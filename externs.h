@@ -20,11 +20,17 @@
 # include <unistd.h>
 # include <string.h>
 # include <dirent.h>
+# include <errno.h>
 # define DIR_T	struct dirent
 # define WAIT_T	int
 # define WAIT_IS_INT 1
 extern char *tzname[2];
 # define TZONE(tm) tzname[(tm).tm_isdst]
+/* include locale stuff for mailer "Content-Type":
+ */
+#include <locale.h>
+#include <nl_types.h>
+#include <langinfo.h>
 #endif
 
 #if defined(UNIXPC)
@@ -55,6 +61,7 @@ extern	int		errno;
 extern	void		perror(), exit(), free();
 extern	char		*getenv(), *strcpy(), *strchr(), *strtok();
 extern	void		*malloc(), *realloc();
+
 # define SIG_T	void
 # define TIME_T	long
 # define PID_T int

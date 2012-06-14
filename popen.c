@@ -29,9 +29,14 @@ static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
 #endif /* not lint */
 
 #include "cron.h"
-#include <sys/signal.h>
+#include <signal.h>
+
+#if defined(BSD) || defined(POSIX)
+#  include <grp.h>
+#endif
 
 
+#define MAX_ARGS 100
 #define WANT_GLOBBING 0
 
 /*
@@ -43,14 +48,15 @@ static PID_T *pids;
 static int fds;
 
 FILE *
-cron_popen(program, type)
+cron_popen(program, type, e)
 	char *program, *type;
+	entry *e;
 {
 	register char *cp;
 	FILE *iop;
 	int argc, pdes[2];
 	PID_T pid;
-	char *argv[100];
+	char *argv[MAX_ARGS + 1];
 #if WANT_GLOBBING
 	char **pop, *vv[2];
 	int gargc;
@@ -58,7 +64,7 @@ cron_popen(program, type)
 	extern char **glob(), **copyblk();
 #endif
 
-	if (*type != 'r' && *type != 'w' || type[1])
+	if ((*type != 'r' && *type != 'w') || type[1])
 		return(NULL);
 
 	if (!pids) {
@@ -72,9 +78,10 @@ cron_popen(program, type)
 		return(NULL);
 
 	/* break up string into pieces */
-	for (argc = 0, cp = program;; cp = NULL)
+	for (argc = 0, cp = program; argc < MAX_ARGS; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
+    argv[MAX_ARGS] = NULL;
 
 #if WANT_GLOBBING
 	/* glob each piece */
@@ -93,7 +100,7 @@ cron_popen(program, type)
 #endif
 
 	iop = NULL;
-	switch(pid = vfork()) {
+	switch(pid = fork()) {
 	case -1:			/* error */
 		(void)close(pdes[0]);
 		(void)close(pdes[1]);
@@ -114,6 +121,34 @@ cron_popen(program, type)
 			}
 			(void)close(pdes[1]);
 		}
+ 		/* set our directory, uid and gid.  Set gid first, since once
+         * we set uid, we've lost root privleges.
+         */
+        if (setgid(e->gid) !=0) {
+          char msg[256];
+          snprintf(msg, 256, "popen:setgid(%lu) failed: %s",
+               (unsigned long) e->gid, strerror(errno));
+          log_it("CRON",getpid(),"error",msg);
+          exit(ERROR_EXIT);
+        }
+# if defined(BSD) || defined(POSIX)
+		if (initgroups(env_get("LOGNAME", e->envp), e->gid) !=0) {
+		  char msg[256];
+		  snprintf(msg, 256, "popen:initgroups(%lu) failed: %s",
+			   (unsigned long) e->gid, strerror(errno));
+		  log_it("CRON",getpid(),"error",msg);
+		  exit(ERROR_EXIT);
+                }
+# endif
+		if (setuid(e->uid) !=0) {
+		  char msg[256];
+		  snprintf(msg, 256, "popen: setuid(%lu) failed: %s",
+			   (unsigned long) e->uid, strerror(errno)); 
+		  log_it("CRON",getpid(),"error",msg);
+		  exit(ERROR_EXIT);
+		}	
+		chdir(env_get("HOME", e->envp));
+
 #if WANT_GLOBBING
 		execvp(gargv[0], gargv);
 #else
@@ -146,7 +181,7 @@ cron_pclose(iop)
 	FILE *iop;
 {
 	register int fdes;
-	int omask;
+	sigset_t omask, mask;
 	WAIT_T stat_loc;
 	PID_T pid;
 
@@ -157,10 +192,15 @@ cron_pclose(iop)
 	if (pids == 0 || pids[fdes = fileno(iop)] == 0)
 		return(-1);
 	(void)fclose(iop);
-	omask = sigblock(sigmask(SIGINT)|sigmask(SIGQUIT)|sigmask(SIGHUP));
-	while ((pid = wait(&stat_loc)) != pids[fdes] && pid != -1)
-		;
-	(void)sigsetmask(omask);
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGQUIT);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGHUP);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
+	pid = waitpid(pids[fdes], &stat_loc, 0);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	pids[fdes] = 0;
-	return (pid == -1 ? -1 : WEXITSTATUS(stat_loc));
+	if (pid == -1 || !WIFEXITED(stat_loc))
+		return -1;
+	return WEXITSTATUS(stat_loc);
 }

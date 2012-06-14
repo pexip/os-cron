@@ -28,7 +28,8 @@ env_init()
 {
 	register char	**p = (char **) malloc(sizeof(char **));
 
-	p[0] = NULL;
+	if (p)
+		p[0] = NULL;
 	return (p);
 }
 
@@ -38,6 +39,9 @@ env_free(envp)
 	char	**envp;
 {
 	char	**p;
+
+	if(!envp)
+		return;
 
 	for (p = envp;  *p;  p++)
 		free(*p);
@@ -55,8 +59,18 @@ env_copy(envp)
 	for (count = 0;  envp[count] != NULL;  count++)
 		;
 	p = (char **) malloc((count+1) * sizeof(char *));  /* 1 for the NULL */
+	if (p == NULL) {
+		errno = ENOMEM;
+		return NULL;
+	}
 	for (i = 0;  i < count;  i++)
-		p[i] = strdup(envp[i]);
+		if ((p[i] = strdup(envp[i])) == NULL) {
+			while (--i >= 0)
+				(void) free(p[i]);
+			free(p);
+			errno = ENOMEM;
+			return NULL;
+		}
 	p[count] = NULL;
 	return (p);
 }
@@ -87,7 +101,11 @@ env_set(envp, envstr)
 		 * save our new one there, and return the existing array.
 		 */
 		free(envp[found]);
-		envp[found] = strdup(envstr);
+		if ((envp[found] = strdup(envstr)) == NULL) {
+			envp[found] = "";
+			errno = ENOMEM;
+			return NULL;
+		}
 		return (envp);
 	}
 
@@ -98,11 +116,29 @@ env_set(envp, envstr)
 	 */
 	p = (char **) realloc((void *) envp,
 			      (unsigned) ((count+1) * sizeof(char **)));
+	if (p == NULL) 	{
+		errno = ENOMEM;
+		return NULL;
+	}
 	p[count] = p[count-1];
-	p[count-1] = strdup(envstr);
+	if ((p[count-1] = strdup(envstr)) == NULL) {
+		errno = ENOMEM;
+		return NULL;
+	}
 	return (p);
 }
 
+/* The following states are used by load_env(), traversed in order: */
+enum env_state {
+	NAMEI,		/* First char of NAME, may be quote */
+	NAME,		/* Subsequent chars of NAME */
+	EQ1,		/* After end of name, looking for '=' sign */
+	EQ2,		/* After '=', skipping whitespace */
+	VALUEI,		/* First char of VALUE, may be quote */
+	VALUE,		/* Subsequent chars of VALUE */
+	FINI,		/* All done, skipping trailing whitespace */
+	ERROR,		/* Error */
+};
 
 /* return	ERR = end of file
  *		FALSE = not an env setting (file was repositioned)
@@ -115,31 +151,104 @@ load_env(envstr, f)
 {
 	long	filepos;
 	int	fileline;
-	char	name[MAX_TEMPSTR], val[MAX_ENVSTR];
-	int	fields;
+	enum env_state state;
+	char name[MAX_ENVSTR], val[MAX_ENVSTR];
+	char quotechar, *c, *str;
 
 	filepos = ftell(f);
 	fileline = LineNumber;
 	skip_comments(f);
-	if (EOF == get_string(envstr, MAX_ENVSTR, f, "\n"))
+	if (EOF == get_string(envstr, MAX_ENVSTR - 1, f, "\n"))
 		return (ERR);
+
+    envstr[MAX_ENVSTR - 1] = '\0';
 
 	Debug(DPARS, ("load_env, read <%s>\n", envstr))
 
-	name[0] = val[0] = '\0';
-	fields = sscanf(envstr, "%[^ =] = %[^\n#]", name, val);
-	if (fields != 2) {
-		Debug(DPARS, ("load_env, not 2 fields (%d)\n", fields))
+	bzero(name, sizeof name);
+	bzero(val, sizeof val);
+	str = name;
+	state = NAMEI;
+	quotechar = '\0';
+	c = envstr;
+	while (state != ERROR && *c) {
+		switch (state) {
+		case NAMEI:
+		case VALUEI:
+			if (*c == '\'' || *c == '"')
+				quotechar = *c++;
+			state++;
+			/* FALLTHROUGH */
+		case NAME:
+		case VALUE:
+			if (quotechar) {
+				if (*c == quotechar) {
+					state++;
+					c++;
+					break;
+				}
+				if (state == NAME && *c == '=') {
+					state = ERROR;
+					break;
+				}
+			} else {
+				if (state == NAME) {
+					if (isspace((unsigned char)*c)) {
+						c++;
+						state++;
+						break;
+					}
+					if (*c == '=') {
+						state++;
+						break;
+					}
+				}
+			}
+			*str++ = *c++;
+			break;
+
+		case EQ1:
+			if (*c == '=') {
+				state++;
+				str = val;
+				quotechar = '\0';
+			} else {
+				if (!isspace((unsigned char)*c))
+					state = ERROR;
+			}
+			c++;
+			break;
+
+		case EQ2:
+		case FINI:
+			if (isspace((unsigned char)*c))
+				c++;
+			else
+				state++;
+			break;
+
+		default:
+			abort();
+		}
+	}
+	if (state != FINI && !(state == VALUE && !quotechar)) {
+		Debug(DPARS, ("load_env, not an env var, state = %d\n", state))
 		fseek(f, filepos, 0);
 		Set_LineNum(fileline);
 		return (FALSE);
 	}
+	if (state == VALUE) {
+		/* End of unquoted value: trim trailing whitespace */
+		c = val + strlen(val);
+		while (c > val && isspace((unsigned char)c[-1]))
+			*(--c) = '\0';
+	}
 
-	/* 2 fields from scanf; looks like an env setting
-	 */
+	/* 2 fields from parser; looks like an env setting */
 
 	/*
-	 * process value string
+	 * This can't overflow because get_string() limited the size of the
+	 * name and val fields.  Still, it doesn't hurt to be careful...
 	 */
 	/*local*/{
 		int	len = strdtb(val);
@@ -154,11 +263,12 @@ load_env(envstr, f)
 		}
 	}
 
+	if (strlen(name) + 1 + strlen(val) >= MAX_ENVSTR-1)
+		return (FALSE);
 	(void) sprintf(envstr, "%s=%s", name, val);
 	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
 	return (TRUE);
 }
-
 
 char *
 env_get(name, envp)
@@ -168,7 +278,7 @@ env_get(name, envp)
 	register int	len = strlen(name);
 	register char	*p, *q;
 
-	while (p = *envp++) {
+	while ((p = *envp++)) {
 		if (!(q = strchr(p, '=')))
 			continue;
 		if ((q - p) == len && !strncmp(p, name, len))
