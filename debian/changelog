@@ -1,3 +1,9 @@
+cron (3.0pl1-120ubuntu4pexip1) pexip; urgency=low
+
+  * Prepare Pexip packaging
+
+ -- John-Mark Bell <jmb@pexip.com>  Tue, 24 Dec 2013 14:03:55 +0000
+
 cron (3.0pl1-120ubuntu4) precise-proposed; urgency=low
 
   * d/cron.default: change to a deprecated message to make it clear

@@ -1,9 +1,10 @@
 Source: cron
 Section: admin
 Priority: important
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Maintainer: Pexip AS <packaging@pexip.com>
+XSBC-Pexip-Original-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
-Uploaders: Christian Kastner <debian@kvr.at>
+XSBC-Pexip-Original-Uploaders: Christian Kastner <debian@kvr.at>
 Standards-Version: 3.9.2
 Build-Depends:
     debhelper (>= 7.3.15ubuntu2),
@@ -12,6 +13,7 @@ Build-Depends:
 Homepage: http://ftp.isc.org/isc/cron/
 Vcs-Git: git://git.debian.org/git/pkg-cron/pkg-cron.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-cron/pkg-cron.git
+XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
 
 Package: cron
 Architecture: any
