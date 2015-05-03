@@ -542,7 +542,7 @@ child_process(e, u)
 	}
 
 	register FILE	*mail = NULL;
-	register int	bytes = 1;
+	register int	bytes = 0;
 
 	register char	**env;
 	char    	**jobenv = build_env(e->envp); 
@@ -561,12 +561,14 @@ child_process(e, u)
 	fprintf(mail, "From: root (Cron Daemon)\n");
 	fprintf(mail, "To: %s\n", mailto);
 	fprintf(mail, "Subject: Cron <%s@%s> %s%s\n",
-			usernm, first_word(hostname, "."),
+			usernm,
+			fqdn_in_subject ? hostname : first_word(hostname, "."),
 			e->cmd, status?" (failed)":"");
 # if defined(MAIL_DATE)
 	fprintf(mail, "Date: %s\n",
 			arpadate(&StartTime));
 # endif /* MAIL_DATE */
+	fprintf(mail, "MIME-Version: 1.0\n");
 	if ( content_type == 0L ) {
 		fprintf(mail, "Content-Type: text/plain; charset=%s\n",
 				cron_default_mail_charset
@@ -595,6 +597,8 @@ child_process(e, u)
 
 		fprintf(mail,"Content-Transfer-Encoding: %s\n", content_transfer_encoding);
 	}
+	else
+		fprintf(mail, "Content-Transfer-Encoding: 8bit\n");
 
 	for (env = e->envp;  *env;  env++)
 		fprintf(mail, "X-Cron-Env: <%s>\n",
@@ -613,6 +617,7 @@ child_process(e, u)
 			ret = fwrite(buf, 1, remain, mail);
 			if (ret > 0) {
 				remain -= ret;
+				bytes += ret;
 				continue;
 			}
 			// XXX error
@@ -630,9 +635,8 @@ child_process(e, u)
 	if (status) {
 		char buf[MAX_TEMPSTR];
 		snprintf(buf, MAX_TEMPSTR,
-				"mailed %d byte%s of output; "
-				"but got status 0x%04x, "
-				"\n",
+				"mailed %d byte%s of output "
+				"but got status 0x%04x from MTA\n",
 				bytes, (bytes==1)?"":"s", status);
 		log_it(usernm, getpid(), "MAIL", buf);
 	}

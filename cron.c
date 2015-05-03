@@ -28,6 +28,8 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
 
 #include <sys/types.h>
 #include <fcntl.h>
+#include <libgen.h>
+#include <strings.h>
 
 static	void	usage __P((void)),
 		run_reboot_jobs __P((cron_db *)),
@@ -65,7 +67,7 @@ main(argc, argv)
 	cron_db	database;
 	char *cs;
 
-	ProgramName = argv[0];
+	ProgramName = basename(argv[0]);
 
 #if defined(BSD)
 	setlinebuf(stdout);
@@ -105,7 +107,7 @@ main(argc, argv)
        /* Except that "US-ASCII" is preferred to "ANSI_x3.4-1968" in MIME,
         * even though "ANSI_x3.4-1968" is the official charset name. */
        if ( ( cs = nl_langinfo( CODESET ) ) != 0L && 
-               strcmp(cs, "ANSI_x3.4-1968") != 0 )
+               strcasecmp(cs, "ANSI_x3.4-1968") != 0 )
            strncpy( cron_default_mail_charset, cs, MAX_ENVSTR );
        else
            strcpy( cron_default_mail_charset, "US-ASCII" );
@@ -469,8 +471,9 @@ parse_args(argc, argv)
 	log_level = 1;
 	stay_foreground = 0;
         lsbsysinit_mode = 0;
+        fqdn_in_subject = 0;
 
-	while (EOF != (argch = getopt(argc, argv, "lfx:L:"))) {
+	while (EOF != (argch = getopt(argc, argv, "lfnx:L:"))) {
 		switch (argch) {
 		default:
 			usage();
@@ -481,12 +484,15 @@ parse_args(argc, argv)
 			if (!set_debug_flags(optarg))
 				usage();
 			break;
-                case 'l':
-                    lsbsysinit_mode = 1;
-                    break;
+		case 'l':
+			lsbsysinit_mode = 1;
+			break;
+		case 'n':
+			fqdn_in_subject = 1;
+			break;
 		case 'L':
-		    log_level = atoi(optarg);
-		    break;
+			log_level = atoi(optarg);
+			break;
 		}
 	}
 }

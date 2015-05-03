@@ -1,63 +1,186 @@
-cron (3.0pl1-120ubuntu4) precise-proposed; urgency=low
+cron (3.0pl1-127+deb8u1) jessie; urgency=medium
 
-  * d/cron.default: change to a deprecated message to make it clear
-    that the file is no longer in use. (LP: #794082)
+  * d/cron.service: Use KillMode=process to kill only the daemon.
+    The default of KillMode=control-group kills all the processes in the control
+    group, for example when restarting the daemon. This is a deviation from past
+    behavior we do not want. Thanks, Alexandre Detiste! Closes: #783683
 
- -- Clint Byrum <clint@ubuntu.com>  Thu, 14 Jun 2012 11:04:03 -0700
+ -- Christian Kastner <debian@kvr.at>  Sun, 03 May 2015 15:25:18 +0200
 
-cron (3.0pl1-120ubuntu3) precise; urgency=low
+cron (3.0pl1-127) unstable; urgency=medium
 
-  * debian/rules: add support for cross-compiling.
+  * Drop $READ_ENV from cron's command line. It does not belong there.
+    Closes: #766779
 
- -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 02 Apr 2012 07:50:11 +0000
+ -- Christian Kastner <debian@kvr.at>  Sat, 25 Oct 2014 20:47:09 +0200
 
-cron (3.0pl1-120ubuntu2) precise; urgency=low
+cron (3.0pl1-126) unstable; urgency=low
 
-  * Drop build-dependency on libaudit, not in main and the security team
-    doesn't want it there.  LP: #878155.
+  * Packaging (general): removed unused files from the source that had been
+    already removed in 3.0pl1-117 but got reintroduced due to a merge.
 
- -- Steve Langasek <steve.langasek@ubuntu.com>  Thu, 20 Oct 2011 07:57:06 -0700
+ -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Fri, 24 Oct 2014 23:01:59 +0200
 
-cron (3.0pl1-120ubuntu1) precise; urgency=low
+cron (3.0pl1-125) unstable; urgency=medium
 
-  [ Ubuntu Merge-o-Matic ]
-  * Merge from Debian unstable.  Remaining changes:
-    - debian/control:
-      + Requires debhelper >= 7.3.15ubuntu2 (for Upstart).
-      + Move MTA to Suggests field.
-    - debian/cron.upstart: Add Upstart script.
-    - debian/rules: Call dh_installinit to install Upstart job properly.
-  * Dropped changes, superseded upstream:
-    - debian/control: lockfile-progs no longer recommended.
-    - debian/{prerm,postinst,postrm}: scripts now generated with debhelper.
+  * Acknowledge NMUs. Thanks, Laurent Bigonville and Ansgar Burchardt.
+    Closes: #749271
 
- -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 17 Oct 2011 15:33:56 -0700
+  [ Christian Kastner ]
+  * debian/control:
+    - Bump Standards-Version to 3.9.6 (no changes needed)
+    - Canonicalize Vcs-* URLs
+  * debian/copyright:
+    - Bump years
+    - Don't use spaces in License short name
+  * debian/source/lintian-overrides:
+    - Drop overrides from pre-UTF-8 debian/control era
+  * debian/rules:
+    - Extend documentation
+  * debian/cron.init:
+    - Include winbind in Should-Start/Stop. Closes: #732203
+  * crontab.5:
+    - Don't use hyphen as a minus sign
+  * cron.8:
+    - Drop stray words in cron.8. Thanks, Regid Ichira! Closes: #702091
+    - Fix misspelled 'sytem'. Thanks, green! Closes: #753775
+  * cron.c,crontab.c:
+    - Use basename of argv[0] as syslog tag. Closes: #752750
+  * cron.c:
+     - Use case-insensitive comparison in charset selection. Thanks,
+       Malcolm Scott! LP: #1169160
+  * entry.c:
+    - Detect invalid entry: step specified without a range. Thanks,
+      Justin T. Pryzby! Closes: #733478
+    - Error out when a command field is too long instead of silently
+      truncating it. Closes: #686223, LP: #826702
+  * do_command.c:
+    - Fix initialization and increment of mailed bytes counter.
+      Closes: #691488
+  * cron.c, do_command.c:
+    - Add an option -n to include FQDN in mail subject. Closes: #570423
+
+  [ brian m. carlson ]
+  * config.h, do_command.c:
+    - Send proper 8-bit emails by including an appropriate MIME-Version and
+      adjusting the Content-Transfer-Encoding header accordingly.
+      Closes: #694686
+
+  [ Javier Fernández-Sanguino ]
+  * Change systemd definition in order for the daemon to read an honor
+    /etc/default/cron (Closes: #754279)
+
+ -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Fri, 24 Oct 2014 16:17:56 +0200
+
+cron (3.0pl1-124.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * debian/cron.service: Set IgnoreSIGPIPE=false. (Closes: #756047)
+  * debian/cron.service: Add Documentation field.
+
+ -- Ansgar Burchardt <ansgar@debian.org>  Mon, 04 Aug 2014 21:44:00 +0200
+
+cron (3.0pl1-124.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add pam_loginuid module to the PAM session stack (Closes: #677443)
+  * Add systemd service file. Thanks to Michael Stapelberg (Closes: #652440)
+
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 25 May 2014 21:21:19 +0200
+
+cron (3.0pl1-124) unstable; urgency=medium
+
+  [ Release targeted to Wheezy including fixes for critical/important bugs ]
+  * debian/{preinst,postinst,postrm}: remove obsolete /etc/cron.daily/standard
+    on upgrade. (Closes: #679062)
+  * debian/cron.init: Have the init.d file remove cron's pidfile if it 
+    exists after killing the process. The pidfile should be removed
+    by cron itself (but it isn't) through its SIGhandler as done in later
+    versions in cron (4.1 and cronie). This fix is, however, simpler and less
+    intrusive. (Closes: 679106, 615855)
+  * debian/control:  
+       - Reword last paragraph since cron does not provide any standard tasks
+         anymore. (Closes: 674192)
+       - Update to Standards-Version: 3.9.3 - which BTW includes an indication
+         on which are the valid cron filenames.
+       - Depend on debhelper >= 9 (lintian warning)
+
+ -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Thu, 28 Jun 2012 12:08:09 +0200
+
+cron (3.0pl1-123) unstable; urgency=low
+
+  * debian/standard.daily: Apply patch from Steve Allison to prevent checking
+     two times the same filesystem. This prevents bogus warnings about missing
+     lost+found in schroot bind mounts (Closes: #660879)
+  * debian/rules: Apply patch from Steve Langasek to add cross compiler
+    support to cron (Closes: #666892)
+  * debian/cron.default, debian/standard.daily, debian/rules: Remove
+    the lost+found check as this is no longer required and causes
+    issues with some filesystems (e.g. bind mounts, locally mounted USB
+    drives). Additionally, in some filesystems the directory
+    will be generated when required. (Closes: #620164, #658743, #662605,
+    #660879, #579640, #473711)
+
+ -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Sat, 23 Jun 2012 08:28:27 +0200
+
+cron (3.0pl1-121) unstable; urgency=low
+
+  * debian/control:
+    - Put the maintainer address in UTF-8 encoding
+  * debian/postinst:
+     - Only go ahead when configuring the package (Closes: #653304, #657073)
+  * debian/source/lintian-overrides:
+    - Removed, no longer required
+  * crontab.5:
+    - Escape the '%' in the examples so that they can work when copied over to
+      crontab (Closes: #642309)
+    - Remove tabs from manpage since they are not formatted properly in the
+      nonfill area
+  * cron.8, crontab.1, crontab.5:
+    - Fix formatting errors in manual pages with patch provided by David
+      Prévot (Closes: #643603)
+  * debian/cron.default:
+    - Fix typo (Closes: #643897)
+  * debian/compat:
+    - Set to compatibility version 9 to enable hardened build flags 
+      (Closes: #653720)
+
+ -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Mon, 19 Sep 2011 00:20:17 +0200
 
 cron (3.0pl1-120) unstable; urgency=low
 
-  * do_command.c, cron.h, cron.8: Change the behaviour when logging the
-    information of the child processes. A new loglevel (8) is introduced and
-    documented in cron.8. The previous log format is kept unless the sysadmin
-    choses to select this new option.   (Closes: 637295) 
-  * debian/examples/cron-stats.pl: Adjust the script with the
-    changes introduced in the logging behaviour.
+  * do_command.c, cron.h, cron.8: 
+    - Change the behaviour when logging the information of the child processes.
+      A new loglevel (8) is introduced and documented in cron.8. The previous
+      log format is kept unless the sysadmin choses to select this new option.
+      (Closes: #637295) 
+  * debian/examples/cron-stats.pl:
+    - Adjust the script with the changes introduced in the logging behaviour.
   * cron.8: Fix minor formatting errors
   * debian/cron.bug-script:
-      - Report properly on the EDITOR variable
-      - Report the permissions and contents of all relevant cron directories
+    - Report properly on the EDITOR variable. Thanks to Jan Braun for the
+      report.
+    - Also report the contents of /etc/cron.* dirs. This is helpful when
+      debugging syntax/mode/naming errors. Users that do not want to share this
+      information should edit/delete before reporting bugs.
   * debian/changelog: Typo fixes and missing information
+  * debian/control:
+    - Update package description, removing the "backup of key system files" as
+      a feature. The last of these responsibilities were transffered in -117.
   * crontab.5: 
-      - Document limitations of the periods that can be defined in crontab
-        syntax and provide workarounds (Closes: 640086)
-      - Document limitation of the use of @reboot due to the definition
-        of the boot sequence as suggested by Regid Ichira.
-  * debian/source/lintian-overrides: Add overrides file for lintian
-    required because the maintainer name in debian/changelog and in
-    debian/control do not match due to encoding.
+    - Document limitations of the periods that can be defined in crontab syntax
+      and provide workarounds (Closes: #640086)
+    - Document limitation of the use of @reboot due to the definition of the
+      boot sequence as suggested by Regid Ichira.
+  * debian/source/lintian-overrides:
+    - Add overrides file for lintian required because the maintainer name in
+      debian/changelog and in debian/control do not match due to encoding.
   [ Christian Kastner ]
   * debian/control:
     - Fix broken Vcs-* URLs
-  * debian/NEWS: Remove previous spurious entry from 3.0pl1-110.
+  * debian/NEWS: 
+    - Remove spurious NEWS entry (the entry for -110 was duplicated at the
+      bottom)
 
  -- Javier Fernández-Sanguino Peña <jfs@debian.org>  Fri, 09 Sep 2011 23:25:35 +0200
 
@@ -184,7 +307,7 @@ cron (3.0pl1-117) unstable; urgency=low
     - Backup of /etc/{passd,group} is no longer performed by cron; the task
       was handed over to src:shadow (see #554170). In Squeeze, this task will
       be performed redundantly by both packages (as discussed on
-      debian-release)
+      debian-release) (Closes: 333837)
     - Rewrite locking and lost+found-checking code, based on a submission to
       the BTS by Justin B. Rye. Closes: #478967, #537073, LP: #257367
     - Parse /etc/mtab instead of /proc/mounts; the former makes handling bind
@@ -203,37 +326,6 @@ cron (3.0pl1-117) unstable; urgency=low
     were no longer relevant.
 
  -- Christian Kastner <debian@kvr.at>  Sun, 08 May 2011 01:21:15 +0200
-
-cron (3.0pl1-116ubuntu3) oneiric; urgency=low
-
-  * Cherry-pick fix from Debian: database.c, cron.c, cron.h,
-    debian/copyright:
-    - Check orphaned crontabs for adoption. Fix taken from Fedora cronie.
-      Closes: #634926, LP: #27520.
-
- -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 19 Sep 2011 10:21:01 -0700
-
-cron (3.0pl1-116ubuntu2) oneiric; urgency=low
-
-  * No-change rebuild with current debhelper, to fix maintainer script
-    which keeps trying to start cron in my chroots due to bypassing
-    invoke-rc.d
-
- -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 15 Aug 2011 16:30:24 -0700
-
-cron (3.0pl1-116ubuntu1) natty; urgency=low
-
-  * Merge from debian unstable (LP: #696953), remaining changes:
-    - debian/control:
-      + Requires debhelper >= 7.3.15ubuntu2 (for Upstart).
-      + Move MTA,lockfile-progs to Suggests field.
-    - debian/cron.upstart: Add Upstart script.
-    - debian/{prerm,postinst,postrm}:
-      + Don't call update-rc.d,invoke-rc.d and
-        /etc/init.d/cron.
-    - debian/rules: Call dh_installinit to install Upstart job properly.
-
- -- Lorenzo De Liso <blackz@ubuntu.com>  Mon, 03 Jan 2011 20:32:01 +0100
 
 cron (3.0pl1-116) unstable; urgency=high
 
@@ -258,21 +350,6 @@ cron (3.0pl1-116) unstable; urgency=high
 
  -- Christian Kastner <debian@kvr.at>  Wed, 10 Nov 2010 21:13:19 +0100
 
-cron (3.0pl1-115ubuntu1) natty; urgency=low
-
-  * Merge from Debian testing, Ubuntu remaining changes:
-    - debian/control:
-      + Requires debhelper >= 7.3.15ubuntu2 (for Upstart).
-      + Move MTA,lockfile-progs to Suggests field.
-    - debian/cron.upstart: Add Upstart script.
-    - debian/{prerm,postinst,postrm}:
-      + Don't call update-rc.d,invoke-rc.d and
-        /etc/init.d/cron.
-    - debian/rules:
-      + Call dh_installinit to install Upstart job properly.
-
- -- Alessio Treglia <quadrispro@ubuntu.com>  Sat, 27 Nov 2010 10:46:19 +0100
-
 cron (3.0pl1-115) unstable; urgency=high
 
   * cron.c: set LC_COLLATE to 'C' in order to properly work when locales
@@ -288,22 +365,6 @@ cron (3.0pl1-115) unstable; urgency=high
       - Force LC_COLLATE to 'C' regardless of user locale settings.
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 16 Oct 2010 13:05:02 +0200
-
-cron (3.0pl1-114ubuntu1) maverick; urgency=low
-
-  * Merge from debian unstable for documentation updates and reading of
-    /etc/default/locale. Remaining changes:
-    - debian/control:
-      + Build-Depends on debhelper >= 7.3.15ubuntu2, for Upstart
-      + Drop MTA and lockfile-args to Suggests
-    - add debian/cron.upstart
-    - debian/postinst: remove calls to update-rc.d, invoke-rc.d and
-      /etc/init.d/cron
-    - debian/postrm: remove call to update-rc.d
-    - debian/prerm: remove calls to invoke-rc.d and /etc/init.d/cron
-    - debian/rules: install Upstart job
-
- -- Jamie Strandboge <jamie@ubuntu.com>  Tue, 24 Aug 2010 14:56:42 -0500
 
 cron (3.0pl1-114) unstable; urgency=low
 
@@ -348,35 +409,6 @@ cron (3.0pl1-114) unstable; urgency=low
     - Make source format explicit (1.0)
 
  -- Christian Kastner <debian@kvr.at>  Sun, 18 Jul 2010 22:51:21 +0200
-
-cron (3.0pl1-113ubuntu1) maverick; urgency=low
-
-  * Merge from debian unstable. Fixes:
-    - LP: #46493 (this should have been fixed way back in 3.0pl1-87, and I
-      confirmed it is no longer a problem)
-    - LP: #118168 (Debian #79037)
-    - LP: #151231 (Debian #155109, #443615)
-    - LP: #308341 (Debian #437180)
-  * Remaining changes:
-    - debian/control:
-      + Build-Depends on debhelper >= 7.3.15ubuntu2, for Upstart
-      + Drop MTA and lockfile-args to Suggests
-    - add debian/cron.upstart
-    - debian/postinst: remove calls to update-rc.d, invoke-rc.d and
-      /etc/init.d/cron
-    - debian/postrm: remove call to update-rc.d
-    - debian/prerm: remove calls to invoke-rc.d and /etc/init.d/cron
-    - debian/rules: install Upstart job
-  * Drop the following changes, now in debian:
-    - popen.c: check return code of initgroups() in cron_popen()
-    - debian/control: add missing ${misc:Depends}
-    - debian/control: Depends bump on lsb to >= 3.2.12ubuntu2. No longer
-      required now that we use Upstart
-    - debian/cron.pam: switch from including common-session to including
-      the new common-session-noninteractive
-    - pathnames.h: use sensible-editor
-
- -- Jamie Strandboge <jamie@ubuntu.com>  Fri, 25 Jun 2010 16:08:12 -0500
 
 cron (3.0pl1-113) unstable; urgency=medium
 
@@ -609,52 +641,6 @@ cron (3.0pl1-107) unstable; urgency=low
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Tue, 16 Mar 2010 22:55:26 +0100
 
-cron (3.0pl1-106ubuntu5) lucid; urgency=low
-
-  * SECURITY UPDATE: check return code of initgroups() in cron_popen().
-    Related to fix for CVE-2006-2607. Thanks to Javier Fernandez-Sanguino
-    Pen~a from Debian for pointing this out. This can be dropped in
-    3.0pl1-109.
-    - http://svn.debian.org/wsvn/pkg-cron/trunk/popen.c?op=diff&rev=0&sc=0
-
- -- Jamie Strandboge <jamie@ubuntu.com>  Wed, 14 Apr 2010 09:10:42 -0500
-
-cron (3.0pl1-106ubuntu4) lucid; urgency=low
-
-  * rebuild rest of main for armel armv7/thumb2 optimization;
-    UbuntuSpec:mobile-lucid-arm-gcc-v7-thumb2
-
- -- Alexander Sack <asac@ubuntu.com>  Fri, 05 Mar 2010 04:06:36 +0100
-
-cron (3.0pl1-106ubuntu3) karmic; urgency=low
-
-  FFE LP: #427356.
-
-  * Replace init script with Upstart job.
-  * debian/control:
-    - Add missing ${misc:Depends}
-    - Bump build-dependency on debhelper for Upstart-aware dh_installinit
-
- -- Scott James Remnant <scott@ubuntu.com>  Tue, 15 Sep 2009 03:32:59 +0100
-
-cron (3.0pl1-106ubuntu2) karmic; urgency=low
-
-  * debian/cron.pam: switch from including common-session to including
-    the new common-session-noninteractive.
-  * debian/control: depend on libpam-runtime (>= 1.0.1-11) for the above.
-
- -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 24 Aug 2009 03:19:49 +0000
-
-cron (3.0pl1-106ubuntu1) karmic; urgency=low
-
-  * Merge from debian unstable, remaining changes:
-    - debian/control: Depend on lsb-base >= 3.2-12ubuntu4
-    - debian/control: Drop MTA and lockfile-args to Suggests
-    - pathnames.h: use sensible-editor
-  * New Debian release fixes LP: #46649
-
- -- Jamie Strandboge <jamie@ubuntu.com>  Thu, 14 May 2009 09:53:08 -0500
-
 cron (3.0pl1-106) unstable; urgency=high
 
    * SECURITY UPDATE: cron does not check the return code of setgid() and
@@ -692,17 +678,6 @@ cron (3.0pl1-106) unstable; urgency=high
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 13 May 2009 01:05:41 +0200
 
-cron (3.0pl1-105ubuntu1) jaunty; urgency=low
-
-  * Merge from debian unstable, remaining changes:
-    - crontab.5 : Add details about multiple recipients in MAILTO
-    - pathnames.h: use sensible-editor
-    - debian/control: Depend on lsb-base >= 3.2-12ubuntu3.
-    - Drop MTA to Suggests
-    - debian/cron.init: Add the 'status' action
-
- -- Michael Vogt <michael.vogt@ubuntu.com>  Wed, 12 Nov 2008 16:41:26 +0100
-
 cron (3.0pl1-105) unstable; urgency=low
 
   * Non-maintainer upload with permission.
@@ -718,49 +693,6 @@ cron (3.0pl1-105) unstable; urgency=low
     Closes: #499584
 
  -- Russell Coker <russell@coker.com.au>  Sun, 28 Sep 2008 19:23:50 +1000
-
-cron (3.0pl1-104+ubuntu5) intrepid; urgency=low
-
-  * crontab.5 : Add details about multiple recipients in MAILTO (LP: #235464) 
-
- -- Jean-Baptiste Lallement <jeanbaptiste.lallement@gmail.com>  Wed, 30 Jul 2008 23:41:42 +0200
-
-cron (3.0pl1-104+ubuntu4) intrepid; urgency=low
-
-  * debian/control: Depend on lsb-base >= 3.2-12ubuntu3.
-
- -- Chuck Short <zulcss@ubuntu.com>  Thu, 10 Jul 2008 14:57:12 +0000
-
-cron (3.0pl1-104+ubuntu3) intrepid; urgency=low
-
-  * debian/control: Depend on lsb >= 3.2.12ubuntu2, which has
-    the status_of_proc() function.
-  * debian/cron.init: Add the 'status' action (LP: #201504),
-    thanks to Dustin Kirkland. 
-
- -- Chuck Short <zulcss@ubuntu.com>  Thu, 10 Jul 2008 14:47:09 +0000
-
-cron (3.0pl1-104+ubuntu2) intrepid; urgency=low
-
-  * Drop MTA to Suggests for Ubuntu for the moment, now that apt installs
-    Recommends by default.
-
- -- Colin Watson <cjwatson@ubuntu.com>  Tue, 08 Jul 2008 10:37:59 +0100
-
-cron (3.0pl1-104+ubuntu1) intrepid; urgency=low
-
-  * pathnames.h: Use the Debian sensible-editor (LP: #222830).
-  * Modify Maintainer value to match the DebianMaintainerField
-    specification.
-
- -- Dustin Kirkland <kirkland@ubuntu.com>  Mon, 09 Jun 2008 11:42:25 -0500
-
-cron (3.0pl1-104+build1) intrepid; urgency=low
-
-  * Fake sync with Debian. The previous merge wasn't necessary, Debian adopted
-    our remaining change (do not call init script stop for runlevels 0 and 6).
-
- -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 05 Jun 2008 09:05:55 +0200
 
 cron (3.0pl1-104) unstable; urgency=low
 
@@ -1590,4 +1522,5 @@ cron (3.0pl1-35) frozen unstable; urgency=low
   is fixed. Also added -DDEBIAN to build commands in Makefile.
 
  -- Steve Greenland <steveg@neuromancer.dmccorp.com>  Sun, 1 Dec 1996 16:21:52 -0600
+
 
