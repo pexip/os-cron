@@ -13,7 +13,7 @@ Build-Depends:
 Homepage: http://ftp.isc.org/isc/cron/
 Vcs-Git: git://git.debian.org/git/pkg-cron/pkg-cron.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-cron/pkg-cron.git
-XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
 Package: cron
 Architecture: any
