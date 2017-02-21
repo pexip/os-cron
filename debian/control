@@ -10,7 +10,7 @@ Build-Depends:
     libpam0g-dev,
     libselinux1-dev [linux-any],
     libaudit-dev [linux-any],
-    dh-systemd (>= 1.4)
+#    dh-systemd (>= 1.4)
 Homepage: http://ftp.isc.org/isc/cron/
 Vcs-Git: git://anonscm.debian.org/pkg-cron/pkg-cron.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-cron/pkg-cron.git

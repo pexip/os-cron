@@ -58,7 +58,7 @@ endif # Linux
 
 
 %:
-	dh $@  --with=systemd
+	dh $@
 
 
 override_dh_auto_install:
