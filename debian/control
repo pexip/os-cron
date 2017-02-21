@@ -2,16 +2,17 @@ Source: cron
 Section: admin
 Priority: important
 Maintainer: Pexip AS <packaging@pexip.com>
-XSBC-Pexip-Original-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-XSBC-Original-Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
+XSBC-Pexip-Original-Maintainer: Javier Fernández-Sanguino Peña <jfs@debian.org>
 XSBC-Pexip-Original-Uploaders: Christian Kastner <debian@kvr.at>
-Standards-Version: 3.9.2
+Standards-Version: 3.9.6
 Build-Depends:
-    debhelper (>= 7.3.15ubuntu2),
+    debhelper (>= 9),
     libpam0g-dev,
-    libselinux1-dev [linux-any]
+    libselinux1-dev [linux-any],
+    libaudit-dev [linux-any],
+    dh-systemd (>= 1.4)
 Homepage: http://ftp.isc.org/isc/cron/
-Vcs-Git: git://git.debian.org/git/pkg-cron/pkg-cron.git
+Vcs-Git: git://anonscm.debian.org/pkg-cron/pkg-cron.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-cron/pkg-cron.git
 XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
@@ -26,11 +27,12 @@ Depends:
     adduser,
     lsb-base (>= 3.0-10),
     libpam-runtime (>= 1.0.1-11)
+Recommends:
+    exim4 | postfix | mail-transport-agent
 Suggests:
     anacron (>=2.0-1),
     logrotate,
-    checksecurity,
-    exim4 | postfix | mail-transport-agent
+    checksecurity
 Breaks:
     dpkg (<< 1.15.4)
 Provides: cron-daemon
@@ -44,6 +46,6 @@ Description: process scheduling daemon
  (or to the user in question); you should probably install a mail system
  as well so that you can receive these messages.
  .
- This cron package is configured by default to do some basic daily system
- maintenance tasks. Other packages, such as checksecurity, can provide further
- maintenance tasks.
+ This cron package does not provide any system maintenance tasks. Basic
+ periodic maintenance tasks are provided by other packages, such 
+ as checksecurity.
