@@ -1,6 +1,8 @@
 cron (3.0pl1-127+deb8u1pexip1) pexip; urgency=low
 
   * Migrate to Jessie
+  * debian/preinst: Prepare transition of /etc/init.d/cron from
+    symlink to conffile
 
  -- John-Mark Bell <jmb@pexip.com>  Tue, 21 Feb 2017 13:06:12 +0000
 
