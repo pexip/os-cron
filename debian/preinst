@@ -10,5 +10,6 @@ fi
 # Conffiles that are now obsolete
 dpkg-maintscript-helper rm_conffile /etc/cron.monthly/standard "3.0pl1-113" -- "$@"
 dpkg-maintscript-helper rm_conffile /etc/cron.daily/standard "3.0pl1-124" -- "$@"
+dpkg-maintscript-helper rm_conffile /etc/init/cron.conf "3.0pl1-127+deb8u1pexip1" -- "$@"
 
 #DEBHELPER#
