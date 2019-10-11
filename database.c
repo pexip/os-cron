@@ -24,12 +24,11 @@ static char rcsid[] = "$Id: database.c,v 2.8 1994/01/15 20:43:43 vixie Exp $";
 
 
 #include "cron.h"
-#define __USE_GNU /* For O_NOFOLLOW */
 #include <fcntl.h>
-#undef __USE_GNU
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <time.h>
+
 
 #define TMAX(a,b) ((a)>(b)?(a):(b))
 
@@ -39,7 +38,7 @@ going to be lazy */
 #ifndef PATH_MAX
 
 #ifdef MAXPATHLEN
-#define PATH_MAX MAXPATHLEN 
+#define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 2048
 #endif
@@ -49,10 +48,8 @@ going to be lazy */
 static	void		process_crontab __P((char *, char *, char *,
 					     struct stat *,
 					     cron_db *, cron_db *));
-#ifdef DEBIAN
 static int valid_name (char *filename);
 static user *get_next_system_crontab __P((user *));
-#endif
 
 void force_rescan_user(cron_db *old_db, cron_db *new_db, const char *fname, time_t old_mtime);
 
@@ -63,19 +60,16 @@ void
 load_database(old_db)
 	cron_db		*old_db;
 {
-        DIR		*dir;
+	DIR		*dir;
 	struct stat	statbuf;
 	struct stat	syscron_stat;
 	DIR_T   	*dp;
 	cron_db		new_db;
 	user		*u, *nu;
-#ifdef DEBIAN
 	struct stat     syscrond_stat;
 	struct stat     syscrond_file_stat;
-	
-        char            syscrond_fname[PATH_MAX+1];
-	int             syscrond_change = 0;
-#endif
+	char		syscrond_fname[PATH_MAX+1];
+	int		syscrond_change = 0;
 
 	Debug(DLOAD, ("[%d] load_database()\n", getpid()))
 
@@ -95,10 +89,9 @@ load_database(old_db)
 		syscron_stat.st_mtime = 0;
 	}
 
-#ifdef DEBIAN
 	/* Check mod time of SYSCRONDIR. This won't tell us if a file
-         * in it changed, but will capture deletions, which the individual
-         * file check won't
+	 * in it changed, but will capture deletions, which the individual
+	 * file check won't
 	 */
 	if (stat(SYSCRONDIR, &syscrond_stat) < OK) {
 		log_it("CRON", getpid(), "STAT FAILED", SYSCRONDIR);
@@ -113,20 +106,20 @@ load_database(old_db)
 	 * This is especially important on laptops with APM.
 	 */
 	if (old_db->sysd_mtime != syscrond_stat.st_mtime) {
-	        syscrond_change = 1;
+		syscrond_change = 1;
 	} else {
 	        /* Look through the individual files */
 		user *systab;
 
 		Debug(DLOAD, ("[%d] system dir mtime unch, check files now.\n",
-			      getpid()))
+				getpid()))
 
 		for (systab = old_db->head;
-		     (systab = get_next_system_crontab (systab)) != NULL;
-		     systab = systab->next) {
+			(systab = get_next_system_crontab (systab)) != NULL;
+			systab = systab->next) {
 
 			sprintf(syscrond_fname, "%s/%s", SYSCRONDIR,
-							 systab->name + 8);
+				systab->name + 8);
 
 			Debug(DLOAD, ("\t%s:", syscrond_fname))
 
@@ -134,14 +127,13 @@ load_database(old_db)
 				syscrond_file_stat.st_mtime = 0;
 
 			if (syscrond_file_stat.st_mtime != systab->mtime ||
-				systab->mtime == 0) {
-			        syscrond_change = 1;
+					systab->mtime == 0) {
+				syscrond_change = 1;
                         }
 
 			Debug(DLOAD, (" [checked]\n"))
 		}
 	}
-#endif /* DEBIAN */
 
 	/* if spooldir's mtime has not changed, we don't need to fiddle with
 	 * the database.
@@ -150,14 +142,9 @@ load_database(old_db)
 	 * so is guaranteed to be different than the stat() mtime the first
 	 * time this function is called.
 	 */
-#ifdef DEBIAN
 	if ((old_db->user_mtime == statbuf.st_mtime) &&
-	    (old_db->sys_mtime == syscron_stat.st_mtime) &&
-	    (!syscrond_change)) {
-#else
-	if ((old_db->user_mtime == statbuf.st_mtime) &&
-	    (old_db->sys_mtime == syscron_stat.st_mtime)) {
-#endif
+		(old_db->sys_mtime == syscron_stat.st_mtime) &&
+		(!syscrond_change)) {
 		Debug(DLOAD, ("[%d] spool dir mtime unch, no load needed.\n",
 			      getpid()))
 		return;
@@ -170,9 +157,7 @@ load_database(old_db)
 	 */
 	new_db.user_mtime = statbuf.st_mtime;
 	new_db.sys_mtime = syscron_stat.st_mtime;
-#ifdef DEBIAN
 	new_db.sysd_mtime = syscrond_stat.st_mtime;
-#endif
 	new_db.head = new_db.tail = NULL;
 
 	if (syscron_stat.st_mtime) {
@@ -181,7 +166,6 @@ load_database(old_db)
 				&new_db, old_db);
 	}
 
-#ifdef DEBIAN
 	/* Read all the package crontabs. */
 	if (!(dir = opendir(SYSCRONDIR))) {
 		log_it("CRON", getpid(), "OPENDIR FAILED", SYSCRONDIR);
@@ -189,7 +173,7 @@ load_database(old_db)
 
 	while (dir != NULL && NULL != (dp = readdir(dir))) {
 		char	fname[MAXNAMLEN+1],
-		        tabname[PATH_MAX+1];
+			tabname[PATH_MAX+1];
 
 
 		/* avoid file names beginning with ".".  this is good
@@ -219,7 +203,6 @@ load_database(old_db)
 	}
 	if (dir)
 		closedir(dir);
-#endif
 
 	/* we used to keep this dir open all the time, for the sake of
 	 * efficiency.  however, we need to close it in every fork, and
@@ -307,8 +290,8 @@ unlink_user(db, u)
 
 user *
 find_user(db, name)
-	cron_db	*db;
-	char	*name;
+	cron_db		*db;
+	const char	*name;
 {
 	char	*env_get();
 	user	*u;
@@ -333,13 +316,9 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
 	int		crontab_fd = OK - 1;
 	user		*u = NULL;
 
-#ifdef DEBIAN
 	/* If the name begins with *system*, don't worry about password -
 	 it's part of the system crontab */
 	if (strncmp(fname, "*system*", 8) && !(pw = getpwnam(uname))) {
-#else
-	if (strcmp(fname, "*system*") && !(pw = getpwnam(uname))) {
-#endif
 		/* file doesn't have a user in passwd file.
 		 */
 		if (strncmp(fname, "tmp.", 4)) {
@@ -350,117 +329,119 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
 		goto next_crontab;
 	}
 
-        if (pw) {
-            /* Path for user crontabs (including root's!) */
-            if ((crontab_fd = open(tabname, O_RDONLY|O_NOFOLLOW, 0)) < OK) {
-		/* crontab not accessible?
-		 */
-		log_it(fname, getpid(), "CAN'T OPEN", tabname);
-		goto next_crontab;
-            }
-
-            if (fstat(crontab_fd, statbuf) < OK) {
-		log_it(fname, getpid(), "FSTAT FAILED", tabname);
-		goto next_crontab;
-            }
-            /* Check to make sure that the crontab is owned by the correct user
-               (or root) */
-            if (statbuf->st_uid != pw->pw_uid && statbuf->st_uid != ROOT_UID) {
-                log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-            }
-
-	    /* Check to make sure that the crontab is a regular file */
-            if (!S_ISREG(statbuf->st_mode)) {
-		log_it(fname, getpid(), "NOT A REGULAR FILE", tabname);
-		goto next_crontab;
-	    }
-
-	    /* Check to make sure that the crontab's permissions are secure */
-            if ((statbuf->st_mode & 07777) != 0600) {
-		log_it(fname, getpid(), "INSECURE MODE (mode 0600 expected)", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-	    }
-
-	    /* Check to make sure that there are no hardlinks to the crontab */
-            if (statbuf->st_nlink != 1) {
-		log_it(fname, getpid(), "NUMBER OF HARD LINKS > 1", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-	    }
-        } else {
-            /* System crontab path. These can be symlinks, but the
-               symlink and the target must be owned by root. */
-            if (lstat(tabname, statbuf) < OK) {
-		log_it(fname, getpid(), "LSTAT FAILED", tabname);
-		goto next_crontab;
-            }
-            if (S_ISLNK(statbuf->st_mode) && statbuf->st_uid != ROOT_UID) {
-                log_it(fname, getpid(), "WRONG SYMLINK OWNER", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-            }
-            if ((crontab_fd = open(tabname, O_RDONLY, 0)) < OK) {
-		/* crontab not accessible?
-
-		   If tabname is a symlink, it's most probably just broken, so
-		   we force a rescan. Once the link is fixed, it will get picked
-		   up and processed again. If tabname is a regular file, this
-		   error is bad so we skip it instead.
-		 */
-		if (S_ISLNK(statbuf->st_mode)) {
-                    log_it(fname, getpid(), "CAN'T OPEN SYMLINK", tabname);
-                    force_rescan_user(old_db, new_db, fname, 0);
-                    goto next_crontab;
-                } else {
-		    log_it(fname, getpid(), "CAN'T OPEN", tabname);
-		    goto next_crontab;
+	if (pw) {
+		/* Path for user crontabs (including root's!) */
+		if ((crontab_fd = open(tabname, O_RDONLY|O_NOFOLLOW, 0)) < OK) {
+			/* crontab not accessible?
+			 */
+			log_it(fname, getpid(), "CAN'T OPEN", tabname);
+			goto next_crontab;
 		}
-            }
 
-            if (fstat(crontab_fd, statbuf) < OK) {
-		log_it(fname, getpid(), "FSTAT FAILED", tabname);
-		goto next_crontab;
-            }
+		if (fstat(crontab_fd, statbuf) < OK) {
+			log_it(fname, getpid(), "FSTAT FAILED", tabname);
+			goto next_crontab;
+		}
+		/* Check to make sure that the crontab is owned by the correct user
+		   (or root) */
 
-            /* Check to make sure that the crontab is owned by root */
-            if (statbuf->st_uid != ROOT_UID) {
-                log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-            }
+		if (statbuf->st_uid != pw->pw_uid && statbuf->st_uid != ROOT_UID) {
+			log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
 
-            /* Check to make sure that the crontab is a regular file */
-            if (!S_ISREG(statbuf->st_mode)) {
-		log_it(fname, getpid(), "NOT A REGULAR FILE", tabname);
-		goto next_crontab;
-	    }
+		/* Check to make sure that the crontab is a regular file */
+		if (!S_ISREG(statbuf->st_mode)) {
+			log_it(fname, getpid(), "NOT A REGULAR FILE", tabname);
+			goto next_crontab;
+		}
 
-            /* Check to make sure that the crontab is writable only by root
-	     * This should really be in sync with the check for users above
-	     * (mode 0600). An upgrade path could be implemented for 4.1
-	     */
-	    if ((statbuf->st_mode & S_IWGRP) || (statbuf->st_mode & S_IWOTH)) {
-		log_it(fname, getpid(), "INSECURE MODE (group/other writable)", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-	    }
-            /* Technically, we should also check whether the parent dir is
- 	     * writable, and so on. This would only make proper sense for
- 	     * regular files; we can't realistically check all possible
- 	     * security issues resulting from symlinks. We'll just assume that
- 	     * root will handle responsible when creating them.
-	     */
+		/* Check to make sure that the crontab's permissions are secure */
+		if ((statbuf->st_mode & 07777) != 0600) {
+			log_it(fname, getpid(), "INSECURE MODE (mode 0600 expected)", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
 
-	    /* Check to make sure that there are no hardlinks to the crontab */
-            if (statbuf->st_nlink != 1) {
-		log_it(fname, getpid(), "NUMBER OF HARD LINKS > 1", tabname);
-                force_rescan_user(old_db, new_db, fname, 0);
-		goto next_crontab;
-	    }
-        }
+		/* Check to make sure that there are no hardlinks to the crontab */
+		if (statbuf->st_nlink != 1) {
+			log_it(fname, getpid(), "NUMBER OF HARD LINKS > 1", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
+	} else {
+		/* System crontab path. These can be symlinks, but the
+		   symlink and the target must be owned by root. */
+		if (lstat(tabname, statbuf) < OK) {
+			log_it(fname, getpid(), "LSTAT FAILED", tabname);
+			goto next_crontab;
+		}
+		if (S_ISLNK(statbuf->st_mode) && statbuf->st_uid != ROOT_UID) {
+			log_it(fname, getpid(), "WRONG SYMLINK OWNER", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
+		if ((crontab_fd = open(tabname, O_RDONLY, 0)) < OK) {
+			/* crontab not accessible?
+			 *
+			 * If tabname is a symlink, it's most probably just
+			 * broken, so we force a rescan. Once the link is
+			 * fixed, it will get picked up and processed again. If
+			 * tabname is a regular file, this error is bad, so we
+			 * skip it instead.
+			 */
+			if (S_ISLNK(statbuf->st_mode)) {
+				log_it(fname, getpid(), "CAN'T OPEN SYMLINK", tabname);
+				force_rescan_user(old_db, new_db, fname, 0);
+			} else {
+				log_it(fname, getpid(), "CAN'T OPEN", tabname);
+			}
+			goto next_crontab;
+		}
+
+		if (fstat(crontab_fd, statbuf) < OK) {
+			log_it(fname, getpid(), "FSTAT FAILED", tabname);
+			goto next_crontab;
+		}
+
+		/* Check to make sure that the crontab is owned by root */
+		if (statbuf->st_uid != ROOT_UID) {
+			log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
+
+		/* Check to make sure that the crontab is a regular file */
+		if (!S_ISREG(statbuf->st_mode)) {
+			log_it(fname, getpid(), "NOT A REGULAR FILE", tabname);
+			goto next_crontab;
+		}
+
+		/* Check to make sure that the crontab is writable only by root
+		 * This should really be in sync with the check for users above
+		 * (mode 0600). An upgrade path could be implemented for 4.1
+		 */
+		if ((statbuf->st_mode & S_IWGRP) || (statbuf->st_mode & S_IWOTH)) {
+			log_it(fname, getpid(), "INSECURE MODE (group/other writable)", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
+		/* Technically, we should also check whether the parent dir is
+		 * writable, and so on. This would only make proper sense for
+		 * regular files; we can't realistically check all possible
+		 * security issues resulting from symlinks. We'll just assume that
+		 * root will handle responsible when creating them.
+		 */
+
+		/* Check to make sure that there are no hardlinks to the crontab */
+		if (statbuf->st_nlink != 1) {
+			log_it(fname, getpid(), "NUMBER OF HARD LINKS > 1", tabname);
+			force_rescan_user(old_db, new_db, fname, 0);
+			goto next_crontab;
+		}
+	}
+
         /*
          * The link count check is not sufficient (the owner may
          * delete their original link, reducing the link count back to
@@ -507,8 +488,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
                  * has actually taken place.
                  */
                 force_rescan_user(old_db, new_db, fname, statbuf->st_mtime);
-        }   
-
+        }
 
 next_crontab:
 	if (crontab_fd >= OK) {
@@ -517,7 +497,6 @@ next_crontab:
 	}
 }
 
-#ifdef DEBIAN
 
 #include <regex.h>
 
@@ -568,8 +547,6 @@ get_next_system_crontab (curtab)
 	return curtab;
 }
 
-#endif
-
 /* Force rescan of a crontab the next time cron wakes up
  *
  * cron currently only detects changes caused by an mtime update; it does not
@@ -593,19 +570,21 @@ force_rescan_user(cron_db *old_db, cron_db *new_db, const char *fname, time_t ol
 	}
 
 	/* Allocate an empty crontab with the specified mtime, add it to new DB */
-        if ((u = (user *) malloc(sizeof(user))) == NULL) {
-                errno = ENOMEM;
-        }   
-        if ((u->name = strdup(fname)) == NULL) {
-                free(u);
-                errno = ENOMEM;
-        }   
-        u->mtime = old_mtime;
-        u->crontab = NULL;
+	if ((u = (user *) malloc(sizeof(user))) == NULL) {
+		errno = ENOMEM;
+		return;
+	}
+	if ((u->name = strdup(fname)) == NULL) {
+		free(u);
+		errno = ENOMEM;
+		return;
+	}
+	u->mtime = old_mtime;
+	u->crontab = NULL;
 #ifdef WITH_SELINUX
-        u->scontext = NULL;
+	u->scontext = NULL;
 #endif
-        Debug(DLOAD, ("\t%s: [added empty placeholder to force rescan]\n", fname))
+	Debug(DLOAD, ("\t%s: [added empty placeholder to force rescan]\n", fname))
 	link_user(new_db, u);
 }
 
@@ -614,67 +593,67 @@ static orphan *orphans;
 
 static void
 free_orphan(orphan *o) {
-        free(o->tabname);
-        free(o->fname);
-        free(o->uname);
-        free(o);
+	free(o->tabname);
+	free(o->fname);
+	free(o->uname);
+	free(o);
 }
 
 void
 check_orphans(cron_db *db) {
-        orphan *prev_orphan = NULL;
-        orphan *o = orphans;
+	orphan *prev_orphan = NULL;
+	orphan *o = orphans;
 	struct stat statbuf;
 
-        while (o != NULL) {
-                if (getpwnam(o->uname) != NULL) {
-                        orphan *next = o->next;
+	while (o != NULL) {
+		if (getpwnam(o->uname) != NULL) {
+			orphan *next = o->next;
 
-                        if (prev_orphan == NULL) {
-                                orphans = next;
-                        } else {
-                                prev_orphan->next = next;
-                        }   
+			if (prev_orphan == NULL) {
+				orphans = next;
+			} else {
+				prev_orphan->next = next;
+			}
 
-                        process_crontab(o->uname, o->fname, o->tabname,
-                                &statbuf, db, NULL);
+			process_crontab(o->uname, o->fname, o->tabname,
+				&statbuf, db, NULL);
 
-                        /* process_crontab could have added a new orphan */
-                        if (prev_orphan == NULL && orphans != next) {
-                                prev_orphan = orphans;
-                        }   
-                        free_orphan(o);
-                        o = next;
-                } else {
-                        prev_orphan = o;
-                        o = o->next;
-                }   
-        }   
+			/* process_crontab could have added a new orphan */
+			if (prev_orphan == NULL && orphans != next) {
+				prev_orphan = orphans;
+			}
+			free_orphan(o);
+			o = next;
+		} else {
+			prev_orphan = o;
+			o = o->next;
+		}
+	}
 }
 
 static void
 add_orphan(const char *uname, const char *fname, const char *tabname) {
-        orphan *o; 
+	orphan *o;
 
-        o = calloc(1, sizeof(*o));
-        if (o == NULL)
-                return;
+	o = calloc(1, sizeof(*o));
+	if (o == NULL)
+		return;
 
-        if (uname)
-                if ((o->uname=strdup(uname)) == NULL)
-                        goto cleanup;
+	if (uname)
+		if ((o->uname=strdup(uname)) == NULL)
+			goto cleanup;
 
-        if (fname)
-                if ((o->fname=strdup(fname)) == NULL)
-                        goto cleanup;
+	if (fname)
+		if ((o->fname=strdup(fname)) == NULL)
+			goto cleanup;
 
-        if (tabname)
-                if ((o->tabname=strdup(tabname)) == NULL)
-                        goto cleanup;
+	if (tabname)
+		if ((o->tabname=strdup(tabname)) == NULL)
+			goto cleanup;
 
-        o->next = orphans;
-        orphans = o;
-        return;
+	o->next = orphans;
+	orphans = o;
+	return;
 
 cleanup:
         free_orphan(o);

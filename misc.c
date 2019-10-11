@@ -197,7 +197,7 @@ set_cron_cwd()
 	struct stat	sb;
 	mode_t		um;
 	struct group	*gr;
-	
+
 	/* first check for CRONDIR ("/var/cron" or some such)
 	 */
 	if (stat(CRONDIR, &sb) < OK && errno == ENOENT) {
@@ -205,7 +205,7 @@ set_cron_cwd()
 
 		/* crontab(1) running SGID crontab shouldn't attempt to create
 		 * directories */
-		if (getuid() != 0 )
+		if (getuid() != 0)
 			exit(ERROR_EXIT);
 
 		um = umask(000);
@@ -213,8 +213,7 @@ set_cron_cwd()
 			fprintf(stderr, "%s: created\n", CRONDIR);
 			stat(CRONDIR, &sb);
 		} else {
-			fprintf(stderr, "%s: mkdir: %s\n", CRONDIR,
-				strerror(errno));
+			fprintf(stderr, "%s: mkdir: %s\n", CRONDIR, strerror(errno));
 			exit(ERROR_EXIT);
 		}
 		(void) umask(um);
@@ -331,7 +330,6 @@ acquire_daemonlock(closeflag)
 	/* abandon fd and fp even though the file is open. we need to
 	 * keep it open and locked, but we don't need the handles elsewhere.
 	 */
-	
 }
 
 /* get_char(file) : like getc() but increment LineNumber on newlines
@@ -344,7 +342,7 @@ get_char(file)
 
 	ch = getc(file);
 	if (ch == '\n')
-		Set_LineNum(LineNumber + 1);
+		Set_LineNum(LineNumber + 1)
 	return ch;
 }
 
@@ -358,7 +356,7 @@ unget_char(ch, file)
 {
 	ungetc(ch, file);
 	if (ch == '\n')
-	       Set_LineNum(LineNumber - 1);
+		Set_LineNum(LineNumber - 1)
 }
 
 
@@ -464,12 +462,12 @@ allowed(username)
 {
 	static int	init = FALSE;
 	static FILE	*allow, *deny;
-	int     isallowed;
+	int		isallowed;
 
-        /* Root cannot be denied execution of cron jobs even if in the
+	/* Root cannot be denied execution of cron jobs even if in the
 	 * 'DENY_FILE' so we return inmediately */
-        if (strcmp(username, ROOT_USER) == 0)
-                return (TRUE);
+	if (strcmp(username, ROOT_USER) == 0)
+		return (TRUE);
 
 	isallowed = FALSE;
 #if defined(ALLOW_ONLY_ROOT)
@@ -479,7 +477,23 @@ allowed(username)
 		init = TRUE;
 #if defined(ALLOW_FILE) && defined(DENY_FILE)
 		allow = fopen(ALLOW_FILE, "r");
+		if (allow == NULL) {
+			/* Only if the file does not exist do we ignore the
+			 * error. Otherwise, we deny by default.
+			 */
+			if (errno != ENOENT) {
+				perror(ALLOW_FILE);
+				return FALSE;
+			}
+		}
 		deny = fopen(DENY_FILE, "r");
+		if (allow == NULL) {
+			/* See above */
+			if (errno != ENOENT) {
+				perror(DENY_FILE);
+				return FALSE;
+			}
+		}
 		Debug(DMISC, ("allow/deny enabled, %d/%d\n", !!allow, !!deny))
 #else
 		allow = NULL;
@@ -487,7 +501,7 @@ allowed(username)
 #endif
 	}
 
-	if (allow) 
+	if (allow)
 		isallowed = in_file(username, allow);
 	else
 		isallowed = TRUE; /* Allow access if ALLOW_FILE does not exist */
@@ -496,7 +510,7 @@ allowed(username)
 #endif
 
 #ifdef WITH_AUDIT
-       /* Log an audit message if the user is rejected */ 
+       /* Log an audit message if the user is rejected */
        if (isallowed == FALSE) {
                int audit_fd = audit_open();
                audit_log_user_message(audit_fd, AUDIT_USER_START, "cron deny",
@@ -515,14 +529,13 @@ log_it(username, xpid, event, detail)
 	char	*event;
 	char	*detail;
 {
-#if defined(LOG_FILE)
 	PID_T			pid = xpid;
+#if defined(LOG_FILE)
 	char			*msg;
 	TIME_T			now = time((TIME_T) 0);
 	register struct tm	*t = localtime(&now);
-	int 			msg_size;
+	int			msg_size;
 #endif /*LOG_FILE*/
-
 
 #if defined(LOG_FILE)
 	/* we assume that MAX_TEMPSTR will hold the date, time, &punctuation.
@@ -530,8 +543,8 @@ log_it(username, xpid, event, detail)
 	msg_size = strlen(username) + strlen(event) + strlen(detail) + MAX_TEMPSTR;
 	msg = malloc(msg_size);
 	if (msg == NULL) {
-	    /* damn, out of mem and we did not test that before... */
-	    fprintf(stderr, "%s: Run OUT OF MEMORY while %s\n",
+		/* damn, out of mem and we did not test that before... */
+		fprintf(stderr, "%s: Run OUT OF MEMORY while %s\n",
 		    ProgramName, __FUNCTION__);
 	    return;
 	}
@@ -567,24 +580,14 @@ log_it(username, xpid, event, detail)
 #endif /*LOG_FILE*/
 
 #if defined(SYSLOG)
-
-
-	    /* we don't use LOG_PID since the pid passed to us by
-	     * our client may not be our own.  therefore we want to
-	     * print the pid ourselves.
-	     */
-	    /* SteveG says: That comment is not consistent with the
-	       code, and makes no sense -- I suspect it's a remnant
-	       of a cut-n-paster... */
 # ifdef LOG_CRON
 	openlog(ProgramName, LOG_PID, LOG_CRON);
 # else
 	openlog(ProgramName, LOG_PID);
 # endif
-	  
+  
 	syslog(LOG_INFO, "(%s) %s (%s)", username, event, detail);
 
-	closelog();
 #endif /*SYSLOG*/
 
 #if DEBUGGING
@@ -666,10 +669,10 @@ mkprint(dst, src, len)
 			*dst++ = '^';
 			*dst++ = '?';
 		} else {			/* parity character */
-		    /* well, the following snprintf is paranoid, but that will
-		     * keep grep happy */
-		    snprintf(dst, 5, "\\%03o", ch);
-		    dst += 4;
+			/* well, the following snprintf is paranoid, but that will
+			 * keep grep happy */
+			snprintf(dst, 5, "\\%03o", ch);
+			dst += 4;
 		}
 	}
 	*dst = '\0';
@@ -706,9 +709,9 @@ arpadate(clock)
 	struct tm *tm = localtime(&t);
 	char *qmark;
 	size_t len;
-        long gmtoff = get_gmtoff(&t, tm);
-        int hours = gmtoff / 3600;
-        int minutes = (gmtoff - (hours * 3600)) / 60;
+	long gmtoff = get_gmtoff(&t, tm);
+	int hours = gmtoff / 3600;
+	int minutes = (gmtoff - (hours * 3600)) / 60;
 
 	if (minutes < 0)
 		minutes = -minutes;
@@ -768,8 +771,8 @@ long get_gmtoff(time_t *clock, struct tm *local)
 		local = localtime(clock);
 
 	offset = (local->tm_sec - gmt.tm_sec) +
-	    ((local->tm_min - gmt.tm_min) * 60) +
-	    ((local->tm_hour - gmt.tm_hour) * 3600);
+		((local->tm_min - gmt.tm_min) * 60) +
+		((local->tm_hour - gmt.tm_hour) * 3600);
 
 	/* Timezone may cause year rollover to happen on a different day. */
 	if (local->tm_year < gmt.tm_year)

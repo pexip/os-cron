@@ -19,7 +19,7 @@
  * $Id: pathnames.h,v 1.3 1994/01/15 20:43:43 vixie Exp $
  */
 
-#if (defined(BSD)) && (BSD >= 199103) || defined(__linux__) || defined(AIX) || defined(__GNU__) || defined(__GLIBC__)
+#if (defined(BSD)) && (BSD >= 199103) || defined(__linux__) || defined(AIX) || defined(__GLIBC__)
 # include <paths.h>
 #endif /*BSD*/
 
@@ -47,14 +47,9 @@
 			 * LOG_FILE or SYSLOG is defined, we don't log.  If
 			 * both are defined, we log both ways.
 			 */
-#ifdef DEBIAN
 #define	ALLOW_FILE	"/etc/cron.allow"		/*-*/
 #define DENY_FILE	"/etc/cron.deny"		/*-*/
-#else
-#define	ALLOW_FILE	"allow"		/*-*/
-#define DENY_FILE	"deny"		/*-*/
-#endif
-/* #define LOG_FILE	"log"		  -*/
+/* #define LOG_FILE	"log"		/*-*/
 
 			/* where should the daemon stick its PID?
 			 */
@@ -67,20 +62,13 @@
 
 			/* 4.3BSD-style crontab */
 #define SYSCRONTAB	"/etc/crontab"
-#ifdef DEBIAN
-                        /* where package specific crontabs live */ 
+			/* where package specific crontabs live */
 #define SYSCRONDIR      "/etc/cron.d"
-#endif
+
 			/* what editor to use if no EDITOR or VISUAL
 			 * environment variable specified.
 			 */
-#if defined(DEBIAN)
-# define EDITOR "/usr/bin/sensible-editor"
-#elif defined(_PATH_VI)
-# define EDITOR _PATH_VI
-#else
-# define EDITOR "/usr/ucb/vi"
-#endif
+#define EDITOR "/usr/bin/sensible-editor"
 
 #ifndef _PATH_BSHELL
 # define _PATH_BSHELL "/bin/sh"
@@ -90,12 +78,11 @@
 # define _PATH_DEFPATH "/usr/bin:/bin"
 #endif
 
-#ifndef _PATH_DEFPATH_ROOT
-# define _PATH_DEFPATH_ROOT "/usr/sbin:/usr/bin:/sbin:/bin"
+#ifndef REBOOT_FILE
+# define REBOOT_FILE "/run/crond.reboot"
 #endif
 
 
-#ifdef DEBIAN
 #ifndef CRONDIR_MODE
 			/* Create mode for CRONDIR; must be in sync with
 			 * packaging
@@ -111,7 +98,6 @@
 #ifndef SPOOL_DIR_GROUP
 			/* Chown SPOOL_DIR to this group (needed by Debian's
 			 * SGID crontab feature)
-			 */ 
+			 */
 #define SPOOL_DIR_GROUP "crontab"
-#endif
 #endif

@@ -10,19 +10,17 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-
-# Set system type (Linux, HURD, etc.)
-DEB_HOST_ARCH_OS = $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
+# Retrieve architecture-related variables
+include /usr/share/dpkg/architecture.mk
 
 # Enable cross-compiling support
-DEB_HOST_GNU_TYPE  = $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE = $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
 export CC=$(DEB_HOST_GNU_TYPE)-gcc
 endif
 
-# Standard compiler flags 
-CFLAGS += -Wall -Wno-unused -Wno-comment
+# Customize build flags
+export DEB_CFLAGS_MAINT_APPEND += -Wall -Wno-unused -Wno-comment
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 # debug is disabled by default
 ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
@@ -58,7 +56,7 @@ endif # Linux
 
 
 %:
-	dh $@  --with=systemd
+	dh $@
 
 
 override_dh_auto_install:
@@ -73,11 +71,3 @@ override_dh_install:
 	install -m 644 debian/placeholder debian/cron/etc/cron.daily/.placeholder
 	install -m 644 debian/placeholder debian/cron/etc/cron.weekly/.placeholder
 	install -m 644 debian/placeholder debian/cron/etc/cron.monthly/.placeholder
-
-
-override_dh_installinit:
-	dh_installinit -- start 89 2 3 4 5 .
-
-
-override_dh_compress:
-	dh_compress -Xexamples

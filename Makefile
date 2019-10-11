@@ -57,8 +57,8 @@ INCLUDE		=	-I.
 #<<need getopt()>>
 LIBS		= $(PAM_LIBS) $(SELINUX_LIBS) $(AUDIT_LIBS)
 #<<optimize or debug?>>
-OPTIM		=	-O2
-#OPTIM		=	-g
+#OPTIM		=	-O
+OPTIM		=	-g
 #<<ATT or BSD or POSIX?>>
 # (ATT untested)
 #COMPAT		=	-DATT
@@ -72,18 +72,15 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
 #CC		=	vcc
 #<<manifest defines>>
 # Allow override from command line
-DEBUG_DEFS  ?= -DDEBUGGING=0   
-# The -DUSE_SIGCHLD is needed for the Alpha port
-DEFS = -DDEBIAN -DUSE_SIGCHLD $(DEBUG_DEFS) $(PAM_DEFS) $(SELINUX_DEFS) $(AUDIT_DEFS)
+DEBUG_DEFS	?= -DDEBUGGING=0
+DEFS		= $(DEBUG_DEFS) $(PAM_DEFS) $(SELINUX_DEFS) $(AUDIT_DEFS)
 #(SGI IRIX systems need this)
 #DEFS		=	-D_BSD_SIGNALS -Dconst=
 #<<the name of the BSD-like install program>>
 #INSTALL = installbsd
-INSTALL = install -s
+INSTALL = install
 #<<any special load flags>>
-# LDFLAGS		=	-s
-# Let install do the strip
-
+#LDFLAGS		=
 #################################### end configurable stuff
 
 SHELL		=	/bin/sh
