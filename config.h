@@ -43,10 +43,10 @@
 			 */
 
 #define MAILCMD _PATH_SENDMAIL					/*-*/
-/* #define MAILARGS "%s -i -FCronDaemon -odi -oem  %s"		/*-*/
-#define MAILARGS "%s -i -FCronDaemon -B8BITMIME -oem  %s"		/*-*/
-			/* -i    = don't terminate on "." by itself
-                         * -Fx	 = set full-name of sender
+#define MAILARGS "%s -FCronDaemon -i -B8BITMIME -oem  %s"	/*-*/
+			/* -Fx	 = set full-name of sender
+			 * -i    = don't terminate on "." by itself
+			 * -B8BITMIME = 8-bit processing
 			 * -odi	 = Option Deliverymode Interactive
 			 * -oem	 = Option Errors Mailedtosender
  			 * -t    = read recipient from header of message
@@ -55,15 +55,15 @@
 			 * by joe user.  --okir
 			 */
 
-/* #define MAILCMD "/bin/mail"			-*/
-/* #define MAILARGS "%s -d  %s"			-*/
+/* #define MAILCMD "/bin/mail"			/*-*/
+/* #define MAILARGS "%s -d  %s"			/*-*/
 			/* -d = undocumented but common flag: deliver locally?
 			 */
 
-/* #define MAILCMD "/usr/mmdf/bin/submit"	-*/
-/* #define MAILARGS "%s -mlrxto %s"		-*/
+/* #define MAILCMD "/usr/mmdf/bin/submit"	/*-*/
+/* #define MAILARGS "%s -mlrxto %s"		/*-*/
 
-/* #define MAIL_DATE				-*/
+/* #define MAIL_DATE				/*-*/
 			/* should we include an ersatz Date: header in
 			 * generated mail?  if you are using sendmail
 			 * for MAILCMD, it is better to let sendmail
@@ -74,7 +74,7 @@
 			 * defined but neither exists, should crontab(1) be
 			 * usable only by root?
 			 */
-/*#define ALLOW_ONLY_ROOT			-*/
+/*#define ALLOW_ONLY_ROOT			/*-*/
 
 			/* if you want to use syslog(3) instead of appending
 			 * to CRONDIR/LOG_FILE (/var/cron/log, e.g.), define

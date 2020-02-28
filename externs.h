@@ -61,7 +61,6 @@ extern	int		errno;
 extern	void		perror(), exit(), free();
 extern	char		*getenv(), *strcpy(), *strchr(), *strtok();
 extern	void		*malloc(), *realloc();
-
 # define SIG_T	void
 # define TIME_T	long
 # define PID_T int

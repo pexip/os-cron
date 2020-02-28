@@ -26,6 +26,7 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
 #include "cron.h"
 #include <signal.h>
 
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <libgen.h>
@@ -49,8 +50,9 @@ usage() {
 	char **dflags;
 
 	fprintf(stderr, "usage:  %s [-x [", ProgramName);
-	for(dflags = DebugFlagNames; *dflags; dflags++)
+	for (dflags = DebugFlagNames; *dflags; dflags++) {
 		fprintf(stderr, "%s%s", *dflags, dflags[1] ? "," : "]");
+	}
 	fprintf(stderr, "]\n");
 #else
 	fprintf(stderr, "usage: %s\n", ProgramName);
@@ -65,7 +67,7 @@ main(argc, argv)
 	char	*argv[];
 {
 	cron_db	database;
-	char *cs;
+	char	*cs;
 
 	ProgramName = basename(argv[0]);
 
@@ -83,12 +85,9 @@ main(argc, argv)
 #endif
 	(void) signal(SIGHUP, sighup_handler);
 
-        /* Reopen stdin in case some idiot closed it before starting
-           us - it will only be closed, but not having it open here
-           screws up other things that will be opened */
-        if (fdopen(0,"r") == NULL) {
-            (void) open("dev/null", 0);
-        }
+	if (fdopen(0, "r") == NULL) {
+		(void) open("dev/null", 0);
+	}
 
 	acquire_daemonlock(0);
 	set_cron_uid();
@@ -98,19 +97,19 @@ main(argc, argv)
 	setenv("PATH", _PATH_DEFPATH, 1);
 #endif
 
-       /* Get the default locale character set for the mail
-        * "Content-Type: ...; charset=" header
-        */
-       setlocale(LC_ALL,""); /* set locale to system defaults or to
-                                that specified by any  LC_* env vars */
-       setlocale(LC_COLLATE, "C"); /* Except for collation, since load_database() uses a-z */
-       /* Except that "US-ASCII" is preferred to "ANSI_x3.4-1968" in MIME,
-        * even though "ANSI_x3.4-1968" is the official charset name. */
-       if ( ( cs = nl_langinfo( CODESET ) ) != 0L && 
-               strcasecmp(cs, "ANSI_x3.4-1968") != 0 )
-           strncpy( cron_default_mail_charset, cs, MAX_ENVSTR );
-       else
-           strcpy( cron_default_mail_charset, "US-ASCII" );
+	/* Get the default locale character set for the mail
+	* "Content-Type: ...; charset=" header
+	*/
+	setlocale(LC_ALL,""); /* set locale to system defaults or to
+				that specified by any  LC_* env vars */
+	setlocale(LC_COLLATE, "C"); /* Except for collation, since load_database() uses a-z */
+	/* Except that "US-ASCII" is preferred to "ANSI_x3.4-1968" in MIME,
+	* even though "ANSI_x3.4-1968" is the official charset name. */
+	if ((cs = nl_langinfo(CODESET)) != 0L &&
+			strcasecmp(cs, "ANSI_x3.4-1968") != 0)
+		strncpy(cron_default_mail_charset, cs, MAX_ENVSTR);
+	else
+		strcpy( cron_default_mail_charset, "US-ASCII");
 
 	/* if there are no debug flags turned on, fork as a daemon should.
 	 */
@@ -145,11 +144,8 @@ main(argc, argv)
 	database.tail = NULL;
 	database.sys_mtime = (time_t) 0;
 	database.user_mtime = (time_t) 0;
-#ifdef DEBIAN
 	database.sysd_mtime = (time_t) 0;
-#endif
 	load_database(&database);
-
 	set_time(TRUE);
 	run_reboot_jobs(&database);
 	timeRunning = virtualTime = clockTime;
@@ -186,7 +182,7 @@ main(argc, argv)
 		timeDiff = timeRunning - virtualTime;
 
 		Debug(DSCH, ("[%d] pulse: %d = %d - %d\n",
-            	    getpid(), timeDiff, timeRunning, virtualTime));
+			getpid(), timeDiff, timeRunning, virtualTime));
 
 		/* shortcut for the most common case */
 		if (timeDiff == 1) {
@@ -211,7 +207,7 @@ main(argc, argv)
 				 * until caught up.
 				 */
 				Debug(DSCH, ("[%d], normal case %d minutes to go\n",
-				    getpid(), timeRunning - virtualTime))
+					getpid(), timeRunning - virtualTime))
 				do {
 					if (job_runqueue())
 						sleep(10);
@@ -231,11 +227,11 @@ main(argc, argv)
 				 * a chance to run, and we do our housekeeping
 				 */
 				Debug(DSCH, ("[%d], DST begins %d minutes to go\n",
-				    getpid(), timeRunning - virtualTime))
+					getpid(), timeRunning - virtualTime))
 				/* run wildcard jobs for current minute */
 				find_jobs(timeRunning, &database, TRUE, FALSE);
-	
-				/* run fixed-time jobs for each minute missed */ 
+
+				/* run fixed-time jobs for each minute missed */
 				do {
 					if (job_runqueue())
 						sleep(10);
@@ -243,9 +239,9 @@ main(argc, argv)
 					find_jobs(virtualTime, &database, FALSE, TRUE);
 					set_time(FALSE);
 				} while (virtualTime< timeRunning &&
-				    clockTime == timeRunning);
+					clockTime == timeRunning);
 				break;
-	
+
 			case 0:
 				/*
 				 * case 3: timeDiff is a small or medium-sized
@@ -255,7 +251,7 @@ main(argc, argv)
 				 * virtual time does not change until we are caught up
 				 */
 				Debug(DSCH, ("[%d], DST ends %d minutes to go\n",
-				    getpid(), virtualTime - timeRunning))
+					getpid(), virtualTime - timeRunning))
 				find_jobs(timeRunning, &database, TRUE, FALSE);
 				break;
 			default:
@@ -273,10 +269,6 @@ main(argc, argv)
 	}
 }
 
-#ifdef DEBIAN
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif
 
 static void
 run_reboot_jobs(db)
@@ -284,31 +276,25 @@ run_reboot_jobs(db)
 {
 	register user		*u;
 	register entry		*e;
-    int rbfd;
-#ifdef DEBIAN
-#define REBOOT_FILE "/var/run/crond.reboot"
+	int			rbfd;
+
 	/* Run on actual reboot, rather than cron restart */
 	if (access(REBOOT_FILE, F_OK) == 0) {
-	        /* File exists, return */
-     	        log_it("CRON", getpid(),"INFO",
-		       "Skipping @reboot jobs -- not system startup");
-	        return;
+		/* File exists, return */
+		log_it("CRON", getpid(),"INFO",
+			"Skipping @reboot jobs -- not system startup");
+		return;
 	}
 	/* Create the file */
-	if ((rbfd = creat(REBOOT_FILE, S_IRUSR&S_IWUSR)) < 0) {
+	if ((rbfd = creat(REBOOT_FILE, S_IRUSR & S_IWUSR)) < 0) {
 		/* Bad news, bail out */
-	        log_it("CRON",getpid(),"DEATH","Can't create reboot check file");
+		log_it("CRON",getpid(),"DEATH","Can't create reboot check file");
 		exit(0);
 	} else {
 		close(rbfd);
 		log_it("CRON", getpid(),"INFO", "Running @reboot jobs");
 	}
-      
-
-        Debug(DMISC, ("[%d], Debian running reboot jobs\n",getpid()));
-    
-#endif
-        Debug(DMISC, ("[%d], vixie running reboot jobs\n", getpid()));
+	Debug(DMISC, ("[%d], running reboot jobs\n", getpid()));
 	for (u = db->head;  u != NULL;  u = u->next) {
 		for (e = u->crontab;  e != NULL;  e = e->next) {
 			if (e->flags & WHEN_REBOOT) {
@@ -328,7 +314,7 @@ find_jobs(vtime, db, doWild, doNonWild)
 	int doNonWild;
 {
 	time_t   virtualSecond  = vtime * SECONDS_PER_MINUTE;
-	register struct tm 	*tm = gmtime(&virtualSecond);
+	register struct tm	*tm = gmtime(&virtualSecond);
 	register int		minute, hour, dom, month, dow;
 	register user		*u;
 	register entry		*e;
@@ -418,8 +404,8 @@ cron_sleep(target)
 
 #ifdef USE_SIGCHLD
 static void
-sigchld_handler(x) {
-	int save_errno = errno;
+sigchld_handler(int x) {
+	int		save_errno = errno;
 	WAIT_T		waiter;
 	PID_T		pid;
 
@@ -452,14 +438,20 @@ sigchld_handler(x) {
 
 
 static void
-sighup_handler(x) {
+sighup_handler(int x) {
 	log_close();
 
-	/* we should use sigaction for proper signal blocking as this 
+	/* we should use sigaction for proper signal blocking as this
 	   has a race, but... */
 	signal(SIGHUP, sighup_handler);
 }
 
+
+#if DEBUGGING
+const char *getoptarg = "flL:nx:";
+#else
+const char *getoptarg = "flL:n";
+#endif
 
 static void
 parse_args(argc, argv)
@@ -468,31 +460,33 @@ parse_args(argc, argv)
 {
 	int	argch;
 
-	log_level = 1;
 	stay_foreground = 0;
-        lsbsysinit_mode = 0;
-        fqdn_in_subject = 0;
+	lsbsysinit_mode = 0;
+	log_level = 1;
+	fqdn_in_subject = 0;
 
-	while (EOF != (argch = getopt(argc, argv, "lfnx:L:"))) {
+	while (EOF != (argch = getopt(argc, argv, getoptarg))) {
 		switch (argch) {
 		default:
 			usage();
 		case 'f':
 			stay_foreground = 1;
 			break;
-		case 'x':
-			if (!set_debug_flags(optarg))
-				usage();
-			break;
 		case 'l':
 			lsbsysinit_mode = 1;
-			break;
-		case 'n':
-			fqdn_in_subject = 1;
 			break;
 		case 'L':
 			log_level = atoi(optarg);
 			break;
+		case 'n':
+			fqdn_in_subject = 1;
+			break;
+#if DEBUGGING
+		case 'x':
+			if (!set_debug_flags(optarg))
+				usage();
+			break;
+#endif
 		}
 	}
 }

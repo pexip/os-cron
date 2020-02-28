@@ -1,6 +1,6 @@
-Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=173
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: vixie-cron
-Ustream-Contact: Paul Vixie <paul@vix.com>
+Upstream-Contact: Paul Vixie <paul@vix.com>
 Source:
  The original source for this package could be obtained from 
  ftp://ftp.vix.com/pub/vixie/cron-3.0, although that link appears to have gone
@@ -10,8 +10,8 @@ Files: *
 Copyright: 1988, 1990, 1993, 1994, Paul Vixie <paul@vix.com>
            1994, Ian Jackson <ian@davenant.greenend.org.uk>
            1996-2005, Steve Greenland <stevegr@debian.org>
-           2005-2006, 2008-2012, Javier Fernández-Sanguino Peña <jfs@debian.org>
-           2010-2011, 2014 Christian Kastner <debian@kvr.at>
+           2005-2014, Javier Fernández-Sanguino Peña <jfs@debian.org>
+           2010-2016, Christian Kastner <ckk@debian.org>
            Numerous contributions via the Debian BTS copyright their respective authors
 License: Paul-Vixie's-license
 
@@ -19,7 +19,7 @@ Files: database.c
 Copyright: 1988, 1990, 1993, 1994 Paul Vixie <paul@vix.com>
            1996-2005, Steve Greenland <stevegr@debian.org>
            2003, Clint Adams <schizo@debian.org>
-           2010-2011, Christian Kastner <debian@kvr.at>
+           2010-2011, Christian Kastner <ckk@debian.org>
            2011, Red Hat, Inc.
 License: Paul-Vixie's-license and GPL-2+ and ISC
 

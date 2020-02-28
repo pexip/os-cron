@@ -82,6 +82,7 @@
 #define	MAX_COMMAND	1000	/* max length of internally generated cmd */
 #define	MAX_TEMPSTR	1000	/* max length of envvar=value\0 strings */
 #define	MAX_ENVSTR	MAX_TEMPSTR	/* DO NOT change - buffer overruns otherwise */
+#define MAX_TAB_LINES	10000	/* max length of crontabs */
 #define	MAX_UNAME	20	/* max length of username, should be overkill */
 #define	ROOT_UID	0	/* don't change this, it really must be root */
 #define	ROOT_USER	"root"	/* ditto */
@@ -101,6 +102,7 @@
 #define	CRON_TAB(u)	"%s/%s", SPOOL_DIR, u
 #define	REG		register
 #define	PPC_NULL	((char **)NULL)
+#define NHEADER_LINES   3
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -126,6 +128,8 @@
 			;
 #endif /* DEBUGGING */
 
+#define Stringify_(x)	#x
+#define Stringify(x)	Stringify_(x)
 #define	MkLower(ch)	(isupper(ch) ? tolower(ch) : ch)
 #define	MkUpper(ch)	(islower(ch) ? toupper(ch) : ch)
 #define	Set_LineNum(ln)	{Debug(DPARS|DEXT,("linenum=%d\n",ln)); \
@@ -184,8 +188,8 @@ typedef	struct _entry {
 #define	DOM_STAR	0x01
 #define	DOW_STAR	0x02
 #define	WHEN_REBOOT	0x04
-#define MIN_STAR	0x08
-#define HR_STAR		0x10
+#define	MIN_STAR	0x08
+#define	HR_STAR		0x10
 } entry;
 
 			/* the crontab database will be a list of the
@@ -201,7 +205,7 @@ typedef	struct _user {
 	time_t		mtime;		/* last modtime of crontab */
 	entry		*crontab;	/* this person's crontab */
 #ifdef WITH_SELINUX
-        security_context_t scontext;    /* SELinux security context */
+	security_context_t scontext;    /* SELinux security context */
 #endif
 } user;
 
@@ -209,16 +213,14 @@ typedef	struct _cron_db {
 	user		*head, *tail;	/* links */
 	time_t		user_mtime;     /* last modtime on spooldir */
 	time_t		sys_mtime;      /* last modtime on system crontab */
-#ifdef DEBIAN
 	time_t		sysd_mtime;     /* last modtime on system crondir */
-#endif
 } cron_db;
 
 typedef struct _orphan {
 	struct _orphan  *next;          /* link */
-	char            *uname;
-	char            *fname;
-	char            *tabname;
+	char	*uname;
+	char	*fname;
+	char	*tabname;
 } orphan;
 
 void		set_cron_uid __P((void)),
@@ -252,7 +254,7 @@ int		job_runqueue __P((void)),
 		allowed __P((char *)),
 		strdtb __P((char *));
 
-long            get_gmtoff(time_t *, struct tm *);
+long		get_gmtoff(time_t *, struct tm *);
 
 char		*env_get __P((char *, char **)),
 		*arpadate __P((time_t *)),
@@ -263,7 +265,7 @@ char		*env_get __P((char *, char **)),
 		**env_set __P((char **, char *));
 
 user		*load_user __P((int, struct passwd *, char *, char *, char *)),
-		*find_user __P((cron_db *, char *));
+		*find_user __P((cron_db *, const char *));
 
 entry		*load_entry __P((FILE *, void (*)(),
 				 struct passwd *, char **));
@@ -304,10 +306,11 @@ time_min clockTime;
 static long GMToff;
 
 int	stay_foreground;
-int     lsbsysinit_mode;
-int     fqdn_in_subject;
-int     log_level = 1;
-char    cron_default_mail_charset[MAX_ENVSTR] = "";
+int	lsbsysinit_mode;
+int	log_level;
+int	fqdn_in_subject;
+
+char	cron_default_mail_charset[MAX_ENVSTR] = "";
 
 # if DEBUGGING
 int	DebugFlags;
@@ -321,15 +324,15 @@ extern	char	*copyright[],
 		*MonthNames[],
 		*DowNames[],
 		*ProgramName;
-extern  int     lsbsysinit_mode;
-extern  int     fqdn_in_subject;
-extern  int     log_level;
+extern	int	lsbsysinit_mode;
+extern	int	log_level;
+extern	int	fqdn_in_subject;
 extern	int	LineNumber;
 extern	time_t	StartTime;
 extern  time_min timeRunning;
 extern  time_min virtualTime;
 extern  time_min clockTime;
-extern  char     cron_default_mail_charset[MAX_ENVSTR];
+extern	char	cron_default_mail_charset[MAX_ENVSTR];
 # if DEBUGGING
 extern	int	DebugFlags;
 extern	char	*DebugFlagNames[];

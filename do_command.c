@@ -41,7 +41,7 @@ static const struct pam_conv conv = {
 	fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode)); \
 	syslog(LOG_ERR,"%s",pam_strerror(pamh, retcode)); \
 	pam_end(pamh, retcode); exit(1); \
-   }
+	}
 #endif
 
 #ifdef WITH_SELINUX
@@ -55,26 +55,26 @@ static void		child_process __P((entry *, user *)),
 
 /* Build up the job environment from the PAM environment plus the
    crontab environment */
-static char ** build_env(char **cronenv)
+static char **build_env(char **cronenv)
 {
-        char **jobenv = cronenv;
+	char **jobenv = cronenv;
 #if defined(USE_PAM)
-        char **pamenv = pam_getenvlist(pamh);
-        char *cronvar;
-        int count = 0;
+	char **pamenv = pam_getenvlist(pamh);
+	char *cronvar;
+	int count = 0;
 
-        jobenv = env_copy(pamenv);
+	jobenv = env_copy(pamenv);
 
-        /* Now add the cron environment variables. Since env_set()
-           overwrites existing variables, this will let cron's
-           environment settings override pam's */
+	/* Now add the cron environment variables. Since env_set()
+	   overwrites existing variables, this will let cron's
+	   environment settings override pam's */
 
-        while ((cronvar = cronenv[count++])) {
-                if (!(jobenv = env_set(jobenv, cronvar))) {
-                        syslog(LOG_ERR, "Setting Cron environment variable %s failed", cronvar);
-                        return NULL;
-                }
-        }
+	while ((cronvar = cronenv[count++])) {
+		if (!(jobenv = env_set(jobenv, cronvar))) {
+			syslog(LOG_ERR, "Setting Cron environment variable %s failed", cronvar);
+			return NULL;
+		}
+	}
 #endif
     return jobenv;
 }
@@ -132,7 +132,6 @@ child_process(e, u)
 	char		*usernm, *mailto;
 	int		children = 0;
 	pid_t		job_pid;
-
 #if defined(USE_PAM)
 	int		retcode = 0;
 #endif
@@ -172,14 +171,10 @@ child_process(e, u)
 #ifdef USE_SIGCHLD
 	/* our parent is watching for our death by catching SIGCHLD.  we
 	 * do not care to watch for our children's deaths this way -- we
-	 * use wait() explictly.  so we have to disable the signal (which
+	 * use wait() explictly.  so we have to reset the signal (which
 	 * was inherited from the parent).
 	 */
-#ifdef DEBIAN
 	(void) signal(SIGCHLD, SIG_DFL);
-#else
-	(void) signal(SIGCHLD, SIG_IGN);
-#endif
 #else
 	/* on system-V systems, we are ignoring SIGCLD.  we have to stop
 	 * ignoring it now or the wait() in cron_pclose() won't work.
@@ -245,7 +240,6 @@ child_process(e, u)
 	PAM_FAIL_CHECK;
 	retcode = pam_open_session(pamh, PAM_SILENT);
 	PAM_FAIL_CHECK;
-
 #endif
 
 	/* fork again, this time so we can exec the user's command.
@@ -259,12 +253,12 @@ child_process(e, u)
 		Debug(DPROC, ("[%d] grandchild process fork()'ed\n",
 			      getpid()))
 
-		/* write a log message .  we've waited this long to do it
+		/* write a log message.  we've waited this long to do it
 		 * because it was not until now that we knew the PID that
 		 * the actual user command shell was going to get and the
 		 * PID is part of the log message.
 		 */
-		if ( (log_level & CRON_LOG_JOBSTART) && ! (log_level & CRON_LOG_JOBPID)) {
+		if ((log_level & CRON_LOG_JOBSTART) && ! (log_level & CRON_LOG_JOBPID)) {
 			char *x = mkprints((u_char *)e->cmd, strlen(e->cmd));
 			log_it(usernm, getpid(), "CMD", x);
 			free(x);
@@ -288,11 +282,9 @@ child_process(e, u)
 		/* grandchild process.  make std{in,out} be the ends of
 		 * pipes opened by our daddy; make stderr go to stdout.
 		 */
-		/* Closes are unnecessary -- let dup2() do it */
-
-		  /* close(STDIN) */; dup2(stdin_pipe[READ_PIPE], STDIN);
-		  dup2(fileno(tmpout), STDOUT);
-		  /* close(STDERR)*/; dup2(STDOUT, STDERR);
+		dup2(stdin_pipe[READ_PIPE], STDIN);
+		dup2(fileno(tmpout), STDOUT);
+		dup2(STDOUT, STDERR);
 
 
 		/* close the pipe we just dup'ed.  The resources will remain.
@@ -310,35 +302,35 @@ child_process(e, u)
 		 * we set uid, we've lost root privledges.
 		 */
 		if (setgid(e->gid) !=0) {
-		  char msg[256];
-		  snprintf(msg, 256, "do_command:setgid(%lu) failed: %s",
-			   (unsigned long) e->gid, strerror(errno));
-		  log_it("CRON",getpid(),"error",msg);
-		  exit(ERROR_EXIT);
+			char msg[256];
+			snprintf(msg, 256, "do_command:setgid(%lu) failed: %s",
+				(unsigned long) e->gid, strerror(errno));
+			log_it("CRON",getpid(),"error",msg);
+			exit(ERROR_EXIT);
 		}
 # if defined(BSD) || defined(POSIX)
 		if (initgroups(env_get("LOGNAME", e->envp), e->gid) !=0) {
-		  char msg[256];
-		  snprintf(msg, 256, "do_command:initgroups(%lu) failed: %s",
-			   (unsigned long) e->gid, strerror(errno));
+			char msg[256];
+			snprintf(msg, 256, "do_command:initgroups(%lu) failed: %s",
+				(unsigned long) e->gid, strerror(errno));
 		  log_it("CRON",getpid(),"error",msg);
 		  exit(ERROR_EXIT);
 		}
 # endif
 		if (setuid(e->uid) !=0) { /* we aren't root after this... */
-		  char msg[256];
-		  snprintf(msg, 256, "do_command:setuid(%lu) failed: %s",
-			   (unsigned long) e->uid, strerror(errno)); 
-		  log_it("CRON",getpid(),"error",msg);
-		  exit(ERROR_EXIT);
-		}	
+			char msg[256];
+			snprintf(msg, 256, "do_command:setuid(%lu) failed: %s",
+				(unsigned long) e->uid, strerror(errno));
+			log_it("CRON",getpid(),"error",msg);
+			exit(ERROR_EXIT);
+		}
 		chdir(env_get("HOME", e->envp));
 
 		/* exec the command.
 		 */
 		{
-                        char    **jobenv = build_env(e->envp); 
-                        char	*shell = env_get("SHELL", jobenv);
+			char	**jobenv = build_env(e->envp);
+			char	*shell = env_get("SHELL", jobenv);
 # if DEBUGGING
 			if (DebugFlags & DTEST) {
 				fprintf(stderr,
@@ -348,31 +340,25 @@ child_process(e, u)
 				_exit(OK_EXIT);
 			}
 # endif /*DEBUGGING*/
-#if 0
-			{
-			  struct sigaction oact;
-			  sigaction(SIGCHLD, NULL, &oact);
-			}
-			fprintf(stdout,"error");
-#endif
 #ifdef WITH_SELINUX
 			if (is_selinux_enabled() > 0) {
-			    if (u->scontext != 0L) {
-                                if (setexeccon(u->scontext) < 0) {
-                                    if (security_getenforce() > 0) {
-                                        fprintf(stderr, "Could not set exec context to %s for user  %s\n", u->scontext,u->name);
-                                        _exit(ERROR_EXIT);
-                                    }
-			        }
-                            }
-			    else if(security_getenforce() > 0)
-			    {
-                                fprintf(stderr, "Error, must have a security context for the cron job when in enforcing mode.\nUser %s.\n", u->name);
-                                _exit(ERROR_EXIT);
-			    }
+				if (u->scontext != 0L) {
+					if (setexeccon(u->scontext) < 0 &&
+							security_getenforce() > 0) {
+						fprintf(stderr, "Could not set exec context "
+								"to %s for user  %s\n",
+								u->scontext,u->name);
+						_exit(ERROR_EXIT);
+					}
+				} else if (security_getenforce() > 0) {
+					fprintf(stderr, "Error, must have a security context "
+							"for the cron job when in enforcing "
+							"mode.\nUser %s.\n", u->name);
+					_exit(ERROR_EXIT);
+				}
 			}
 #endif
-                        execle(shell, shell, "-c", e->cmd, (char *)0, jobenv);
+			execle(shell, shell, "-c", e->cmd, (char *)0, jobenv);
 			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
 			_exit(ERROR_EXIT);
 		}
@@ -474,7 +460,7 @@ child_process(e, u)
 	/* wait for children to die.
 	 */
 	int status = 0;
-	for (;  children > 0;  children--)
+	for (; children > 0; children--)
 	{
 		char		msg[256];
 		WAIT_T		waiter;
@@ -502,7 +488,7 @@ child_process(e, u)
 					" %d%s", pid, WTERMSIG(waiter),
 					WCOREDUMP(waiter) ? ", dumped core" : "");
 				log_it("CRON", getpid(), "error", msg);
-			} 
+			}
 		}
 	}
 
@@ -510,10 +496,9 @@ child_process(e, u)
 // the user if their job failed.  Avoid popening the mailcmd until now
 // since sendmail may time out, and to write info about the exit
 // status.
-	
+
 	long pos;
 	struct stat	mcsb;
-	int		statret;	
 
 	fseek(tmpout, 0, SEEK_END);
 	pos = ftell(tmpout);
@@ -531,7 +516,7 @@ child_process(e, u)
                 goto mail_finished;
 
 	/* Don't send mail if MAILCMD is not available */
-	if ((statret = stat(MAILCMD, &mcsb)) != 0) {
+	if (stat(MAILCMD, &mcsb) != 0) {
 		Debug(DPROC|DEXT, ("%s not found, not sending mail\n", MAILCMD))
 		if (pos > 0) {
 			log_it("CRON", getpid(), "info", "No MTA installed, discarding output");
@@ -545,10 +530,10 @@ child_process(e, u)
 	register int	bytes = 0;
 
 	register char	**env;
-	char    	**jobenv = build_env(e->envp); 
+	char		**jobenv = build_env(e->envp);
 	auto char	mailcmd[MAX_COMMAND];
 	auto char	hostname[MAXHOSTNAMELEN];
-	char    	*content_type = env_get("CONTENT_TYPE",jobenv),
+	char		*content_type = env_get("CONTENT_TYPE",jobenv),
 			*content_transfer_encoding = env_get("CONTENT_TRANSFER_ENCODING",jobenv);
 
 	(void) gethostname(hostname, MAXHOSTNAMELEN);
@@ -569,36 +554,40 @@ child_process(e, u)
 			arpadate(&StartTime));
 # endif /* MAIL_DATE */
 	fprintf(mail, "MIME-Version: 1.0\n");
-	if ( content_type == 0L ) {
+
+	if (content_type == 0L) {
 		fprintf(mail, "Content-Type: text/plain; charset=%s\n",
-				cron_default_mail_charset
-		       );
-	} else {   
+			cron_default_mail_charset);
+	} else {
 		/* user specified Content-Type header.
 		 * disallow new-lines for security reasons
 		 * (else users could specify arbitrary mail headers!)
 		 */
-		char *nl=content_type;
+		char *nl = content_type;
 		size_t ctlen = strlen(content_type);
 
-		while(  (*nl != '\0')
-				&& ((nl=strchr(nl,'\n')) != 0L)
-				&& (nl < (content_type+ctlen))
-		     ) *nl = ' ';
-		fprintf(mail,"Content-Type: %s\n", content_type);
+		while ((*nl != '\0') &&
+				((nl=strchr(nl,'\n')) != 0L) &&
+				(nl < (content_type+ctlen))) {
+			*nl = ' ';
+		}
+	       fprintf(mail,"Content-Type: %s\n", content_type);
 	}
-	if ( content_transfer_encoding != 0L ) {
-		char *nl=content_transfer_encoding;
-		size_t ctlen = strlen(content_transfer_encoding);
-		while(  (*nl != '\0')
-				&& ((nl=strchr(nl,'\n')) != 0L)
-				&& (nl < (content_transfer_encoding+ctlen))
-		     ) *nl = ' ';
 
-		fprintf(mail,"Content-Transfer-Encoding: %s\n", content_transfer_encoding);
+	if (content_transfer_encoding != 0L) {
+		char *nl = content_transfer_encoding;
+		size_t ctlen = strlen(content_transfer_encoding);
+		while ((*nl != '\0') &&
+				((nl = strchr(nl,'\n')) != 0L) &&
+				(nl < (content_transfer_encoding+ctlen))) {
+			*nl = ' ';
+		}
+
+		fprintf(mail,"Content-Transfer-Encoding: %s\n",
+				content_transfer_encoding);
+	} else {
+		fprintf(mail,"Content-Transfer-Encoding: 8bit\n");
 	}
-	else
-		fprintf(mail, "Content-Transfer-Encoding: 8bit\n");
 
 	for (env = e->envp;  *env;  env++)
 		fprintf(mail, "X-Cron-Env: <%s>\n",
@@ -606,7 +595,7 @@ child_process(e, u)
 	fputc('\n', mail);
 
 // Append the actual output of the child to the mail
-	
+
 	char buf[4096];
 	int ret, remain;
 

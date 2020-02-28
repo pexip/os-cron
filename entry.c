@@ -108,6 +108,10 @@ load_entry(file, error_func, pw, envp)
 	 */
 
 	e = (entry *) calloc(sizeof(entry), sizeof(char));
+	if (e == NULL) {
+		log_it("CRON", getpid(), "OOM", "Out of memory parsing crontab");
+		return NULL;
+	}
 
 	if (ch == '@') {
 		/* all of these should be flagged and load-limited; i.e.,
@@ -131,14 +135,14 @@ load_entry(file, error_func, pw, envp)
 			bit_set(e->dom, 0);
 			bit_set(e->month, 0);
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-                        e->flags |= DOW_STAR; 
+			e->flags |= DOW_STAR;
 		} else if (!strcmp("monthly", cmd)) {
 			bit_set(e->minute, 0);
 			bit_set(e->hour, 0);
 			bit_set(e->dom, 0);
 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-                        e->flags |= DOW_STAR;
+			e->flags |= DOW_STAR;
 		} else if (!strcmp("weekly", cmd)) {
 			bit_set(e->minute, 0);
 			bit_set(e->hour, 0);
@@ -229,8 +233,8 @@ load_entry(file, error_func, pw, envp)
 	}
 
 	/* If we used one of the @commands, we may be pointing at
-       blanks, and if we don't skip over them, we'll miss the user/command */	
-    Skip_Blanks(ch, file);
+	   blanks, and if we don't skip over them, we'll miss the user/command */
+	Skip_Blanks(ch, file);
 	/* ch is the first character of a command, or a username */
 	unget_char(ch, file);
 
@@ -333,7 +337,7 @@ load_entry(file, error_func, pw, envp)
 
 	   CK 2010-04-14: this code will never be reached. All calls to
 	   load_entry are proceeded by calls to load_env, which aborts on EOF, and
-       where load_env fails, the code bails out.
+	   where load_env fails, the code bails out.
 	 */
 	if (ch == EOF) {
 		ecode = e_cmd;
@@ -496,7 +500,7 @@ get_range(bits, low, high, names, ch, file)
 	/* Explicitly check for sane values. Certain combinations of ranges and
 	 * steps which should return EOF don't get picked up by the code below,
 	 * eg:
-	 *	5-64/30 * * * *	touch /dev/null
+	 *      5-64/30 * * * *         touch /dev/null
 	 *
 	 * Code adapted from set_elements() where this error was probably intended
 	 * to be catched.
@@ -546,9 +550,9 @@ get_number(numptr, low, names, ch, file)
 	}
 	*pc = '\0';
 
-        if (len == 0) {
-            return EOF;
-        }
+	if (len == 0) {
+		return EOF;
+	}
 
 	/* try to find the name in the name list
 	 */

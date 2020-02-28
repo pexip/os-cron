@@ -81,7 +81,7 @@ cron_popen(program, type, e)
 	for (argc = 0, cp = program; argc < MAX_ARGS; cp = NULL)
 		if (!(argv[argc++] = strtok(cp, " \t\n")))
 			break;
-    argv[MAX_ARGS] = NULL;
+	argv[MAX_ARGS] = NULL;
 
 #if WANT_GLOBBING
 	/* glob each piece */
@@ -121,34 +121,33 @@ cron_popen(program, type, e)
 			}
 			(void)close(pdes[1]);
 		}
- 		/* set our directory, uid and gid.  Set gid first, since once
-         * we set uid, we've lost root privleges.
-         */
-        if (setgid(e->gid) !=0) {
-          char msg[256];
-          snprintf(msg, 256, "popen:setgid(%lu) failed: %s",
-               (unsigned long) e->gid, strerror(errno));
-          log_it("CRON",getpid(),"error",msg);
-          exit(ERROR_EXIT);
-        }
+		/* set our directory, uid and gid.  Set gid first, since once
+		 * we set uid, we've lost root privleges.
+		 */
+		if (setgid(e->gid) !=0) {
+			char msg[256];
+			snprintf(msg, 256, "popen:setgid(%lu) failed: %s",
+				(unsigned long) e->gid, strerror(errno));
+			log_it("CRON",getpid(),"error",msg);
+			exit(ERROR_EXIT);
+		}
 # if defined(BSD) || defined(POSIX)
 		if (initgroups(env_get("LOGNAME", e->envp), e->gid) !=0) {
-		  char msg[256];
-		  snprintf(msg, 256, "popen:initgroups(%lu) failed: %s",
-			   (unsigned long) e->gid, strerror(errno));
-		  log_it("CRON",getpid(),"error",msg);
-		  exit(ERROR_EXIT);
-                }
+			char msg[256];
+			snprintf(msg, 256, "popen:initgroups(%lu) failed: %s",
+				(unsigned long) e->gid, strerror(errno));
+			log_it("CRON",getpid(),"error",msg);
+			exit(ERROR_EXIT);
+		}
 # endif
 		if (setuid(e->uid) !=0) {
-		  char msg[256];
-		  snprintf(msg, 256, "popen: setuid(%lu) failed: %s",
-			   (unsigned long) e->uid, strerror(errno)); 
-		  log_it("CRON",getpid(),"error",msg);
-		  exit(ERROR_EXIT);
-		}	
+			char msg[256];
+			snprintf(msg, 256, "popen: setuid(%lu) failed: %s",
+				(unsigned long) e->uid, strerror(errno));
+			log_it("CRON",getpid(),"error",msg);
+			exit(ERROR_EXIT);
+		}
 		chdir(env_get("HOME", e->envp));
-
 #if WANT_GLOBBING
 		execvp(gargv[0], gargv);
 #else
