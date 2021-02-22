@@ -31,7 +31,7 @@ static char rcsid[] = "$Id: entry.c,v 2.12 1994/01/17 03:20:37 vixie Exp $";
 
 typedef	enum ecode {
 	e_none, e_minute, e_hour, e_dom, e_month, e_dow,
-	e_cmd, e_timespec, e_username, e_cmd_len
+	e_cmd, e_timespec, e_username
 } ecode_e;
 
 static char	get_list __P((bitstr_t *, int, int, char *[], int, FILE *)),
@@ -50,7 +50,6 @@ static char *ecodes[] =
 		"bad command",
 		"bad time specifier",
 		"bad username",
-		"command too long",
 	};
 
 
@@ -92,7 +91,6 @@ load_entry(file, error_func, pw, envp)
 	int	ch;
 	char	cmd[MAX_COMMAND];
 	char	envstr[MAX_ENVSTR];
-	char	**tenvp;
 
 	Debug(DPARS, ("load_entry()...about to eat comments\n"))
 
@@ -108,10 +106,6 @@ load_entry(file, error_func, pw, envp)
 	 */
 
 	e = (entry *) calloc(sizeof(entry), sizeof(char));
-	if (e == NULL) {
-		log_it("CRON", getpid(), "OOM", "Out of memory parsing crontab");
-		return NULL;
-	}
 
 	if (ch == '@') {
 		/* all of these should be flagged and load-limited; i.e.,
@@ -135,21 +129,18 @@ load_entry(file, error_func, pw, envp)
 			bit_set(e->dom, 0);
 			bit_set(e->month, 0);
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-			e->flags |= DOW_STAR;
 		} else if (!strcmp("monthly", cmd)) {
 			bit_set(e->minute, 0);
 			bit_set(e->hour, 0);
 			bit_set(e->dom, 0);
 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-			e->flags |= DOW_STAR;
 		} else if (!strcmp("weekly", cmd)) {
 			bit_set(e->minute, 0);
 			bit_set(e->hour, 0);
 			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
-			e->flags |= DOM_STAR;
 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
-			bit_nset(e->dow, 0,0);
+			bit_set(e->dow, 0);
 		} else if (!strcmp("daily", cmd) || !strcmp("midnight", cmd)) {
 			bit_set(e->minute, 0);
 			bit_set(e->hour, 0);
@@ -158,11 +149,10 @@ load_entry(file, error_func, pw, envp)
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
 		} else if (!strcmp("hourly", cmd)) {
 			bit_set(e->minute, 0);
-			bit_nset(e->hour, 0, (LAST_HOUR-FIRST_HOUR+1));
+			bit_set(e->hour, (LAST_HOUR-FIRST_HOUR+1));
 			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-			e->flags |= HR_STAR;
 		} else {
 			ecode = e_timespec;
 			goto eof;
@@ -170,8 +160,6 @@ load_entry(file, error_func, pw, envp)
 	} else {
 		Debug(DPARS, ("load_entry()...about to parse numerics\n"))
 
-		if (ch == '*')
-			e->flags |= MIN_STAR;
 		ch = get_list(e->minute, FIRST_MINUTE, LAST_MINUTE,
 			      PPC_NULL, ch, file);
 		if (ch == EOF) {
@@ -182,8 +170,6 @@ load_entry(file, error_func, pw, envp)
 		/* hours
 		 */
 
-		if (ch == '*')
-			e->flags |= HR_STAR;
 		ch = get_list(e->hour, FIRST_HOUR, LAST_HOUR,
 			      PPC_NULL, ch, file);
 		if (ch == EOF) {
@@ -232,9 +218,6 @@ load_entry(file, error_func, pw, envp)
 		bit_set(e->dow, 7);
 	}
 
-	/* If we used one of the @commands, we may be pointing at
-	   blanks, and if we don't skip over them, we'll miss the user/command */
-	Skip_Blanks(ch, file);
 	/* ch is the first character of a command, or a username */
 	unget_char(ch, file);
 
@@ -256,9 +239,6 @@ load_entry(file, error_func, pw, envp)
 			goto eof;
 		}
 		Debug(DPARS, ("load_entry()...uid %d, gid %d\n",e->uid,e->gid))
-	} else if (ch == '*') {
-		ecode = e_cmd;
-		goto eof;
 	}
 
 	e->uid = pw->pw_uid;
@@ -267,52 +247,24 @@ load_entry(file, error_func, pw, envp)
 	/* copy and fix up environment.  some variables are just defaults and
 	 * others are overrides.
 	 */
-	if ((e->envp = env_copy(envp)) == NULL) {
-		ecode = e_none;
-		goto eof;
-	}
+	e->envp = env_copy(envp);
 	if (!env_get("SHELL", e->envp)) {
-		snprintf(envstr, MAX_ENVSTR, "SHELL=%s", _PATH_BSHELL);
-		if ((tenvp = env_set(e->envp, envstr))) {
-			e->envp = tenvp;
-		} else {
-			ecode = e_none;
-			goto eof;
-		}
+		sprintf(envstr, "SHELL=%s", _PATH_BSHELL);
+		e->envp = env_set(e->envp, envstr);
 	}
 	if (!env_get("HOME", e->envp)) {
-		snprintf(envstr, MAX_ENVSTR, "HOME=%s", pw->pw_dir);
-		if ((tenvp = env_set(e->envp, envstr))) {
-			e->envp = tenvp;
-		} else {
-			ecode = e_none;
-			goto eof;
-		}
+		sprintf(envstr, "HOME=%s", pw->pw_dir);
+		e->envp = env_set(e->envp, envstr);
 	}
 	if (!env_get("PATH", e->envp)) {
-		snprintf(envstr, MAX_ENVSTR, "PATH=%s", _PATH_DEFPATH);
-		if ((tenvp = env_set(e->envp, envstr))) {
-			e->envp = tenvp;
-		} else {
-			ecode = e_none;
-			goto eof;
-		}
+		sprintf(envstr, "PATH=%s", _PATH_DEFPATH);
+		e->envp = env_set(e->envp, envstr);
 	}
-	snprintf(envstr, MAX_ENVSTR, "%s=%s", "LOGNAME", pw->pw_name);
-	if ((tenvp = env_set(e->envp, envstr))) {
-		e->envp = tenvp;
-	} else {
-		ecode = e_none;
-		goto eof;
-	}
+	sprintf(envstr, "%s=%s", "LOGNAME", pw->pw_name);
+	e->envp = env_set(e->envp, envstr);
 #if defined(BSD)
-	snprintf(envstr, MAX_ENVSTR, "%s=%s", "USER", pw->pw_name);
-	if ((tenvp = env_set(e->envp, envstr))) {
-		e->envp = tenvp;
-	} else {
-		ecode = e_none;
-		goto eof;
-	}
+	sprintf(envstr, "%s=%s", "USER", pw->pw_name);
+	e->envp = env_set(e->envp, envstr);
 #endif
 
 	Debug(DPARS, ("load_entry()...about to parse command\n"))
@@ -320,24 +272,11 @@ load_entry(file, error_func, pw, envp)
 	/* Everything up to the next \n or EOF is part of the command...
 	 * too bad we don't know in advance how long it will be, since we
 	 * need to malloc a string for it... so, we limit it to MAX_COMMAND.
-	 *
-	 * To err on the side of caution, if the command string length is
-	 * equal to MAX_COMMAND, we will assume that the command has been
-	 * truncated and generate an error.
-	 *
 	 * XXX - should use realloc().
-	 */
+	 */ 
 	ch = get_string(cmd, MAX_COMMAND, file, "\n");
-	if (strnlen(cmd, MAX_COMMAND) == MAX_COMMAND - 1) {
-		ecode = e_cmd_len;
-		goto eof;
-	}
 
 	/* a file without a \n before the EOF is rude, so we'll complain...
-
-	   CK 2010-04-14: this code will never be reached. All calls to
-	   load_entry are proceeded by calls to load_env, which aborts on EOF, and
-	   where load_env fails, the code bails out.
 	 */
 	if (ch == EOF) {
 		ecode = e_cmd;
@@ -346,10 +285,7 @@ load_entry(file, error_func, pw, envp)
 
 	/* got the command in the 'cmd' string; save it in *e.
 	 */
-	if ((e->cmd = strdup(cmd)) == NULL) {
-		ecode = e_none;
-		goto eof;
-	}
+	e->cmd = strdup(cmd);
 
 	Debug(DPARS, ("load_entry()...returning successfully\n"))
 
@@ -358,10 +294,6 @@ load_entry(file, error_func, pw, envp)
 	return e;
 
  eof:
-	if (e->envp)
-		env_free(e->envp);
-	if (e->cmd)
-		free(e->cmd);
 	free(e);
 	if (ecode != e_none && error_func)
 		(*error_func)(ecodes[(int)ecode]);
@@ -449,13 +381,6 @@ get_range(bits, low, high, names, ch, file)
 		if (ch != '-') {
 			/* not a range, it's a single number.
 			 */
-
-			/* Unsupported syntax: Step specified without range,
-			   eg:   1/20 * * * * /bin/echo "this fails"
-			 */
-			if (ch == '/')
-				return EOF;
-
 			if (EOF == set_element(bits, low, high, num1))
 				return EOF;
 			return ch;
@@ -489,24 +414,13 @@ get_range(bits, low, high, names, ch, file)
 		 * sent as a 0 since there is no offset either.
 		 */
 		ch = get_number(&num3, 0, PPC_NULL, ch, file);
-		if (ch == EOF || num3 <= 0)
+		if (ch == EOF)
 			return EOF;
 	} else {
 		/* no step.  default==1.
 		 */
 		num3 = 1;
 	}
-
-	/* Explicitly check for sane values. Certain combinations of ranges and
-	 * steps which should return EOF don't get picked up by the code below,
-	 * eg:
-	 *      5-64/30 * * * *         touch /dev/null
-	 *
-	 * Code adapted from set_elements() where this error was probably intended
-	 * to be catched.
-	 */
-	if (num1 < low || num1 > high || num2 < low || num2 > high)
-		return EOF;
 
 	/* range. set all elements from num1 to num2, stepping
 	 * by num3.  (the step is a downward-compatible extension
@@ -549,10 +463,6 @@ get_number(numptr, low, names, ch, file)
 		ch = get_char(file);
 	}
 	*pc = '\0';
-
-	if (len == 0) {
-		return EOF;
-	}
 
 	/* try to find the name in the name list
 	 */

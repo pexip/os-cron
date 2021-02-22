@@ -1,9 +1,40 @@
-cron (3.0pl1-134+deb10u1) buster; urgency=medium
+cron (3.0pl1-137) unstable; urgency=medium
+
+  [ Laurent Combe ]
+  * Add patch Add-MAILFROM-environment-variable.patch
+    (Closes: #898177, #1750051)
+
+  [ Christian Kastner ]
+  * Modify the above patch to use cronie's safe_p() function for email
+    validation
+  * Remove myself from Uploaders
+
+ -- Christian Kastner <ckk@debian.org>  Mon, 22 Feb 2021 23:43:24 +0100
+
+cron (3.0pl1-136) unstable; urgency=medium
+
+  * Convert package to source format 3.0 (quilt). Finally.
+    The conversion was mostly manual, and the process was documented in
+    debian/source-format-3.md. (Closes: #806225)
+  * Bump Standards-Version to 4.5.0 (no changes needed)
+
+ -- Christian Kastner <ckk@debian.org>  Mon, 10 Feb 2020 20:16:06 +0100
+
+cron (3.0pl1-135) unstable; urgency=medium
 
   [ Laurent Bigonville ]
   * Stop using obsolete SELinux API (Closes: #924716)
 
- -- Christian Kastner <ckk@debian.org>  Fri, 11 Oct 2019 09:58:52 +0200
+  [ Christian Kastner ]
+  * d/control: Bump Standards-Version to 4.4.0 (no changes needed)
+  * cron.8: Add missing reference to .dpkg-old. Thanks, Vincent Lefevre!
+    (Closes: #926713)
+
+  [ Jakub Wilk ]
+  * crontab.5: Fix misuse of en-dash in examples, and remove stray character
+    from the LIMITATIONS example. (Closes: #934543)
+
+ -- Christian Kastner <ckk@debian.org>  Sun, 15 Sep 2019 09:13:43 +0200
 
 cron (3.0pl1-134) unstable; urgency=medium
 

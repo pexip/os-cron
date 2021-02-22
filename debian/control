@@ -2,8 +2,7 @@ Source: cron
 Section: admin
 Priority: important
 Maintainer: Javier Fernández-Sanguino Peña <jfs@debian.org>
-Uploaders: Christian Kastner <ckk@debian.org>
-Standards-Version: 4.3.0
+Standards-Version: 4.5.0
 Build-Depends:
     debhelper-compat (= 12),
     libpam0g-dev,
