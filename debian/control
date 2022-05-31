@@ -3,8 +3,7 @@ Section: admin
 Priority: important
 Maintainer: Pexip AS <packaging@pexip.com>
 XSBC-Pexip-Original-Maintainer: Javier Fernández-Sanguino Peña <jfs@debian.org>
-XSBC-Pexip-Original-Uploaders: Christian Kastner <ckk@debian.org>
-Standards-Version: 4.3.0
+Standards-Version: 4.5.0
 Build-Depends:
     debhelper-compat (= 12),
     libpam0g-dev,

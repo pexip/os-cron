@@ -53,10 +53,7 @@ strdup(str)
 {
 	char	*temp;
 
-	if ((temp = malloc(strlen(str) + 1)) == NULL) {
-		errno = ENOMEM;
-		return NULL;
-	}
+	temp = malloc(strlen(str) + 1);
 	(void) strcpy(temp, str);
 	return temp;
 }
@@ -76,7 +73,7 @@ strerror(error)
 		return sys_errlist[error];
 	}
 
-	snprintf(buf, 32, "Unknown error: %d", error);
+	sprintf(buf, "Unknown error: %d", error);
 	return buf;
 }
 #endif
@@ -221,18 +218,16 @@ setenv(name, value, overwrite)
 	int overwrite;
 {
 	char *tmp;
-	int tmp_size;
 
 	if (overwrite && getenv(name))
 		return -1;
 
-	tmp_size = strlen(name) + strlen(value) + 2;
-	if (!(tmp = malloc(tmp_size))) {
+	if (!(tmp = malloc(strlen(name) + strlen(value) + 2))) {
 		errno = ENOMEM;
 		return -1;
 	}
 
-	snprintf(tmp, tmp_size, "%s=%s", name, value);
+	sprintf("%s=%s", name, value);
 	return putenv(tmp);	/* intentionally orphan 'tmp' storage */
 }
 #endif
