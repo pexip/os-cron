@@ -14,7 +14,7 @@ Rules-Requires-Root: no
 Homepage: https://ftp.isc.org/isc/cron/
 Vcs-Git: https://salsa.debian.org/debian/cron.git
 Vcs-Browser: https://salsa.debian.org/debian/cron
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: cron
 Architecture: any
