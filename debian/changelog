@@ -1,3 +1,9 @@
+cron (3.0pl1-137pexip2) pexip-bullseye; urgency=medium
+
+  * Main bullseye build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Fri, 24 Jun 2022 13:54:59 +0100
+
 cron (3.0pl1-137pexip1) pexip; urgency=medium
 
   * Initial bullseye build
