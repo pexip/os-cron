@@ -9,10 +9,10 @@ attack prevention.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -471,6 +471,7 @@ edit_cmd() {
  	(void)signal(SIGHUP, SIG_DFL);
  	(void)signal(SIGINT, SIG_DFL);

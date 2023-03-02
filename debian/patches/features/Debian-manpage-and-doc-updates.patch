@@ -11,10 +11,10 @@ numerous smaller contributions by others.
 
 Forwarded: not-needed
 Last-Update: 2016-01-16
-Index: conv3/README
+Index: cron/README
 ===================================================================
---- conv3.orig/README
-+++ conv3/README
+--- cron.orig/README
++++ cron/README
 @@ -24,6 +24,12 @@ December 27, 1993
  [V1.0 was May 6, 1987]
  Paul Vixie
@@ -28,10 +28,10 @@ Index: conv3/README
  This is a version of 'cron' that is known to run on BSD 4.[23] systems.  It
  is functionally based on the SysV cron, which means that each user can have
  their own crontab file (all crontab files are stored in a read-protected
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: cron.8,v 2.2 1993/12/28 08:34:43 vixie Exp $
@@ -135,10 +135,10 @@ Index: conv3/cron.8
 +and original creator of this manual page.  This page has also been modified for
 +Debian by Steve Greenland, Javier Fernandez-Sanguino and Christian Kastner.
 +
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: crontab.1,v 2.4 1993/12/31 10:47:33 vixie Exp $
@@ -196,10 +196,10 @@ Index: conv3/crontab.1
 +.I cron
 +and original creator of this manual page.  This page has also been modified for
 +Debian by Steve Greenland, Javier Fernandez-Sanguino and Christian Kastner.
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: crontab.5,v 2.4 1994/01/15 20:43:43 vixie Exp $

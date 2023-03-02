@@ -11,10 +11,10 @@ Debian-Bug: https://bugs.debian.org/30653
 Debian-Bug: https://bugs.debian.org/37189
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -31,6 +31,8 @@ static char rcsid[] = "$Id: cron.c,v 2.1
  # include <time.h>
  #endif
@@ -34,11 +34,11 @@ Index: conv3/cron.c
  			break;
  		default:
  			/* parent process should just die */
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
-@@ -206,6 +206,7 @@ child_process(e, u)
+--- cron.orig/do_command.c
++++ cron/do_command.c
+@@ -191,6 +191,7 @@ child_process(e, u)
  		dup2(stdout_pipe[WRITE_PIPE], STDOUT);
  		dup2(STDOUT, STDERR);
  

@@ -10,10 +10,10 @@ Fix provided by Justin Pryzby <justinpryzby@users.sourceforge.net>.
 Bug-Debian: https://bugs.debian.org/470564
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -68,7 +68,7 @@ load_database(old_db)
  	 */
  	if (stat(SPOOL_DIR, &statbuf) < OK) {

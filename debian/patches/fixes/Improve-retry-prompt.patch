@@ -6,10 +6,10 @@ Include y/n in the prompt to indicate the expected input.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -638,7 +638,7 @@ again: /* Loop point for retrying edit a
  		break;
  	case -1:

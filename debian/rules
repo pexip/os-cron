@@ -63,11 +63,15 @@ override_dh_auto_install:
 	# Empty target to bypass the auto-detected install target in Makefile
 
 
-override_dh_install:
-	dh_install
-	install -m 644 debian/crontab.main debian/cron/etc/crontab
-	install -m 644 debian/placeholder debian/cron/etc/cron.d/.placeholder
-	install -m 644 debian/placeholder debian/cron/etc/cron.hourly/.placeholder
-	install -m 644 debian/placeholder debian/cron/etc/cron.daily/.placeholder
-	install -m 644 debian/placeholder debian/cron/etc/cron.weekly/.placeholder
-	install -m 644 debian/placeholder debian/cron/etc/cron.monthly/.placeholder
+COMMON_ETC = debian/cron-daemon-common/etc
+# beginning with release 3.0pl1-139, the configuration files
+# are managed by the package cron-daemon-common
+
+override_dh_install-indep:
+	install -m 644 debian/crontab.main $(COMMON_ETC)/crontab
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.d/.placeholder
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.hourly/.placeholder
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.daily/.placeholder
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.weekly/.placeholder
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.monthly/.placeholder
+	install -m 644 debian/placeholder $(COMMON_ETC)/cron.yearly/.placeholder

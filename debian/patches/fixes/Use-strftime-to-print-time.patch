@@ -7,10 +7,10 @@ the original source (the subversion history is ambiguous).
 
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -659,26 +659,36 @@ mkprints(src, len)
  
  

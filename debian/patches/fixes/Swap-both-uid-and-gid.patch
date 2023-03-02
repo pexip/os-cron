@@ -8,10 +8,10 @@ Fix provided by Solar Designer.
 
 Forwarded: no
 Last-Update: 2015-12-26
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -695,10 +695,21 @@ arpadate(clock)
  
  

@@ -7,12 +7,16 @@ crontab(5) syntax.
 
 Contributed by Javier Fernández-Sanguino Peña <jfs@debian.org>.
 
+Contributed by Georges Khaznadar <georgesk@debian.org> : this patch's
+feature is tested by debian/tests/check_significant_header
+
+
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -549,6 +549,7 @@ edit_cmd() {
  	WAIT_T		waiter;
  	PID_T		pid, xpid;

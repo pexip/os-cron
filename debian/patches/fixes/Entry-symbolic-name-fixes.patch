@@ -13,10 +13,10 @@ Bug-Debian: https://bugs.debian.org/84727
 Bug-Debian: https://bugs.debian.org/150591
 Forwarded: no
 Last-Update: 2015-12-20
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -134,18 +134,21 @@ load_entry(file, error_func, pw, envp)
  			bit_set(e->dom, 0);
  			bit_set(e->month, 0);

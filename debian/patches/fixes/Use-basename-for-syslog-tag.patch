@@ -11,10 +11,10 @@ already considered the dirname of argv[0] to be an optional prefix.
 Bug-Debian: https://bugs.debian.org/752750
 Forwarded: no
 Last-Update: 2015-12-26
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -34,6 +34,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
  #include <sys/stat.h>
  #include <sys/types.h>
@@ -32,10 +32,10 @@ Index: conv3/cron.c
  
  #if defined(BSD)
  	setlinebuf(stdout);
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -31,6 +31,7 @@ static char rcsid[] = "$Id: crontab.c,v
  #include "cron.h"
  #include <errno.h>

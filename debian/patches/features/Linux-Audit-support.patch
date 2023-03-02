@@ -9,10 +9,10 @@ Contributed by Steve Grubb.
 Bug-Debian: https://bugs.debian.org/383741
 Forwarded: no
 Last-Update: 2015-01-07
-Index: conv3/Makefile
+Index: cron/Makefile
 ===================================================================
---- conv3.orig/Makefile
-+++ conv3/Makefile
+--- cron.orig/Makefile
++++ cron/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -31,10 +31,10 @@ Index: conv3/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -35,6 +35,9 @@ static char rcsid[] = "$Id: misc.c,v 2.9
  #include <errno.h>
  #include <string.h>
@@ -61,10 +61,10 @@ Index: conv3/misc.c
  	return isallowed;
  }
  
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -120,6 +120,8 @@ PAM support,
  .IP \(em
  SELinux support,

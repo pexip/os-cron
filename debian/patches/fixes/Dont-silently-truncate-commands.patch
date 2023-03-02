@@ -8,10 +8,10 @@ instead of silently truncated the command.
 Bug-Debian: https://bugs.debian.org/686223
 Forwarded: no
 Last-Update: 2015-12-26
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -112,7 +112,8 @@ followed by a command, followed by a new
  The system crontab (/etc/crontab) uses the same format, except that
  the username for the command is specified after the time and
@@ -22,10 +22,10 @@ Index: conv3/crontab.5
  .PP
  Commands are executed by
  .IR cron (8)
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -31,7 +31,7 @@ static char rcsid[] = "$Id: entry.c,v 2.
  
  typedef	enum ecode {

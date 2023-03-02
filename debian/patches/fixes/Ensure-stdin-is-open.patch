@@ -10,10 +10,10 @@ Bug-Debian: https://bugs.debian.org/295589
 Bug-RedHat: https://bugzilla.redhat.com/show_bug.cgi?id=145992
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -74,6 +74,10 @@ main(argc, argv)
  #endif
  	(void) signal(SIGHUP, sighup_handler);

@@ -9,10 +9,10 @@ Based on an initial fix by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/110612
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -541,9 +541,8 @@ replace_cmd() {
  	Set_LineNum(1)
  	while (EOF != (ch = get_char(NewCrontab)))

@@ -10,10 +10,10 @@ Improve mode checks for crontabs to improve security. Specifically, check for:
 
  Forwarded: no
  Last-Update: 2015-12-26
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -222,7 +222,7 @@ process_crontab(uname, fname, tabname, s
  		goto next_crontab;
  	}
@@ -56,10 +56,10 @@ Index: conv3/database.c
  
  	Debug(DLOAD, ("\t%s:", fname))
  	u = find_user(old_db, fname);
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -41,6 +41,8 @@ command should be used to access and upd
  .I cron
  also reads /etc/crontab, which is in a slightly different format (see

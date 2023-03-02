@@ -13,10 +13,10 @@ Bug-Debian: https://bugs.debian.org/383741
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/1813833
 Forwarded: no
 Last-Update: 2019-03-23
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -432,12 +432,38 @@ allowed(username)
  {
  	static int	init = FALSE;
@@ -79,10 +79,10 @@ Index: conv3/misc.c
  }
  
  
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -102,6 +102,14 @@ crontab(5), cron(8)
  /var/cron/crontabs
  .fi

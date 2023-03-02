@@ -86,7 +86,7 @@ Index: cron/do_command.c
 ===================================================================
 --- cron.orig/do_command.c
 +++ cron/do_command.c
-@@ -400,7 +400,7 @@ child_process(e, u)
+@@ -385,7 +385,7 @@ child_process(e, u)
  				(void) gethostname(hostname, MAXHOSTNAMELEN);
  				(void) snprintf(mailcmd, sizeof(mailcmd),
  						MAILARGS, MAILCMD, mailto);

@@ -12,10 +12,10 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/76625
 Forwarded: no
 Last-Update: 2016-01-09
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -288,7 +288,8 @@ acquire_daemonlock(closeflag)
  			log_it("CRON", getpid(), "DEATH", buf);
  			exit(ERROR_EXIT);
@@ -26,10 +26,10 @@ Index: conv3/misc.c
  		(void) fcntl(fd, F_SETFD, 1);
  	}
  
-Index: conv3/pathnames.h
+Index: cron/pathnames.h
 ===================================================================
---- conv3.orig/pathnames.h
-+++ conv3/pathnames.h
+--- cron.orig/pathnames.h
++++ cron/pathnames.h
 @@ -49,7 +49,7 @@
  			 */
  #define	ALLOW_FILE	"/etc/cron.allow"		/*-*/
@@ -39,10 +39,10 @@ Index: conv3/pathnames.h
  
  			/* where should the daemon stick its PID?
  			 */
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -23,8 +23,11 @@ static char rcsid[] = "$Id: user.c,v 2.8
   */
  

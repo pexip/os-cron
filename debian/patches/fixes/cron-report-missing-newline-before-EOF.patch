@@ -8,10 +8,10 @@ of a crontab. Print a warning instead.
 Bug-Debian: https://bugs.debian.org/79037
 Forwarded: no
 Last-Update: 2015-12-20
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -87,11 +87,20 @@ load_user(crontab_fd, pw, name)
  	 * load the crontab
  	 */
@@ -45,10 +45,10 @@ Index: conv3/user.c
  
   done:
  	env_free(envp);
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -313,6 +313,10 @@ load_entry(file, error_func, pw, envp)
  	ch = get_string(cmd, MAX_COMMAND, file, "\n");
  
@@ -60,10 +60,10 @@ Index: conv3/entry.c
  	 */
  	if (ch == EOF) {
  		ecode = e_cmd;
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -116,6 +116,11 @@ SVR3 syntax.
  .SH DIAGNOSTICS
  A fairly informative usage message appears if you run it with a bad command
@@ -76,10 +76,10 @@ Index: conv3/crontab.1
  .SH AUTHOR
  .nf
  Paul Vixie <paul@vix.com>
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -321,6 +321,12 @@ the following wrapper code:
  .fi
  

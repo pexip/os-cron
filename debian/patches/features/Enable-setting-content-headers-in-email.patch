@@ -12,10 +12,10 @@ Bug-Debian: https://bugs.debian.org/309150
 Bug-Debian: https://bugs.debian.org/600310
 Forwarded: no
 Last-Update: 2016-01-10
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -30,6 +30,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
  #include <sys/types.h>
  #include <fcntl.h>
@@ -53,10 +53,10 @@ Index: conv3/cron.c
  	/* if there are no debug flags turned on, fork as a daemon should.
  	 */
  # if DEBUGGING
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -294,6 +294,8 @@ static long GMToff;
  
  int	lsbsysinit_mode;
@@ -74,10 +74,10 @@ Index: conv3/cron.h
  # if DEBUGGING
  extern	int	DebugFlags;
  extern	char	*DebugFlagNames[];
-Index: conv3/externs.h
+Index: cron/externs.h
 ===================================================================
---- conv3.orig/externs.h
-+++ conv3/externs.h
+--- cron.orig/externs.h
++++ cron/externs.h
 @@ -26,6 +26,11 @@
  # define WAIT_IS_INT 1
  extern char *tzname[2];
@@ -90,11 +90,11 @@ Index: conv3/externs.h
  #endif
  
  #if defined(UNIXPC)
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
-@@ -479,8 +479,12 @@ child_process(e, u)
+--- cron.orig/do_command.c
++++ cron/do_command.c
+@@ -470,8 +470,12 @@ child_process(e, u)
  
  			if (mailto) {
  				register char	**env;
@@ -107,7 +107,7 @@ Index: conv3/do_command.c
  
  				(void) gethostname(hostname, MAXHOSTNAMELEN);
  				(void) snprintf(mailcmd, sizeof(mailcmd),
-@@ -499,7 +503,40 @@ child_process(e, u)
+@@ -490,7 +494,40 @@ child_process(e, u)
  					arpadate(&StartTime));
  # endif /* MAIL_DATE */
  				fprintf(mail, "MIME-Version: 1.0\n");
@@ -149,10 +149,10 @@ Index: conv3/do_command.c
  
  				for (env = e->envp;  *env;  env++)
  					fprintf(mail, "X-Cron-Env: <%s>\n",
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -121,6 +121,20 @@ override the settings described above no
  .I crontab
  file itself.  Note in particular that if you want a PATH other than

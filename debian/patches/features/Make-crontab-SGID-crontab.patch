@@ -15,10 +15,10 @@ using sockets instead should be taken into consideration.
 Bug-Debian: https://bugs.debian.org/18333
 Forwarded: no
 Last-Update: 2016-01-10
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -110,7 +110,6 @@ main(argc, argv)
  		argv[1] = "-";
  	}
@@ -93,10 +93,10 @@ Index: conv3/crontab.c
  	(void) snprintf(n, sizeof(n), CRON_TAB(User));
  	if (rename(tn, n)) {
  		fprintf(stderr, "%s: %s: rename: %s\n",
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -35,6 +35,7 @@ static char rcsid[] = "$Id: misc.c,v 2.9
  #include <errno.h>
  #include <string.h>
@@ -172,10 +172,10 @@ Index: conv3/misc.c
  			exit(ERROR_EXIT);
  		}
  	}
-Index: conv3/pathnames.h
+Index: cron/pathnames.h
 ===================================================================
---- conv3.orig/pathnames.h
-+++ conv3/pathnames.h
+--- cron.orig/pathnames.h
++++ cron/pathnames.h
 @@ -81,3 +81,23 @@
  #ifndef REBOOT_FILE
  # define REBOOT_FILE "/run/crond.reboot"
@@ -200,10 +200,10 @@ Index: conv3/pathnames.h
 +			 */
 +#define SPOOL_DIR_GROUP "crontab"
 +#endif
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -180,6 +180,8 @@ auditlog support,
  .IP \(em
  DST and other time-related changes/fixes,
@@ -213,10 +213,10 @@ Index: conv3/cron.8
  Debian-specific file locations and commands,
  .IP \(em
  Debian-specific configuration (/etc/default/cron),
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -118,6 +118,11 @@ There is one file for each user's cronta
  directory.  Users are not allowed to edit the files under that directory
  directly to ensure that only users allowed by the system to run periodic tasks

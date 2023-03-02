@@ -12,10 +12,10 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2016-01-09
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -47,7 +47,8 @@ going to be lazy */
  static	void		process_crontab __P((char *, char *, char *,
  					     struct stat *,
@@ -367,10 +367,10 @@ Index: conv3/database.c
 +			break;
 +	return curtab;
 +}
-Index: conv3/pathnames.h
+Index: cron/pathnames.h
 ===================================================================
---- conv3.orig/pathnames.h
-+++ conv3/pathnames.h
+--- cron.orig/pathnames.h
++++ cron/pathnames.h
 @@ -62,6 +62,8 @@
  
  			/* 4.3BSD-style crontab */
@@ -380,10 +380,10 @@ Index: conv3/pathnames.h
  
  			/* what editor to use if no EDITOR or VISUAL
  			 * environment variable specified.
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -192,7 +192,9 @@ typedef	struct _user {
  
  typedef	struct _cron_db {
@@ -412,10 +412,10 @@ Index: conv3/cron.h
  extern	int	LineNumber;
  extern	time_t	TargetTime;
  # if DEBUGGING
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -131,7 +131,9 @@ main(argc, argv)
  	acquire_daemonlock(0);
  	database.head = NULL;
@@ -455,10 +455,10 @@ Index: conv3/cron.c
  #if DEBUGGING
  		case 'x':
  			if (!set_debug_flags(optarg))
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -23,10 +23,17 @@
  cron \- daemon to execute scheduled commands (Vixie Cron)
  .SH SYNOPSIS

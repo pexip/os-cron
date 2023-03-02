@@ -6,10 +6,10 @@ When editing/replacing a crontab, set the umask to 077.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -317,6 +317,7 @@ edit_cmd() {
  	time_t		mtime;
  	WAIT_T		waiter;

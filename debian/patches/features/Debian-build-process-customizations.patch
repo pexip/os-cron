@@ -7,10 +7,10 @@ upstream's optimization and stripping; our build process does that.
 
 Forwarded: not-needed
 Last-Update: 2015-12-26
-Index: conv3/Makefile
+Index: cron/Makefile
 ===================================================================
---- conv3.orig/Makefile
-+++ conv3/Makefile
+--- cron.orig/Makefile
++++ cron/Makefile
 @@ -78,11 +78,11 @@ DEFS		=
  #INSTALL = installbsd
  INSTALL = install

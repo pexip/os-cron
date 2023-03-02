@@ -9,10 +9,10 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -31,6 +31,7 @@ static char rcsid[] = "$Id: crontab.c,v
  #include "cron.h"
  #include <errno.h>

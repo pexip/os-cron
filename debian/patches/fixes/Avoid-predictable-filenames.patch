@@ -8,10 +8,10 @@ Based on a fix originally provided by Daniel Jacobowitz.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -333,9 +333,9 @@ edit_cmd() {
  		}
  	}

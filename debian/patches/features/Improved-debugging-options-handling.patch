@@ -8,10 +8,10 @@ from option parsing.
 
 Forwarded: no
 Last-Update: 2016-01-07
-Index: conv3/config.h
+Index: cron/config.h
 ===================================================================
---- conv3.orig/config.h
-+++ conv3/config.h
+--- cron.orig/config.h
++++ cron/config.h
 @@ -29,6 +29,7 @@
   */
  
@@ -20,10 +20,10 @@ Index: conv3/config.h
  #define DEBUGGING 1	/* 1 or 0 -- do you want debugging code built in? */
  #endif
  
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -50,7 +50,17 @@ static	void	usage __P((void)),
  
  static void
@@ -74,10 +74,10 @@ Index: conv3/cron.c
  		}
  	}
  }
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -149,7 +149,12 @@ main(argc, argv)
  	exit(exitstatus);
  	/*NOTREACHED*/
@@ -109,10 +109,10 @@ Index: conv3/crontab.c
  		case 'u':
  			if (!(pw = getpwnam(optarg)))
  			{
-Index: conv3/Makefile
+Index: cron/Makefile
 ===================================================================
---- conv3.orig/Makefile
-+++ conv3/Makefile
+--- cron.orig/Makefile
++++ cron/Makefile
 @@ -71,7 +71,9 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $
  #<<want to use a nonstandard CC?>>
  #CC		=	vcc
