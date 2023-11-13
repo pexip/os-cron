@@ -13,10 +13,10 @@ Bug-Debian: https://bugs.debian.org/474157
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/36690
 Forwarded: no
 Last-Update: 2016-01-09
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -40,6 +40,13 @@
  #include "config.h"
  #include "externs.h"
@@ -85,10 +85,10 @@ Index: conv3/cron.h
  # if DEBUGGING
  extern	int	DebugFlags;
  extern	char	*DebugFlagNames[];
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -162,6 +162,7 @@ load_entry(file, error_func, pw, envp)
  			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
  			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
@@ -125,11 +125,11 @@ Index: conv3/entry.c
  	}
  
  	e->uid = pw->pw_uid;
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
-@@ -496,7 +496,7 @@ child_process(e, u)
+--- cron.orig/do_command.c
++++ cron/do_command.c
+@@ -487,7 +487,7 @@ child_process(e, u)
  					e->cmd);
  # if defined(MAIL_DATE)
  				fprintf(mail, "Date: %s\n",
@@ -138,10 +138,10 @@ Index: conv3/do_command.c
  # endif /* MAIL_DATE */
  				fprintf(mail, "MIME-Version: 1.0\n");
  				fprintf(mail, "Content-Transfer-Encoding: 8bit\n");
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -683,8 +683,9 @@ arpadate(clock)
  	struct tm *tm = localtime(&t);
  	char *qmark;
@@ -193,10 +193,10 @@ Index: conv3/misc.c
 +	return (offset);
 +}
 +#endif /* HAVE_TM_GMTOFF */
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -25,11 +25,6 @@ static char rcsid[] = "$Id: cron.c,v 2.1
  
  #include "cron.h"
@@ -499,10 +499,10 @@ Index: conv3/cron.c
  }
  
  
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -111,6 +111,22 @@ need not be restarted whenever a crontab
  .IR crontab (1)
  command updates the modtime of the spool directory whenever it changes a

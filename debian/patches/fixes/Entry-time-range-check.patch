@@ -12,10 +12,10 @@ contains an invalid minute "64".
 Bug-Debian: https://bugs.debian.org/533726
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -479,6 +479,17 @@ get_range(bits, low, high, names, ch, fi
  		num3 = 1;
  	}

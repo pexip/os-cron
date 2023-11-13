@@ -3,9 +3,10 @@ Section: admin
 Priority: important
 Maintainer: Pexip AS <packaging@pexip.com>
 XSBC-Pexip-Original-Maintainer: Javier Fernández-Sanguino Peña <jfs@debian.org>
-Standards-Version: 4.5.0
+XSBC-Pexip-Original-Uploaders: Georges Khaznadar <georgesk@debian.org>
+Standards-Version: 4.6.1
 Build-Depends:
-    debhelper-compat (= 12),
+    debhelper-compat (= 13),
     libpam0g-dev,
     libselinux1-dev [linux-any],
     libaudit-dev [linux-any]
@@ -20,20 +21,26 @@ Architecture: any
 Multi-Arch: foreign
 Pre-Depends:
     ${misc:Pre-Depends},
+    cron-daemon-common
 Depends:
     ${shlibs:Depends},
     ${misc:Depends},
-    debianutils (>= 1.7),
     sensible-utils,
-    adduser,
-    lsb-base (>= 3.0-10),
-    libpam-runtime (>= 1.0.1-11)
+    libpam-runtime
 Recommends:
     default-mta | mail-transport-agent
 Suggests:
-    anacron (>= 2.0-1),
+    anacron,
     logrotate,
     checksecurity
+Conflicts:
+    systemd-cron,
+    bcron,
+    cronie
+Replaces:
+    systemd-cron,
+    bcron,
+    cronie
 Provides: cron-daemon
 Description: process scheduling daemon
  The cron daemon is a background process that runs particular programs at
@@ -48,3 +55,28 @@ Description: process scheduling daemon
  This cron package does not provide any system maintenance tasks. Basic
  periodic maintenance tasks are provided by other packages, such
  as checksecurity.
+
+Package: cron-daemon-common
+Architecture: all
+Depends: ${misc:Depends},
+    adduser
+Conflicts:
+	cron (<< 3.0pl1-140),
+	cronie (<< 1.6.1-5),
+	systemd-cron(<< 1.15.18-1.1),
+	bcron (<< 0.11-9.1)
+Breaks:
+    systemd-cron(<<1.15.19-5~)
+Replaces:
+	cron (<< 3.0pl1-140),
+	cronie (<< 1.6.1-5),
+	systemd-cron(<< 1.15.18-1.1),
+	bcron (<< 0.11-9.1)
+Description: process scheduling daemon's configuration files
+ The cron daemon is a background process that runs particular programs at
+ particular times (for example, every minute, day, week, or month), as
+ specified in a crontab. By default, users may also create crontabs of
+ their own so that processes are run on their behalf.
+ .
+ This package provides configuration files which must be there to
+ define scheduled process sets.

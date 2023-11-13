@@ -17,10 +17,10 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2019-03-07
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -48,10 +48,6 @@ static char rcsid[] = "$Id: misc.c,v 2.9
  #define LOG_CRON LOG_DAEMON
  #endif
@@ -47,7 +47,7 @@ Index: conv3/misc.c
 -		syslog_open = TRUE;		/* assume openlog success */
 -	}
 -
-+  
++
  	syslog(LOG_INFO, "(%s) %s (%s)", username, event, detail);
  
  #endif /*SYSLOG*/

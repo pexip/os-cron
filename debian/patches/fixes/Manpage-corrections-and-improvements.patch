@@ -16,10 +16,10 @@ Bug-Debian: https://bugs.debian.org/893579
 Bug-Debian: https://bugs.debian.org/934543
 Forwarded: no
 Last-Update: 2019-09-15
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -14,9 +14,9 @@
  .\" * I'll try to keep a version up to date.  I can be reached as follows:
  .\" * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
@@ -102,10 +102,10 @@ Index: conv3/cron.8
  .SH "SEE ALSO"
  crontab(1), crontab(5)
  .SH AUTHOR
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -20,37 +20,50 @@
  .TH CRONTAB 1 "29 December 1993"
  .UC 4
@@ -226,10 +226,10 @@ Index: conv3/crontab.1
  .SH DIAGNOSTICS
  A fairly informative usage message appears if you run it with a bad command
  line.
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -16,7 +16,7 @@
  .\" */
  .\"

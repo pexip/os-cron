@@ -10,10 +10,10 @@ CVE-2019-9704.
 Bug-Debian: https://bugs.debian.org/264320
 Forwarded: no
 Last-Update: 2019-03-23
-Index: conv3/compat.c
+Index: cron/compat.c
 ===================================================================
---- conv3.orig/compat.c
-+++ conv3/compat.c
+--- cron.orig/compat.c
++++ cron/compat.c
 @@ -53,7 +53,10 @@ strdup(str)
  {
  	char	*temp;
@@ -26,10 +26,10 @@ Index: conv3/compat.c
  	(void) strcpy(temp, str);
  	return temp;
  }
-Index: conv3/env.c
+Index: cron/env.c
 ===================================================================
---- conv3.orig/env.c
-+++ conv3/env.c
+--- cron.orig/env.c
++++ cron/env.c
 @@ -28,7 +28,8 @@ env_init()
  {
  	register char	**p = (char **) malloc(sizeof(char **));
@@ -90,10 +90,10 @@ Index: conv3/env.c
  	return (p);
  }
  
-Index: conv3/job.c
+Index: cron/job.c
 ===================================================================
---- conv3.orig/job.c
-+++ conv3/job.c
+--- cron.orig/job.c
++++ cron/job.c
 @@ -45,7 +45,8 @@ job_add(e, u)
  		if (j->e == e && j->u == u) { return; }
  
@@ -104,10 +104,10 @@ Index: conv3/job.c
  	j->next = (job*) NULL;
  	j->e = e;
  	j->u = u;
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -479,7 +479,12 @@ log_it(username, xpid, event, detail)
  		     + strlen(event)
  		     + strlen(detail)
@@ -132,10 +132,10 @@ Index: conv3/misc.c
  
  	return dst;
  }
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -52,7 +52,7 @@ load_user(crontab_fd, pw, name)
  	user	*u;
  	entry	*e;
@@ -189,10 +189,10 @@ Index: conv3/user.c
  			break;
  		}
  	}
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -91,6 +91,7 @@ load_entry(file, error_func, pw, envp)
  	int	ch;
  	char	cmd[MAX_COMMAND];
@@ -294,10 +294,10 @@ Index: conv3/entry.c
  	free(e);
  	if (ecode != e_none && error_func)
  		(*error_func)(ecodes[(int)ecode]);
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -503,6 +503,10 @@ replace_cmd() {
  	time_t	now = time(NULL);
  	char	**envp = env_init();

@@ -6,6 +6,9 @@ This patch lets cron use the MAILFROM variable to set the sender as which it
 will send emails. MAILFROM has the same semantics as the same environment
 variable in cronie.
 
+Contributed by Georges Khaznadar <georgesk@debian.org> : a test in
+debian/tests/check_mailfrom_mailto
+
 Origin: https://github.com/cronie-crond/cronie/blob/master/src/do_command.c
 Bug-Debian: https://bugs.debian.org/898177
 Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/cron/+bug/1750051
@@ -16,11 +19,11 @@ Last-Update: 2021-02-16
  do_command.c | 45 ++++++++++++++++++++++++++-------------------
  3 files changed, 39 insertions(+), 26 deletions(-)
 
-diff --git a/cron.8 b/cron.8
-index cae80a3..582270f 100644
---- a/cron.8
-+++ b/cron.8
-@@ -123,7 +123,9 @@ then wakes up every minute, examining all stored crontabs, checking
+Index: cron/cron.8
+===================================================================
+--- cron.orig/cron.8
++++ cron/cron.8
+@@ -123,7 +123,9 @@ then wakes up every minute, examining al
  each command to see if it should be run in the current minute.  When
  executing commands, any output is mailed to the owner of the crontab
  (or to the user named in the MAILTO environment variable in the
@@ -31,11 +34,11 @@ index cae80a3..582270f 100644
  processes have their name coerced to uppercase, as will be seen in the
  syslog and ps output.
  .PP
-diff --git a/crontab.5 b/crontab.5
-index 70e411d..969370c 100644
---- a/crontab.5
-+++ b/crontab.5
-@@ -100,12 +100,16 @@ on these systems, USER will be set also.)
+Index: cron/crontab.5
+===================================================================
+--- cron.orig/crontab.5
++++ cron/crontab.5
+@@ -100,12 +100,16 @@ on these systems, USER will be set also.
  .PP
  In addition to LOGNAME, HOME, and SHELL,
  .IR cron (8)
@@ -58,10 +61,10 @@ index 70e411d..969370c 100644
  .PP
  On the Debian GNU/Linux system, cron supports the
  .B pam_env
-diff --git a/do_command.c b/do_command.c
-index 930e910..7a94f52 100644
---- a/do_command.c
-+++ b/do_command.c
+Index: cron/do_command.c
+===================================================================
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -52,6 +52,7 @@ static const struct pam_conv conv = {
  
  static void		child_process __P((entry *, user *)),
@@ -79,30 +82,19 @@ index 930e910..7a94f52 100644
  	int		children = 0;
  	pid_t		job_pid;
  #if defined(USE_PAM)
-@@ -152,21 +153,7 @@ child_process(e, u)
+@@ -150,8 +151,9 @@ child_process(e, u)
+ 
+ 	/* discover some useful and important environment settings
  	 */
- 	usernm = env_get("LOGNAME", e->envp);
- 	mailto = env_get("MAILTO", e->envp);
--
--	/* Check for arguments */
--	if (mailto) {
--		const char	*end;
--
--		/* These chars have to match those cron_popen()
--		 * uses to split the command string */
--		mailto += strspn(mailto, " \t\n");
--		end = mailto + strcspn(mailto, " \t\n");
--		if (*mailto == '-' || *end != '\0') {
--			printf("Bad Mailto karma.\n");
--			log_it("CRON",getpid(),"error","bad mailto");
--			mailto = NULL;
--		}
--	}
+-	usernm = env_get("LOGNAME", e->envp);
+-	mailto = env_get("MAILTO", e->envp);
++	usernm   = env_get("LOGNAME", e->envp);
++	mailto   = env_get("MAILTO", e->envp);
 +	mailfrom = env_get("MAILFROM", e->envp);
  
  #ifdef USE_SIGCHLD
  	/* our parent is watching for our death by catching SIGCHLD.  we
-@@ -512,8 +499,13 @@ child_process(e, u)
+@@ -503,8 +505,13 @@ child_process(e, u)
  	// get name of recipient.
  	if (mailto == NULL)
  		mailto = usernm;
@@ -118,7 +110,7 @@ index 930e910..7a94f52 100644
  
  	/* Don't send mail if MAILCMD is not available */
  	if (stat(MAILCMD, &mcsb) != 0) {
-@@ -543,7 +535,7 @@ child_process(e, u)
+@@ -534,7 +541,7 @@ child_process(e, u)
  		perror(MAILCMD);
  		(void) _exit(ERROR_EXIT);
  	}
@@ -127,13 +119,13 @@ index 930e910..7a94f52 100644
  	fprintf(mail, "To: %s\n", mailto);
  	fprintf(mail, "Subject: Cron <%s@%s> %s%s\n",
  			usernm,
-@@ -694,3 +686,18 @@ do_univ(u)
+@@ -685,3 +692,18 @@ do_univ(u)
  	(void) universe(U_ATT);
  #endif
  }
 +
 +static int safe_p(const char *usernm, const char *s) {
-+	static const char safe_delim[] = "@!:%-.,_+"; /* conservative! */
++	static const char safe_delim[] = "@!:%-.,_+=/"; /* conservative! */
 +	const char *t;
 +	int ch, first;
 +

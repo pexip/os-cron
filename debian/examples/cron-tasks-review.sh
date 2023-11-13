@@ -162,7 +162,7 @@ echo $EXTRA_OPTS | grep -q -- '-l' && use_lsb="yes"
 run_opts=""
 [ "$use_lsb" = "yes" ] &&  run_opts="--lsbsysinit"
 
-temp=`tempfile` || { echo "ERROR: Cannot create temporary file" >&2 ; exit 1; }
+temp=`mktemp` || { echo "ERROR: Cannot create temporary file" >&2 ; exit 1; }
 trap "rm -f $temp" 0 1 2 3 13 15
 
 # Now review the scripts, note that cron does not use run-parts to run these

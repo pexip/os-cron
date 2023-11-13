@@ -11,10 +11,10 @@ Contributed by Justin Pryzby <justinpryzby@users.sourceforge.net>.
 Bug-Debian: https://bugs.debian.org/155109
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -111,12 +111,21 @@ do_command(e, u)
  }
  
@@ -38,7 +38,7 @@ Index: conv3/do_command.c
  	register char	*input_data;
  	char		*usernm, *mailto;
  	int		children = 0;
-@@ -171,10 +180,14 @@ child_process(e, u)
+@@ -156,10 +165,14 @@ child_process(e, u)
  	(void) signal(SIGCLD, SIG_DFL);
  #endif /*BSD*/
  
@@ -55,7 +55,7 @@ Index: conv3/do_command.c
  	
  	/* since we are a forked process, we can diddle the command string
  	 * we were passed -- nobody else is going to use it again, right?
-@@ -264,20 +277,19 @@ child_process(e, u)
+@@ -249,20 +262,19 @@ child_process(e, u)
  		 * appropriate circumstances.
  		 */
  		close(stdin_pipe[WRITE_PIPE]);
@@ -79,7 +79,7 @@ Index: conv3/do_command.c
  
  		/* set our login universe.  Do this in the grandchild
  		 * so that the child can invoke /usr/lib/sendmail
-@@ -363,11 +375,10 @@ child_process(e, u)
+@@ -354,11 +366,10 @@ child_process(e, u)
  
  	Debug(DPROC, ("[%d] child continues, closing pipes\n", getpid()))
  
@@ -92,7 +92,7 @@ Index: conv3/do_command.c
  
  	/*
  	 * write, to the pipe connected to child's stdin, any input specified
-@@ -388,11 +399,6 @@ child_process(e, u)
+@@ -379,11 +390,6 @@ child_process(e, u)
  
  		Debug(DPROC, ("[%d] child2 sending data to grandchild\n", getpid()))
  
@@ -104,7 +104,7 @@ Index: conv3/do_command.c
  		/* translation:
  		 *	\% -> %
  		 *	%  -> \n
-@@ -440,183 +446,171 @@ child_process(e, u)
+@@ -431,183 +437,171 @@ child_process(e, u)
  	 * when the grandchild exits, we'll get EOF.
  	 */
  

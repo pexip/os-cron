@@ -10,10 +10,10 @@ Bug-Debian: https://bugs.debian.org/74762
 Bug-Debian: https://bugs.debian.org/77563
 Forwarded: no
 Last-Update: 2015-12-26
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -31,6 +31,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
  # include <time.h>
  #endif
@@ -48,10 +48,10 @@ Index: conv3/cron.c
  	for (u = db->head;  u != NULL;  u = u->next) {
  		for (e = u->crontab;  e != NULL;  e = e->next) {
  			if (e->flags & WHEN_REBOOT) {
-Index: conv3/pathnames.h
+Index: cron/pathnames.h
 ===================================================================
---- conv3.orig/pathnames.h
-+++ conv3/pathnames.h
+--- cron.orig/pathnames.h
++++ cron/pathnames.h
 @@ -79,3 +79,7 @@
  #ifndef _PATH_DEFPATH
  # define _PATH_DEFPATH "/usr/bin:/bin"

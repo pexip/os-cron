@@ -10,10 +10,10 @@ Bug-Debian: https://bugs.debian.org/68366
 Bug-Debian: https://bugs.debian.org/67586
 Forwarded: no
 Last-Update: 2016-01-07
-Index: conv3/Makefile
+Index: cron/Makefile
 ===================================================================
---- conv3.orig/Makefile
-+++ conv3/Makefile
+--- cron.orig/Makefile
++++ cron/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -32,10 +32,10 @@ Index: conv3/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -29,6 +29,18 @@ static char rcsid[] = "$Id: do_command.c
  #if defined(SYSLOG)
  # include <syslog.h>
@@ -65,7 +65,7 @@ Index: conv3/do_command.c
  
  	Debug(DPROC, ("[%d] child_process('%s')\n", getpid(), e->cmd))
  
-@@ -168,6 +183,19 @@ child_process(e, u)
+@@ -153,6 +168,19 @@ child_process(e, u)
  		*p = '\0';
  	}
  
@@ -85,7 +85,7 @@ Index: conv3/do_command.c
  	/* fork again, this time so we can exec the user's command.
  	 */
  	switch (fork()) {
-@@ -504,6 +532,11 @@ child_process(e, u)
+@@ -495,6 +523,11 @@ child_process(e, u)
  			Debug(DPROC, (", dumped core"))
  		Debug(DPROC, ("\n"))
  	}
@@ -97,10 +97,10 @@ Index: conv3/do_command.c
  }
  
  
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -116,6 +116,8 @@ changes introduced are:
  .IP \(em
  Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,

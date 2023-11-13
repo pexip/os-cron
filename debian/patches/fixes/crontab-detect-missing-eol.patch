@@ -9,10 +9,10 @@ the entire crontab (depending on the implementation).
 Bug-Debian: https://bugs.debian.org/79037
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -509,6 +509,7 @@ replace_cmd() {
  	char	n[MAX_FNAME], envstr[MAX_ENVSTR], tn[MAX_FNAME];
  	FILE	*tmp;

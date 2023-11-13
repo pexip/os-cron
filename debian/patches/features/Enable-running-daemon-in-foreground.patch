@@ -9,10 +9,10 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/108492
 Forwarded: no
 Last-Update: 2016-01-10
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -119,7 +119,7 @@ main(argc, argv)
  	if (0) {
  # endif
@@ -51,10 +51,10 @@ Index: conv3/cron.c
  		case 'l':
  			lsbsysinit_mode = 1;
  			break;
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -292,6 +292,7 @@ time_min virtualTime;
  time_min clockTime;
  static long GMToff;
@@ -63,10 +63,10 @@ Index: conv3/cron.h
  int	lsbsysinit_mode;
  
  char	cron_default_mail_charset[MAX_ENVSTR] = "";
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -23,6 +23,7 @@
  cron \- daemon to execute scheduled commands (Vixie Cron)
  .SH SYNOPSIS

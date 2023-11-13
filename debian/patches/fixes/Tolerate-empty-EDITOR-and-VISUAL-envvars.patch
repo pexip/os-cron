@@ -9,10 +9,10 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/148809
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -394,8 +394,8 @@ edit_cmd() {
  	}
  	mtime = statbuf.st_mtime;

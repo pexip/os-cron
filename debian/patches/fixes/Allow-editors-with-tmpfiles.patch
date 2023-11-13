@@ -11,10 +11,10 @@ Bug-Debian: https://bugs.debian.org/149908
 Bug-Debian: https://bugs.debian.org/413962
 Forwarded: no
 Last-Update: 2015-12-25
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -58,6 +58,7 @@ static char	*Options[] = { "???", "list"
  static	PID_T		Pid;
  static	char		*User, *RealUser;

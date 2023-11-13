@@ -16,10 +16,10 @@ Bug-Debian: https://bugs.debian.org/857662
 Bug-Debian: https://bugs.debian.org/924716
 Forwarded: no
 Last-Update: 2019-09-15
-Index: conv3/Makefile
+Index: cron/Makefile
 ===================================================================
---- conv3.orig/Makefile
-+++ conv3/Makefile
+--- cron.orig/Makefile
++++ cron/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -38,10 +38,10 @@ Index: conv3/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -40,6 +40,13 @@
  #include "config.h"
  #include "externs.h"
@@ -75,10 +75,10 @@ Index: conv3/cron.h
  		*find_user __P((cron_db *, const char *));
  
  entry		*load_entry __P((FILE *, void (*)(),
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -98,7 +98,7 @@ load_database(old_db)
  	new_db.head = new_db.tail = NULL;
  
@@ -98,10 +98,10 @@ Index: conv3/database.c
  	if (u != NULL) {
  		u->mtime = statbuf->st_mtime;
  		link_user(new_db, u);
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -42,6 +42,11 @@ static const struct pam_conv conv = {
  	}
  #endif
@@ -114,7 +114,7 @@ Index: conv3/do_command.c
  
  static void		child_process __P((entry *, user *)),
  			do_univ __P((user *));
-@@ -322,6 +327,24 @@ child_process(e, u)
+@@ -313,6 +318,24 @@ child_process(e, u)
  				_exit(OK_EXIT);
  			}
  # endif /*DEBUGGING*/
@@ -139,10 +139,10 @@ Index: conv3/do_command.c
  			execle(shell, shell, "-c", e->cmd, (char *)0, jobenv);
  			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
  			_exit(ERROR_EXIT);
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -25,6 +25,133 @@ static char rcsid[] = "$Id: user.c,v 2.8
  
  #include "cron.h"
@@ -341,10 +341,10 @@ Index: conv3/user.c
  	/* 
  	 * init environment.  this will be copied/augmented for each entry.
  	 */
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -118,6 +118,8 @@ Support for /etc/cron.{hourly,daily,week
  .IP \(em
  PAM support,

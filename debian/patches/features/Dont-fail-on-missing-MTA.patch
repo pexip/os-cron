@@ -15,10 +15,10 @@ output to it.
 Bug-Debian: https://bugs.debian.org/577133
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -23,6 +23,8 @@ static char rcsid[] = "$Id: do_command.c
  #include "cron.h"
  #include <signal.h>
@@ -28,7 +28,7 @@ Index: conv3/do_command.c
  #if defined(sequent)
  # include <sys/universe.h>
  #endif
-@@ -485,6 +487,7 @@ child_process(e, u)
+@@ -476,6 +478,7 @@ child_process(e, u)
  // status.
  
  	long pos;
@@ -36,7 +36,7 @@ Index: conv3/do_command.c
  
  	fseek(tmpout, 0, SEEK_END);
  	pos = ftell(tmpout);
-@@ -501,6 +504,17 @@ child_process(e, u)
+@@ -492,6 +495,17 @@ child_process(e, u)
  	else if (!*mailto)
                  goto mail_finished;
  

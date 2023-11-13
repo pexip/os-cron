@@ -16,10 +16,10 @@ Bug-Debian: https://bugs.debian.org/203737
 Bug-Debian: https://bugs.debian.org/511684
 Forwarded: no
 Last-Update: 2016-01-07
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -46,6 +46,31 @@ static const struct pam_conv conv = {
  static void		child_process __P((entry *, user *)),
  			do_univ __P((user *));
@@ -52,7 +52,7 @@ Index: conv3/do_command.c
  
  void
  do_command(e, u)
-@@ -286,8 +311,8 @@ child_process(e, u)
+@@ -277,8 +302,8 @@ child_process(e, u)
  		/* exec the command.
  		 */
  		{
@@ -63,7 +63,7 @@ Index: conv3/do_command.c
  # if DEBUGGING
  			if (DebugFlags & DTEST) {
  				fprintf(stderr,
-@@ -297,7 +322,7 @@ child_process(e, u)
+@@ -288,7 +313,7 @@ child_process(e, u)
  				_exit(OK_EXIT);
  			}
  # endif /*DEBUGGING*/
@@ -72,10 +72,10 @@ Index: conv3/do_command.c
  			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
  			_exit(ERROR_EXIT);
  		}
-Index: conv3/crontab.5
+Index: cron/crontab.5
 ===================================================================
---- conv3.orig/crontab.5
-+++ conv3/crontab.5
+--- cron.orig/crontab.5
++++ cron/crontab.5
 @@ -107,6 +107,20 @@ recipients by separating recipient users
  but empty (MAILTO=""), no mail will be sent.  Otherwise mail is sent to the
  owner of the crontab.

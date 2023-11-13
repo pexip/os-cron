@@ -19,10 +19,10 @@ Bug-Debian: https://bugs.debian.org/271747
 Bug-Debian: https://bugs.debian.org/318247
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -138,6 +138,12 @@
  
  typedef int time_min;
@@ -60,10 +60,10 @@ Index: conv3/cron.h
  extern	int	LineNumber;
  extern	time_t	StartTime;
  extern  time_min timeRunning;
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -131,6 +131,7 @@ child_process(e, u)
  	register char	*input_data;
  	char		*usernm, *mailto;
@@ -72,7 +72,7 @@ Index: conv3/do_command.c
  #if defined(USE_PAM)
  	int		retcode = 0;
  #endif
-@@ -243,7 +244,7 @@ child_process(e, u)
+@@ -228,7 +229,7 @@ child_process(e, u)
  
  	/* fork again, this time so we can exec the user's command.
  	 */
@@ -81,7 +81,7 @@ Index: conv3/do_command.c
  	case -1:
  		log_it("CRON",getpid(),"error","can't fork");
  		exit(ERROR_EXIT);
-@@ -257,14 +258,12 @@ child_process(e, u)
+@@ -242,14 +243,12 @@ child_process(e, u)
  		 * the actual user command shell was going to get and the
  		 * PID is part of the log message.
  		 */
@@ -98,7 +98,7 @@ Index: conv3/do_command.c
  		 */
  		log_close();
  
-@@ -366,6 +365,16 @@ child_process(e, u)
+@@ -357,6 +356,16 @@ child_process(e, u)
  		break;
  	default:
  		/* parent process */
@@ -115,7 +115,7 @@ Index: conv3/do_command.c
  		break;
  	}
  
-@@ -467,17 +476,19 @@ child_process(e, u)
+@@ -458,17 +467,19 @@ child_process(e, u)
  		Debug(DPROC, ("[%d] grandchild #%d finished, status=%04x\n",
  			getpid(), pid, WEXITSTATUS(waiter)))
  
@@ -146,7 +146,7 @@ Index: conv3/do_command.c
  		}
  	}
  
-@@ -625,6 +636,19 @@ child_process(e, u)
+@@ -616,6 +627,19 @@ child_process(e, u)
  mail_finished:
  	fclose(tmpout);
  
@@ -166,10 +166,10 @@ Index: conv3/do_command.c
  #if defined(USE_PAM)
  	pam_setcred(pamh, PAM_DELETE_CRED | PAM_SILENT);
  	retcode = pam_close_session(pamh, PAM_SILENT);
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -447,9 +447,9 @@ sighup_handler(int x) {
  
  
@@ -200,10 +200,10 @@ Index: conv3/cron.c
  #if DEBUGGING
  		case 'x':
  			if (!set_debug_flags(optarg))
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -25,6 +25,8 @@ cron \- daemon to execute scheduled comm
  cron
  .RB [ \-f ]

@@ -9,10 +9,10 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/64382
 Forwarded: no
 Last-Update: 2015-12-20
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -31,6 +31,18 @@ static char rcsid[] = "$Id: database.c,v
  
  #define TMAX(a,b) ((a)>(b)?(a):(b))

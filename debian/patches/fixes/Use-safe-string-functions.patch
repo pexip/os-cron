@@ -13,10 +13,10 @@ Bug-Debian: https://bugs.debian.org/62268
 Bug-Debian: https://bugs.debian.org/89040
 Forwarded: no
 Last-Update: 2015-12-20
-Index: conv3/compat.c
+Index: cron/compat.c
 ===================================================================
---- conv3.orig/compat.c
-+++ conv3/compat.c
+--- cron.orig/compat.c
++++ cron/compat.c
 @@ -76,7 +76,7 @@ strerror(error)
  		return sys_errlist[error];
  	}
@@ -47,10 +47,10 @@ Index: conv3/compat.c
  	return putenv(tmp);	/* intentionally orphan 'tmp' storage */
  }
  #endif
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -55,7 +55,7 @@ static char	*Options[] = { "???", "list"
  
  
@@ -164,10 +164,10 @@ Index: conv3/crontab.c
  	if (rename(tn, n)) {
  		fprintf(stderr, "%s: error renaming %s to %s\n",
  			ProgramName, tn, n);
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -66,8 +66,8 @@
  #define	OK_EXIT		0	/* exit() with this is considered 'normal' */
  #define	MAX_FNAME	100	/* max length of internally generated fn */
@@ -179,10 +179,10 @@ Index: conv3/cron.h
  #define	MAX_UNAME	20	/* max length of username, should be overkill */
  #define	ROOT_UID	0	/* don't change this, it really must be root */
  #define	ROOT_USER	"root"	/* ditto */
-Index: conv3/env.c
+Index: cron/env.c
 ===================================================================
---- conv3.orig/env.c
-+++ conv3/env.c
+--- cron.orig/env.c
++++ cron/env.c
 @@ -140,15 +140,17 @@ load_env(envstr, f)
  {
  	long	filepos;
@@ -212,10 +212,10 @@ Index: conv3/env.c
  	(void) sprintf(envstr, "%s=%s", name, val);
  	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
  	return (TRUE);
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
+--- cron.orig/do_command.c
++++ cron/do_command.c
 @@ -365,8 +365,8 @@ child_process(e, u)
  				auto char	hostname[MAXHOSTNAMELEN];
  
@@ -236,10 +236,10 @@ Index: conv3/do_command.c
  			"mailed %d byte%s of output but got status 0x%04x\n",
  					bytes, (bytes==1)?"":"s",
  					status);
-Index: conv3/entry.c
+Index: cron/entry.c
 ===================================================================
---- conv3.orig/entry.c
-+++ conv3/entry.c
+--- cron.orig/entry.c
++++ cron/entry.c
 @@ -257,7 +257,7 @@ load_entry(file, error_func, pw, envp)
  		goto eof;
  	}
@@ -285,10 +285,10 @@ Index: conv3/entry.c
  	if ((tenvp = env_set(e->envp, envstr))) {
  		e->envp = tenvp;
  	} else {
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -267,11 +267,11 @@ acquire_daemonlock(closeflag)
  		char	buf[MAX_TEMPSTR];
  		int	fd, otherpid;
@@ -371,10 +371,10 @@ Index: conv3/misc.c
  		       DowNames[tm->tm_wday],
  		       tm->tm_mday,
  		       MonthNames[tm->tm_mon],
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -125,7 +125,7 @@ load_database(old_db)
  			continue;
  

@@ -1,3 +1,251 @@
+cron (3.0pl1-162) unstable; urgency=medium
+
+  * moved "Breaks: systemd-cron(<<1.15.19-5~)" to the package
+    cron-daemon-common. Closes: #1031231
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 02 Mar 2023 08:33:55 +0100
+
+cron (3.0pl1-161) unstable; urgency=medium
+
+  * added "Breaks: systemd-cron(<<1.15.19-5~)"; Closes: #1031231
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 23 Feb 2023 12:10:17 +0100
+
+cron (3.0pl1-160) unstable; urgency=medium
+
+  * disregard /etc/cron.yearly in debian/tests/compare-with-old-cron-files
+  * defined a "-n" switch for crontab, which means "dry run". This allows
+    one to call `crontab -n foo` which will check the file foo for its
+    syntax and report something, without writing any crontab.
+    Closes: #979578, thanks to  積丹尼 Dan Jacobson
+  * defined a "-h" switch for crontab, which makes it display the help
+    information and quit. Closes: #946383, thanks to  積丹尼 Dan Jacobson
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 13 Feb 2023 13:46:47 +0100
+
+cron (3.0pl1-159) unstable; urgency=medium
+
+  * included 積丹尼 Dan Jacobson's nice example into crontab.5
+    Closes: #955452
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 13 Feb 2023 12:36:56 +0100
+
+cron (3.0pl1-158) unstable; urgency=medium
+
+  * applied Ville Skyttä's patch. Closes: #998399
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 13 Feb 2023 12:29:28 +0100
+
+cron (3.0pl1-157) unstable; urgency=medium
+
+  * create .placeholder in /etc/cron.yearly; Closes: #1015175
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 13 Feb 2023 11:52:13 +0100
+
+cron (3.0pl1-156) unstable; urgency=medium
+
+  * reverted the previous change (dependency on dpkg)
+  * in debian/crontab.postrm, lanch dpkg-statoverride --remove only when
+    dpkg-statoverride --list return some override; Closes: #1027476
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 11 Jan 2023 16:12:26 +0100
+
+cron (3.0pl1-155) unstable; urgency=medium
+
+  * added a dependency on dpkg. Closes: #1027476
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 09 Jan 2023 21:32:55 +0100
+
+cron (3.0pl1-154) unstable; urgency=medium
+
+  * fixed a date discrepancy occurring in d/cron.NEWS, about
+    Christian Kastner's changes which touched version 3.0pl1-119,
+    and another one in d/NEWS which touched version 3.0pl1-134.
+  * merged file debian/NEWS into debian/cron.NEWS.
+  * signaled some lintian overrides for package cron-daemon-common: hidden
+    files .placeholder should not raise warnings about
+    missing-systemd-timer-for-cron-script
+  * fixed spelling in debian/changelog, with US/English dictionary.
+  * used Reuben Thomas' patch to fix crontab(5); Thanks! Closes: #980374
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 08 Dec 2022 17:30:31 +0100
+
+cron (3.0pl1-153) unstable; urgency=medium
+
+  * patched crontab.5, in order to provide an example of a workaround
+    for people who would like to address the multiple timezone issue.
+    Closes: #166533
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 28 Nov 2022 16:31:51 +0100
+
+cron (3.0pl1-152) unstable; urgency=medium
+
+  * new patch debian/patches/fixes/Check_for_timezone_changes.patch:
+    check the timezone unconditionally. Closes: #1019716
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 27 Nov 2022 20:41:35 +0100
+
+cron (3.0pl1-151) unstable; urgency=medium
+
+  * bumped a breaks+replace clause, now against cronie (<< 1.6.1-5)
+    Closes: #1023325
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 13 Nov 2022 17:26:56 +0100
+
+cron (3.0pl1-150) unstable; urgency=medium
+
+  [ Georges Khaznadar ]
+  * documented a little more debian/patches/features/protect-list.patch
+  * included changes made by Janitor:
+  +   Trim trailing whitespace.
+  +   Update standards version to 4.6.1
+
+  [ Johannes Schauer Marin Rodrigues ]
+  * Remove dependency on lsb-base (Closes: #1020603)
+
+  [ Debian Janitor ]
+  * Trim trailing whitespace.
+  * Update standards version to 4.6.1, no changes needed.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 02 Oct 2022 18:54:39 +0200
+
+cron (3.0pl1-149) unstable; urgency=medium
+
+  * manage characters \r and \b in a special way, since one could use
+    them to obfuscate a crontab. This patch closes: #585552.
+    Now one can insert characters  \r and \b into a crontab's shell command,
+    `crontab -l` will show those characters in escaped format; so the
+    obfuscation is more difficult to create.
+  * introduced the debian patch d/patches/features/protect-list.patch and
+    the test d/tests/check-listings-protection to create the feature and
+    check that it works as expected
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 25 Jul 2022 15:43:43 +0200
+
+cron (3.0pl1-148) unstable; urgency=medium
+
+  * moved the dependency on adduser from package cron to package
+    cron-daemon-common. Closes: #1013916; thanks, Mark Hindley!
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 18 Jul 2022 12:52:27 +0200
+
+cron (3.0pl1-147) unstable; urgency=medium
+
+  * added a test for d/fixes/Pam-group-after-fork.patch
+  * merged Jorge Gualtieri's pull request, so this test is working.
+  * added a text utility to display text surrounded by a frame
+  * grouped the two tests which are waiting for a crontab job in the
+    same file, so there is one single delay
+  * modified dependencies for the tests
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 11 Jul 2022 10:33:30 +0200
+
+cron (3.0pl1-145) unstable; urgency=medium
+
+  * included Jorge Rocha Gualtieri's patch, and shifted the change
+    by many lines (closes: #983817)
+  * moved part of debian/cron.postrm to debian/cron-daemon-common.postrm,
+    added a condition in debian/cron-daemon-common.postrm: systemd-cron
+    must not be installed, to let it remove /etc/cron.allow and
+    /etc/cron.deny (closes: #773095)
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 04 Jul 2022 09:37:15 +0200
+
+cron (3.0pl1-144) unstable; urgency=medium
+
+  * added versioned Conflicts/Replaces clauses for bcron and systemd-cron
+    Closes: #1012596
+  * added Conflicts/Replaces clauses between cron and other packages providing
+    cron-daemon.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 13 Jun 2022 18:33:28 +0200
+
+cron (3.0pl1-143) unstable; urgency=medium
+
+  * modified the test "do_not_modify_previous_crontabs" in order to
+    prevent its output of the sentence "debconf: delaying package
+    configuration, since apt-utils is not installed" to stderr.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 09 Jun 2022 14:51:19 +0200
+
+cron (3.0pl1-142) unstable; urgency=medium
+
+  * added a test to check that older configuration files are preserved
+    when cron-daemon-common is installed. This test is successfully run by
+    Salsa'CI.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 08 Jun 2022 18:44:58 +0200
+
+cron (3.0pl1-141) experimental; urgency=medium
+
+  * removed the patch fixes/Validate-MAILTO-input.patch, and
+    refreshed other patches to fit the change. All the additions made
+    by the file fixes/Validate-MAILTO-input.patch were undone by the
+    other patch features/Add-MAILFROM-environment-variable.patch, making
+    it completely useless. Taken in account the environment variable
+    MAILFROM again, in the patch
+    features/Add-MAILFROM-environment-variable.patch
+  * tests added:
+    - correctness of the header added to new crontabs (checks the patch
+      features/Add-helpful-header-to-new-crontab.patch) in file
+      d/tests/check_significant_header
+    - debian/tests/check_mailfrom_mailto to check the patch
+      features/Add-MAILFROM-environment-variable.patch
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 02 Jun 2022 19:08:39 +0200
+
+cron (3.0pl1-140) experimental; urgency=medium
+
+  * Created an additional binary package: cron-daemon-common; the new
+    package is there to separate the installation of /etc/crontab and
+    /etc/cron.* stuff, thus making easier to choose between cron and
+    cronie packages, both providing (hopefully) the same features.
+  * Added a few tests for autopkgtest. So far, tested features are:
+    - installing the new packages "cron-daemon-common" and "cron"
+      provide identical contents under /etc/cron.*, then installing
+      the "cron" package from debian/bullseye.
+    - when "cron-daemon-common" and "cron" are installed the only
+      differences in files /etc/crontab are brackets instead of
+      parentheses (which prevent launching a subshell)
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 15 May 2022 21:41:22 +0200
+
+cron (3.0pl1-139) unstable; urgency=medium
+
+  * applied simplifications proposed by Debian Janitor:
+    - removed the dependency on debian-utils,
+    - removed the version constraints for dependencies lsb-base, libpam-runtime
+    - removed the version constraint for the suggestion anacron
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 15 May 2022 20:17:22 +0200
+
+cron (3.0pl1-138) unstable; urgency=medium
+
+  * Added myself as an Uploader
+  * Add bitstring.h as a dependency to CRON_OBJ and CRONTAB_OBJ
+  * applied changes proposed by debian Janitor
+    (https://salsa.debian.org/debian/cron/-/merge_requests/2/diffs)
+    - fixed a line length in d/changelog
+    - bumped Standards-Version: 4.6.0, debhelper-compat (= 13)
+    - erased debian/cron.prerm, which contained nothing useful.
+  * replaced a sequence of spaces by a tab in line 18 of debian/crontab.main,
+    so line 18 has the same syntax as following lines of the same file.
+    Closes: #930765
+  * added the command `dpkg-statoverride --remove /usr/bin/crontab`, to
+    be called when the package is purged. Closes: #984586
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 08 May 2022 15:14:55 +0200
+
+cron (3.0pl1-137.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * authorized characters like "=", "/" in email addresses.
+    the modified file is
+    debian/patches/features/Add-MAILFROM-environment-variable.patch
+    Closes: #990026
+
+ -- Georges Khaznadar <georgesk@debian.org>  Tue, 13 Jul 2021 11:04:41 +0200
+
 cron (3.0pl1-137pexip3) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion
@@ -90,7 +338,7 @@ cron (3.0pl1-133) unstable; urgency=medium
     calloc() could crash the daemon, which could be triggered by a very
     large crontab created by a user.
   * Enforce maximum crontab line count of 1000 to prevent a malicious user
-    from creating an excessivly large crontab. The daemon will log a warning
+    from creating an excessively large crontab. The daemon will log a warning
     for existing files, and crontab(1) will refuse to create new ones.
   * Add d/NEWS altering to the new 1000 lines limit.
   * Move /var/run/crond.reboot to /run/crond.reboot.
@@ -154,7 +402,7 @@ cron (3.0pl1-131) unstable; urgency=medium
       Examples are no longer compressed in compatibility level 12
   * d/copyright:
     - Switch URL to official MRCF 1.0 policy
-    - Ustream-Contact -> Upstream-Contact
+    - Upstream-Contact -> Upstream-Contact
   * Remove ancient cruft from maintainer scripts
     This cruft dealt with conffile tasks from before oldoldstable. As we don't
     provide a direct upgrade path from older releases, this is just maintenance
@@ -174,7 +422,7 @@ cron (3.0pl1-130) unstable; urgency=medium
     (Closes: 892720, 892721, 892724)
   * debian/cron.service:
       - Add dependency on nss-user-lookup.target in the definition which
-        properly fixes the issues when cron is started before centralised user
+        properly fixes the issues when cron is started before centralized user
         repositories are available (e.g. LDAP or Active Directory). This
         should avoid errors in syslog similar to the following:
         "crond[PID]: (CRON) bad username (/etc/cron.d/JOBNAME)"
@@ -403,12 +651,12 @@ cron (3.0pl1-121) unstable; urgency=low
 cron (3.0pl1-120) unstable; urgency=low
 
   * do_command.c, cron.h, cron.8:
-    - Change the behaviour when logging the information of the child processes.
+    - Change the behavior when logging the information of the child processes.
       A new loglevel (8) is introduced and documented in cron.8. The previous
-      log format is kept unless the sysadmin choses to select this new option.
+      log format is kept unless the sysadmin chooses to select this new option.
       (Closes: #637295)
   * debian/examples/cron-stats.pl:
-    - Adjust the script with the changes introduced in the logging behaviour.
+    - Adjust the script with the changes introduced in the logging behavior.
   * cron.8: Fix minor formatting errors
   * debian/cron.bug-script:
     - Report properly on the EDITOR variable. Thanks to Jan Braun for the
@@ -419,7 +667,7 @@ cron (3.0pl1-120) unstable; urgency=low
   * debian/changelog: Typo fixes and missing information
   * debian/control:
     - Update package description, removing the "backup of key system files" as
-      a feature. The last of these responsibilities were transffered in -117.
+      a feature. The last of these responsibilities were transferred in -117.
   * crontab.5:
     - Document limitations of the periods that can be defined in crontab syntax
       and provide workarounds (Closes: #640086)
@@ -446,7 +694,7 @@ cron (3.0pl1-119) unstable; urgency=low
   [ Javier Fernandez-Sanguino ]
   * debian/NEWS:
     - Remove the entry introduced in the previous version until an agreement is
-      reached on the desired behaviour (Reopens: #608774)
+      reached on the desired behavior (Reopens: #608774)
   * debian/standard.daily:
     - Work properly if mount points have a space (Closes: #633972)
     - Sanity check mount point value before generating an error
@@ -492,7 +740,7 @@ cron (3.0pl1-118) unstable; urgency=low
 
   [ Javier Fernandez-Sanguino]
   * debian/NEWS
-    - Document the new behaviour of cron regarding logging of non-zero
+    - Document the new behavior of cron regarding logging of non-zero
       exit status cronjobs (Closes: #608874)
 
  -- Christian Kastner <debian@kvr.at>  Tue, 31 May 2011 14:50:34 +0200
@@ -622,19 +870,19 @@ cron (3.0pl1-115) unstable; urgency=high
 cron (3.0pl1-114) unstable; urgency=low
 
   * Cleanup of the package in preparation of the next Debian release.
-     - Notice that only one change introduces new behaviour (debian/cron.pam),
+     - Notice that only one change introduces new behavior (debian/cron.pam),
        the other changes are just documentation fixes or cleanups to the
        packaging.
   * debian/cron.pam:
     - In addition to the reading /etc/security/pam_env.conf and
       /etc/environment (obsolete config file) previous default,
       cron will now also read /etc/default/locale in order to setup
-      the proper localisation environment for tasks.
+      the proper localization environment for tasks.
   [ Documentation fixes ]
   * debian/cron.{default,init}, cron.8, crontab.5:
     - Updated documentation (comments in scripts and manpages) regarding the
       reading and setting of locale information for the cron daemon and for
-      cron tasks to document the new behaviour due to the above change.
+      cron tasks to document the new behavior due to the above change.
   * debian/{preinst,postinst,postrm}:
     - Since /etc/cron.monthly/standard does not provide any worthwhile task
       anymore, remove obsolete /etc/cron.monthly/standard after upgrading
@@ -678,8 +926,8 @@ cron (3.0pl1-112) unstable; urgency=low
   [ Christian Kastner ]
   * do_command.c:
     - Don't send mail when a job exits non-zero, only send mail if the job sent
-      output to stderr. This behaviour was introduced erroneously; while it
-      does have merit, it is completely against standard cron behaviour.
+      output to stderr. This behavior was introduced erroneously; while it
+      does have merit, it is completely against standard cron behavior.
       Closes: #581612
   * debian/compat:
     - Bumped debhelper compatibility to 7
@@ -756,7 +1004,7 @@ cron (3.0pl1-110) unstable; urgency=medium
   * database.c
      - Recover from broken symlinks in /etc/cron.d/ (Closes: #433609)
      - Don't report wrong file owner in /etc/cron.d/ as wrong symlink owner
-     - Check the permissions of symlink targets (writeable only by root)
+     - Check the permissions of symlink targets (writable only by root)
   * do_command.c
      - Don't let long-running commands time out certain MTAs. Patch provided by
        Justin Pryzby, based on an analysis by Alexis Huxley (thanks!). Debian's
@@ -782,7 +1030,7 @@ cron (3.0pl1-110) unstable; urgency=medium
        number of issues, especially with otherwise trivial matters such as
        whitespace. Closes: #437180
   * cron.8
-     - Document symlink behaviour.
+     - Document symlink behavior.
   * crontab.1
      - Document the new EOF handling described above.
   * crontab.5
@@ -810,13 +1058,13 @@ cron (3.0pl1-109) unstable; urgency=medium
        skip cron jobs when there is a savings time change.
        Closes: #217836, #458123, #474157, LP: #36690
   * crontab.c:
-     - Revert the behaviour  that prevented 'alias crontab="crontab -i"' from
+     - Revert the behavior  that prevented 'alias crontab="crontab -i"' from
        working. Now the -i flag is allowed regardless of other command line
        switches.  (Closes: #513379)
      - Be more verbose in the example provided for first-time users than run
        'crontab -e'
      - Check if the crontab exists before attempting its removal and before
-       prompting the user (whe using -i)
+       prompting the user (when using -i)
      - When prompting, tell the user which chars are expected
   * crontab.1:
      - Change usage to match crontab's output
@@ -934,7 +1182,7 @@ cron (3.0pl1-106) unstable; urgency=high
 cron (3.0pl1-105) unstable; urgency=low
 
   * Non-maintainer upload with permission.
-  * Fixes an uninitialised data problem in the SE Linux code, also fixes a
+  * Fixes an uninitialized data problem in the SE Linux code, also fixes a
     similar compile warning in code which is not related to SE Linux which
     isn't a bug (to avoid confusion).
     Closes: #472938
@@ -999,7 +1247,7 @@ cron (3.0pl1-101) unstable; urgency=low
   * crontab.c:
     - Add an option to ask for confirmation when a crontab is to be removed,
       based on Fedora's patch for this same request. Users wanting this
-      behaviour have to alias cron (just as rm is aliased to 'rm -i')
+      behavior have to alias cron (just as rm is aliased to 'rm -i')
       (Closes: #117758, #289636, #324103, #414048)
     - Print the location of CRONDIR when printing files on the crontab dir so
       that the error messages have the absolute location of the files they
@@ -1044,9 +1292,9 @@ cron (3.0pl1-98) unstable; urgency=low
 
 cron (3.0pl1-97) unstable; urgency=high
 
-  * Fix the behaviour of crontab so that in systems that do *not* have
+  * Fix the behavior of crontab so that in systems that do *not* have
     a cron.allow file users will be allowed to use crontab, change
-    the behaviour of the previous version because it was contrary
+    the behavior of the previous version because it was contrary
     to the manpage (now a user that is in *both* cron.deny and
     cron.allow will be allowed access) (Closes: #383741)
 
@@ -1067,7 +1315,7 @@ cron (3.0pl1-96) unstable; urgency=low
     access)
   * Add two example scripts:
      - stats-cron.pl: A script written by myself that can be used to audit
-       the behaviour of cron and benefits from the new cron logging (-L 2)
+       the behavior of cron and benefits from the new cron logging (-L 2)
        option to log the *end* of a cronjob.
      - crontab2english.pl: A script written by Sean M. Burke that translates
        the crontab notation to natural language.
@@ -1092,7 +1340,7 @@ cron (3.0pl1-95) unstable; urgency=low
     default to US ASCII (Closes: #338051)
     - There is no need to define a CHARSET variable now with the above
     patch (Closes: #309150)
-  * Support kfreebsd-amd64 by modifying the Build-Depends for SElinux
+  * Support kfreebsd-amd64 by modifying the Build-Depends for SELinux
     (Closes: #361458)
   * Fix typos in the crontab.1 manpage spotted by Jonas Koelker
     (Closes: #369153)
@@ -1114,7 +1362,7 @@ cron (3.0pl1-94) unstable; urgency=low
 cron (3.0pl1-93) unstable; urgency=low
 
   * Include patch from Ubuntu that incorporates LSB functions to the init.
-    This should help have Ubuntu synchronise their changes easier.
+    This should help have Ubuntu synchronize their changes easier.
   * Fix FTBFS on GNU/kFreeBSD with patch from Aurelien Jarno (Closes: #338246)
   * Add brackets to the initscript for bash completion (Closes: #350605)
 
@@ -1123,7 +1371,7 @@ cron (3.0pl1-93) unstable; urgency=low
 
 cron (3.0pl1-92) unstable; urgency=low
 
-  * Don't use SElinux on GNU/kFreeBSD, as it is Linux-specific, patch
+  * Don't use SELinux on GNU/kFreeBSD, as it is Linux-specific, patch
     from Aurelien Jarno (Closes: #325404)
   * Added LSB formatted dependency info in init.d script (Closes: #335305)
 
@@ -1146,7 +1394,7 @@ cron (3.0pl1-90) unstable; urgency=low
 
 cron (3.0pl1-89) unstable; urgency=low
 
-  * Fix bashishm in cron.daily script (Closes: #323983)
+  * Fix bashism in cron.daily script (Closes: #323983)
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Sun, 21 Aug 2005 00:12:26 +0200
 
@@ -1156,7 +1404,7 @@ cron (3.0pl1-88) unstable; urgency=low
     "Let's clean up the bug list" release
   * Added a debian/TODO file with some tasks not done in this upload.
   * Use patch provided by Marc Dequenes to fix FTBFS on Hurd
-    (due to the use of selinux) (Closes: #279429)
+    (due to the use of SELinux) (Closes: #279429)
   * Enable pam_limits.so in the default configuration (Closes: #300725)
   * Fix standard.daily so it can cope with mount points with spaces
     (Closes: #198211)
@@ -1257,7 +1505,7 @@ cron (3.0pl1-80) unstable; urgency=low
 
 cron (3.0pl1-79) unstable; urgency=low
 
-  * Don't exit postinst when user is unkown (closes: #208432)
+  * Don't exit postinst when user is unknown (closes: #208432)
   * Remove spurious debug messages (closes: #211117)
 
  -- Steve Greenland <stevegr@debian.org>  Tue, 16 Sep 2003 08:26:17 -0500
@@ -1303,7 +1551,7 @@ cron (3.0pl1-75) unstable; urgency=low
 
 cron (3.0pl1-74) unstable; urgency=low
 
-  * Split out the checksecurity script et. al. to seperate package
+  * Split out the checksecurity script et. al. to separate package
     'checksecurity'
   * Detect missing or stupid stepsize (e.g. */ or 7-9/0) (closes: #183650)
   * Allow for crontab editors that don't write to the same file. Finally.
@@ -1573,7 +1821,7 @@ cron (3.0pl1-52) unstable; urgency=high
 cron (3.0pl1-51) unstable; urgency=low
 
   * Changed default of "crontab -l" to NOT list the extra header lines. May
-  obtain original behaviour by setting "CRONTAB_NOHEADER=N".
+  obtain original behavior by setting "CRONTAB_NOHEADER=N".
   * Fixed comment in misc.c that accidentally cause the SIGPIPE handler to
   be reset more often than necessary.
   * Don't checksecurity on ntfs file systems (closes:#33079)
@@ -1659,7 +1907,7 @@ cron (3.0pl1-43) unstable; urgency=medium
     (closes: Bug#15985)
   * When USE_SIGCHLD is defined, before running user process, set handling
     for SIGCHLD to SIG_DFL, not SIG_IGN. Despite documentation that the
-    default for SIGCHLD is ignore, the behaviour is different.
+    default for SIGCHLD is ignore, the behavior is different.
     (closes:Bug#17564,Bug#9075,Bug#16436,Bug#17814)
   * Moved allow and deny files from /var/spool/cron to /etc/cron.{allow,deny}
     (closes:Bug#14970)

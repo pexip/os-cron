@@ -12,10 +12,10 @@ Bug-Debian: https://bugs.debian.org/36338
 Bug-Debian: https://bugs.debian.org/146224
 Forwarded: no
 Last-Update: 2016-01-07
-Index: conv3/config.h
+Index: cron/config.h
 ===================================================================
---- conv3.orig/config.h
-+++ conv3/config.h
+--- cron.orig/config.h
++++ cron/config.h
 @@ -42,11 +42,16 @@
  			 */
  

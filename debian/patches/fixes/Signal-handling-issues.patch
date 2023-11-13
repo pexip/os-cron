@@ -10,10 +10,10 @@ a larger fix, so it has been split out.
 Bug-Debian: https://bugs.debian.org/155109
 Forwarded: no
 Last-Update: 2015-12-22
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -256,6 +256,7 @@ cron_sleep() {
  #ifdef USE_SIGCHLD
  static void
@@ -54,10 +54,10 @@ Index: conv3/cron.c
  }
  
  
-Index: conv3/popen.c
+Index: cron/popen.c
 ===================================================================
---- conv3.orig/popen.c
-+++ conv3/popen.c
+--- cron.orig/popen.c
++++ cron/popen.c
 @@ -180,7 +180,7 @@ cron_pclose(iop)
  	FILE *iop;
  {

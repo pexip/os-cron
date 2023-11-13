@@ -4,8 +4,8 @@ cron for DEBIAN
 This is the Debian GNU/Linux prepackaged and heavily modified version
 of Paul Vixie's cron subsystem.
 
-Debian's cron development is being done on Alioth:
-http://anonscm.debian.org/gitweb/?p=pkg-cron/cron.git
+Debian's cron development is being done on Salsa:
+https://salsa.debian.org/debian/cron
 
 This package was put together by Ian Jackson <iwj10@cus.cam.ac.uk>,
 from the standard sources to 3.0pl1, as posted to comp.sources.unix.
@@ -34,8 +34,9 @@ allow file:    /etc/cron.allow
 deny file:     /etc/cron.deny
 
 This package is now maintained by Javier Fernández-Sanguino Peña
-<jfs@debian.org> and Christian Kastner <ckk@debian.org>
+<jfs@debian.org>.
 
-Historical note: The old subversion repository from before the
-migration to git can be found here:
- http://svn.debian.org/wsvn/pkg-cron
+There have been many contributors over the years to the Debian
+version of cron but most noteworthy is the work done by Steve Greenland from 
+1996 to 2005 and Christian Kastner from 2010 to 2021.
+

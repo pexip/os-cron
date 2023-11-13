@@ -7,10 +7,10 @@ User pathnames and commands specific to Debian.
 Bug-Debian: https://bugs.debian.org/482284
 Forwarded: not-needed
 Last-Update: 2016-01-15
-Index: conv3/pathnames.h
+Index: cron/pathnames.h
 ===================================================================
---- conv3.orig/pathnames.h
-+++ conv3/pathnames.h
+--- cron.orig/pathnames.h
++++ cron/pathnames.h
 @@ -28,7 +28,7 @@
  			 * to; SPOOL_DIR, ALLOW_FILE, DENY_FILE, and LOG_FILE
  			 * are all relative to this directory.
@@ -62,10 +62,10 @@ Index: conv3/pathnames.h
  
  #ifndef _PATH_BSHELL
  # define _PATH_BSHELL "/bin/sh"
-Index: conv3/misc.c
+Index: cron/misc.c
 ===================================================================
---- conv3.orig/misc.c
-+++ conv3/misc.c
+--- cron.orig/misc.c
++++ cron/misc.c
 @@ -238,7 +238,7 @@ set_cron_cwd()
  }
  
@@ -75,10 +75,10 @@ Index: conv3/misc.c
   *	another daemon is already running, which we detect here.
   *
   * note: main() calls us twice; once before forking, once after.
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -30,7 +30,7 @@ runlevels.
  .SH NOTES
  .PP
@@ -88,10 +88,10 @@ Index: conv3/cron.8
  files (which are named after accounts in
  /etc/passwd); crontabs found are loaded into memory.  Note that
  crontabs in this directory should not be accessed directly -
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -35,14 +35,14 @@ these are files in /var/spool/cron/cront
  they are not intended to be edited directly.
  .PP

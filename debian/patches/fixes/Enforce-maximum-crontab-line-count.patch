@@ -20,10 +20,10 @@ already kept in check.
 
 Forwarded: no
 Last-Update: 2019-03-23
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -68,6 +68,7 @@
  #define	MAX_COMMAND	1000	/* max length of internally generated cmd */
  #define	MAX_TEMPSTR	1000	/* max length of envvar=value\0 strings */
@@ -49,10 +49,10 @@ Index: conv3/cron.h
  #define	MkLower(ch)	(isupper(ch) ? tolower(ch) : ch)
  #define	MkUpper(ch)	(islower(ch) ? toupper(ch) : ch)
  #define	Set_LineNum(ln)	{Debug(DPARS|DEXT,("linenum=%d\n",ln)); \
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -130,7 +130,19 @@ load_user(crontab_fd, pw, name)
  			}
  			break;
@@ -74,10 +74,10 @@ Index: conv3/user.c
  
   done:
  	env_free(envp);
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -45,9 +45,6 @@ static char rcsid[] = "$Id: crontab.c,v
  #endif
  

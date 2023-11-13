@@ -11,10 +11,10 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -292,6 +292,8 @@ list_cmd() {
  	char	n[MAX_FNAME];
  	FILE	*f;
@@ -58,10 +58,10 @@ Index: conv3/crontab.c
  	while (EOF != (ch = get_char(f)))
  		putchar(ch);
  	fclose(f);
-Index: conv3/crontab.1
+Index: cron/crontab.1
 ===================================================================
---- conv3.orig/crontab.1
-+++ conv3/crontab.1
+--- cron.orig/crontab.1
++++ cron/crontab.1
 @@ -82,7 +82,10 @@ named file or standard input if the pseu
  .PP
  The

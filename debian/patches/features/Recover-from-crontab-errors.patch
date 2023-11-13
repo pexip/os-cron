@@ -18,10 +18,10 @@ Bug-Debian: https://bugs.debian.org/627859
 Bug-Debian: https://bugs.debian.org/809167
 Forwarded: no
 Last-Update: 2019-03-23
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -27,6 +27,7 @@ static char rcsid[] = "$Id: database.c,v
  #include <fcntl.h>
  #include <sys/stat.h>

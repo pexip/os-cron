@@ -15,10 +15,10 @@ slightly extended.
 Bug-Debian: https://bugs.debian.org/378153
 Forwarded: no
 Last-Update: 2015-12-20
-Index: conv3/user.c
+Index: cron/user.c
 ===================================================================
---- conv3.orig/user.c
-+++ conv3/user.c
+--- cron.orig/user.c
++++ cron/user.c
 @@ -99,7 +99,10 @@ load_user(crontab_fd, pw, name)
  			 */
  			if (envstr[0] != '\0') {

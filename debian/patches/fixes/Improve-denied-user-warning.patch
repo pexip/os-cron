@@ -10,10 +10,10 @@ Contributed by Javier Fernández-Sanguino Peña <jfs@debian.org>.
 Bug-Debian: https://bugs.debian.org/505288
 Forwarded: no
 Last-Update: 2016-01-15
-Index: conv3/crontab.c
+Index: cron/crontab.c
 ===================================================================
---- conv3.orig/crontab.c
-+++ conv3/crontab.c
+--- cron.orig/crontab.c
++++ cron/crontab.c
 @@ -110,11 +110,19 @@ main(argc, argv)
  	set_cron_uid();
  	set_cron_cwd();

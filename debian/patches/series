@@ -5,7 +5,6 @@ fixes/Memory-allocation-issues.patch
 fixes/Use-safe-string-functions.patch
 fixes/Entry-symbolic-name-fixes.patch
 fixes/Limit-number-of-command-arguments.patch
-fixes/Validate-MAILTO-input.patch
 fixes/Manpage-corrections-and-improvements.patch
 fixes/cron-report-missing-newline-before-EOF.patch
 fixes/crontab-entry-parsing-fixes.patch
@@ -42,6 +41,7 @@ fixes/Use-basename-for-syslog-tag.patch
 fixes/Improve-denied-user-warning.patch
 fixes/Permit-user-to-use--u-option-on-self.patch
 fixes/crontab-wo-arguments-reads-from-stdin.patch
+fixes/Pam-group-after-fork.patch
 features/Debian-build-process-customizations.patch
 features/Debian-manpage-and-doc-updates.patch
 features/Debian-paths-and-commands.patch
@@ -68,3 +68,9 @@ features/Selective-logging.patch
 features/Check-orphaned-crontabs-for-adoption.patch
 features/Add-option-to-include-FQDN-in-email.patch
 features/Add-MAILFROM-environment-variable.patch
+fixes/Missing_bistring_h.patch
+features/protect-list.patch
+fixes/Check_for_timezone_changes.patch
+features/No-multiple-timezones.patch
+fixes/crontab_5_manpage.patch
+features/dry-run.patch

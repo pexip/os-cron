@@ -8,11 +8,11 @@ in the subject when sending mails.
 Bug-Debian: https://bugs.debian.org/570423
 Forwarded: no
 Last-Update: 2015-01-16
-Index: conv3/do_command.c
+Index: cron/do_command.c
 ===================================================================
---- conv3.orig/do_command.c
-+++ conv3/do_command.c
-@@ -546,7 +546,8 @@ child_process(e, u)
+--- cron.orig/do_command.c
++++ cron/do_command.c
+@@ -537,7 +537,8 @@ child_process(e, u)
  	fprintf(mail, "From: root (Cron Daemon)\n");
  	fprintf(mail, "To: %s\n", mailto);
  	fprintf(mail, "Subject: Cron <%s@%s> %s%s\n",
@@ -22,10 +22,10 @@ Index: conv3/do_command.c
  			e->cmd, status?" (failed)":"");
  # if defined(MAIL_DATE)
  	fprintf(mail, "Date: %s\n",
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -448,9 +448,9 @@ sighup_handler(int x) {
  
  
@@ -56,10 +56,10 @@ Index: conv3/cron.c
  #if DEBUGGING
  		case 'x':
  			if (!set_debug_flags(optarg))
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -308,6 +308,7 @@ static long GMToff;
  int	stay_foreground;
  int	lsbsysinit_mode;
@@ -76,10 +76,10 @@ Index: conv3/cron.h
  extern	int	LineNumber;
  extern	time_t	StartTime;
  extern  time_min timeRunning;
-Index: conv3/cron.8
+Index: cron/cron.8
 ===================================================================
---- conv3.orig/cron.8
-+++ conv3/cron.8
+--- cron.orig/cron.8
++++ cron/cron.8
 @@ -41,6 +41,10 @@ Enable LSB compliant names for /etc/cron
  not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
  /etc/cron.weekly or /etc/cron.monthly.

@@ -12,10 +12,10 @@ Bug-Debian: https://bugs.debian.org/634926
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/27520
 Origin: https://git.fedorahosted.org/cgit/cronie.git/commit/?id=8b407876f276f96914111bd9954f21f627db7b11
 Last-Update: 2016-01-15
-Index: conv3/cron.c
+Index: cron/cron.c
 ===================================================================
---- conv3.orig/cron.c
-+++ conv3/cron.c
+--- cron.orig/cron.c
++++ cron/cron.c
 @@ -171,6 +171,7 @@ main(argc, argv)
  		} while (clockTime == timeRunning);
  		timeRunning = clockTime;
@@ -24,10 +24,10 @@ Index: conv3/cron.c
  		load_database(&database);
  
  		/*
-Index: conv3/cron.h
+Index: cron/cron.h
 ===================================================================
---- conv3.orig/cron.h
-+++ conv3/cron.h
+--- cron.orig/cron.h
++++ cron/cron.h
 @@ -216,6 +216,13 @@ typedef	struct _cron_db {
  	time_t		sysd_mtime;     /* last modtime on system crondir */
  } cron_db;
@@ -52,10 +52,10 @@ Index: conv3/cron.h
  
  int		job_runqueue __P((void)),
  		set_debug_flags __P((char *)),
-Index: conv3/database.c
+Index: cron/database.c
 ===================================================================
---- conv3.orig/database.c
-+++ conv3/database.c
+--- cron.orig/database.c
++++ cron/database.c
 @@ -53,6 +53,9 @@ static user *get_next_system_crontab __P
  
  void force_rescan_user(cron_db *old_db, cron_db *new_db, const char *fname, time_t old_mtime);
