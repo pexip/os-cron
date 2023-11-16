@@ -1,3 +1,9 @@
+cron (3.0pl1-162pexip1) pexip-bookworm; urgency=medium
+
+  * Initial bookworm build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 09:56:57 +0000
+
 cron (3.0pl1-162) unstable; urgency=medium
 
   * moved "Breaks: systemd-cron(<<1.15.19-5~)" to the package
