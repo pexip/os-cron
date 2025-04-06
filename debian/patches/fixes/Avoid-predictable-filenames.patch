@@ -8,10 +8,14 @@ Based on a fix originally provided by Daniel Jacobowitz.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index 8389f96..5f9d977 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -333,9 +333,9 @@ edit_cmd() {
  		}
  	}

@@ -74,3 +74,12 @@ fixes/Check_for_timezone_changes.patch
 features/No-multiple-timezones.patch
 fixes/crontab_5_manpage.patch
 features/dry-run.patch
+features/cron_now.patch
+fixes/Usr-bin-sbin.patch
+features/Enabling_debug_by_default.patch
+fixes/Step-size_out_of_bound_handling.patch
+features/Wrap-long-lines.patch
+docs/more_examples_for_crontab.patch
+features/check_e_mails.patch
+features/accept_empty_var.patch
+fixes/gcc-15-compiler.patch

@@ -10,10 +10,15 @@ a larger fix, so it has been split out.
 Bug-Debian: https://bugs.debian.org/155109
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
+---
+ cron.c  |  8 ++++++++
+ popen.c | 17 +++++++++++------
+ 2 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/cron.c b/cron.c
+index 1db8569..f708bda 100644
+--- a/cron.c
++++ b/cron.c
 @@ -256,6 +256,7 @@ cron_sleep() {
  #ifdef USE_SIGCHLD
  static void
@@ -54,10 +59,10 @@ Index: cron/cron.c
  }
  
  
-Index: cron/popen.c
-===================================================================
---- cron.orig/popen.c
-+++ cron/popen.c
+diff --git a/popen.c b/popen.c
+index b5c3242..55fa64e 100644
+--- a/popen.c
++++ b/popen.c
 @@ -180,7 +180,7 @@ cron_pclose(iop)
  	FILE *iop;
  {

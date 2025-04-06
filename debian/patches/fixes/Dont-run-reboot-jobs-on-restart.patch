@@ -10,11 +10,16 @@ Bug-Debian: https://bugs.debian.org/74762
 Bug-Debian: https://bugs.debian.org/77563
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+---
+ cron.c      | 21 ++++++++++++++++++++-
+ pathnames.h |  4 ++++
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/cron.c b/cron.c
+index f708bda..490ea9e 100644
+--- a/cron.c
++++ b/cron.c
+@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  # include <time.h>
  #endif
  
@@ -26,8 +31,9 @@ Index: cron/cron.c
  {
  	register user		*u;
  	register entry		*e;
+-
 +	int			rbfd;
- 
++
 +	/* Run on actual reboot, rather than cron restart */
 +	if (access(REBOOT_FILE, F_OK) == 0) {
 +		/* File exists, return */
@@ -48,10 +54,10 @@ Index: cron/cron.c
  	for (u = db->head;  u != NULL;  u = u->next) {
  		for (e = u->crontab;  e != NULL;  e = e->next) {
  			if (e->flags & WHEN_REBOOT) {
-Index: cron/pathnames.h
-===================================================================
---- cron.orig/pathnames.h
-+++ cron/pathnames.h
+diff --git a/pathnames.h b/pathnames.h
+index 04065a0..a1b31ae 100644
+--- a/pathnames.h
++++ b/pathnames.h
 @@ -79,3 +79,7 @@
  #ifndef _PATH_DEFPATH
  # define _PATH_DEFPATH "/usr/bin:/bin"

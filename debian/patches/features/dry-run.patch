@@ -1,12 +1,73 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:22 +0200
+Subject: dry-run
+
+Implement two switches:
+
 Implement two switches:
 -n to make a "dry run" (syntax crontab -n foo)
 -h to display a help message
+---
+ crontab.1 | 19 +++++++++++++++++--
+ crontab.c | 40 +++++++++++++++++++++++++++++++---------
+ 2 files changed, 48 insertions(+), 11 deletions(-)
 
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -46,7 +46,7 @@ static char rcsid[] = "$Id: crontab.c,v
+diff --git a/crontab.1 b/crontab.1
+index 199bae8..2c87bc9 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -22,7 +22,9 @@
+ .SH NAME
+ crontab \- maintain crontab files for individual users (Vixie Cron)
+ .SH SYNOPSIS
+-crontab [ \-u user ] file
++crontab [ \-h]
++.br
++crontab [ \-u user ] [\-n] file
+ .br
+ crontab [ \-u user ] [ \-i ] { \-e | \-l | \-r }
+ .SH DESCRIPTION
+@@ -62,6 +64,12 @@ user is always allowed to setup a crontab.  For standard Debian systems, all
+ users may use this command.
+ .PP
+ If the
++.I \-h
++option is given,
++.I crontab
++shows a help message and quits immediately.
++.PP
++If the
+ .I \-u
+ option is given, it specifies the name of the user whose crontab is to be
+ used (when listing) or modified (when editing).  If this option is not given,
+@@ -80,6 +88,13 @@ option for safety's sake.
+ The first form of this command is used to install a new crontab from some
+ named file or standard input if the pseudo-filename ``-'' is given.
+ .PP
++If the
++.I \-n
++option is given, it means "dry run":
++.I crontab
++examines "your" crontab for its syntax, and outputs a success message if
++this syntax is correct, but nothing is written to any crontab.
++.PP
+ The
+ .I \-l
+ option causes the current crontab to be displayed on standard output.  See
+@@ -137,7 +152,7 @@ The files
+ .I /etc/cron.allow
+ and
+ .I /etc/cron.deny
+-if, they exist, must be either world-readable, or readable by group
++if they exist, must be either world-readable, or readable by group
+ ``crontab''. If they are not, then cron will deny access to all users until the
+ permissions are fixed.
+ .PP
+diff --git a/crontab.c b/crontab.c
+index 8fe6f90..e403e34 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -46,7 +46,7 @@ static char rcsid[] = "$Id: crontab.c,v 2.13 1994/01/17 03:20:37 vixie Exp $";
  #endif
  
  
@@ -98,45 +159,3 @@ Index: cron/crontab.c
  #ifdef HAS_FCHMOD
  	if (fchmod(fileno(tmp), 0600) < OK)
  #else
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
-@@ -22,7 +22,9 @@
- .SH NAME
- crontab \- maintain crontab files for individual users (Vixie Cron)
- .SH SYNOPSIS
--crontab [ \-u user ] file
-+crontab [ \-h]
-+.br
-+crontab [ \-u user ] [\-n] file
- .br
- crontab [ \-u user ] [ \-i ] { \-e | \-l | \-r }
- .SH DESCRIPTION
-@@ -62,6 +64,12 @@ user is always allowed to setup a cronta
- users may use this command.
- .PP
- If the
-+.I \-h
-+option is given,
-+.I crontab
-+shows a help message and quits immediately.
-+.PP
-+If the
- .I \-u
- option is given, it specifies the name of the user whose crontab is to be
- used (when listing) or modified (when editing).  If this option is not given,
-@@ -80,6 +88,13 @@ option for safety's sake.
- The first form of this command is used to install a new crontab from some
- named file or standard input if the pseudo-filename ``-'' is given.
- .PP
-+If the
-+.I \-n
-+option is given, it means "dry run":
-+.I crontab
-+examines "your" crontab for its syntax, and outputs a success message if
-+this syntax is correct, but nothing is written to any crontab.
-+.PP
- The
- .I \-l
- option causes the current crontab to be displayed on standard output.  See

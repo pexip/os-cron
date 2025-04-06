@@ -11,11 +11,16 @@ Debian-Bug: https://bugs.debian.org/30653
 Debian-Bug: https://bugs.debian.org/37189
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -31,6 +31,8 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+---
+ cron.c       | 5 +++++
+ do_command.c | 1 +
+ 2 files changed, 6 insertions(+)
+
+diff --git a/cron.c b/cron.c
+index c424c77..1db8569 100644
+--- a/cron.c
++++ b/cron.c
+@@ -31,6 +31,8 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  # include <time.h>
  #endif
  
@@ -34,10 +39,10 @@ Index: cron/cron.c
  			break;
  		default:
  			/* parent process should just die */
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/do_command.c b/do_command.c
+index f596252..f18f670 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -191,6 +191,7 @@ child_process(e, u)
  		dup2(stdout_pipe[WRITE_PIPE], STDOUT);
  		dup2(STDOUT, STDERR);

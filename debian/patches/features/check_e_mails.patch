@@ -1,0 +1,140 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Sun, 27 Oct 2024 16:53:53 +0100
+Subject: check_e_mails
+
+Suject: check MAILTO and MAILFROM when a new crontab is saved
+
+Check for forbidden characters, like spaces. Example:
+MAILTO=a@example.con, b@example.com
+is wrong, since there is a space after the comma
+
+Bug-Debian: https://bugs.debian.org/1061155
+Forwarded: no
+Last-Update: 2024-02-28
+---
+ crontab.c    | 13 ++++++++++++-
+ do_command.c | 18 ++----------------
+ misc.c       | 16 ++++++++++++++++
+ misc.h       |  6 ++++++
+ 4 files changed, 36 insertions(+), 17 deletions(-)
+ create mode 100644 misc.h
+
+diff --git a/crontab.c b/crontab.c
+index e403e34..4cab725 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -29,6 +29,8 @@ static char rcsid[] = "$Id: crontab.c,v 2.13 1994/01/17 03:20:37 vixie Exp $";
+ 
+ 
+ #include "cron.h"
++#include "misc.h"
++
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <libgen.h>
+@@ -907,7 +909,16 @@ replace_cmd() {
+ 				free(e);
+ 			break;
+ 		case TRUE:
+-			break;
++		        /* here MAILTO and MAILFROM are checked */
++		        if (
++			    strncmp(envstr, "MAILTO=", 7) == 0 ||
++			    strncmp(envstr, "MAILFROM=", 9) == 0
++			    ){
++			  if (! safe_p("", strstr(envstr,"=")+1)){
++                            check_error("unsafe mail");
++                          }
++                        }
++                        break;
+ 		}
+ 	}
+ 
+diff --git a/do_command.c b/do_command.c
+index eb70b8a..ac6e528 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -21,6 +21,8 @@ static char rcsid[] = "$Id: do_command.c,v 2.12 1994/01/15 20:43:43 vixie Exp $"
+ 
+ 
+ #include "cron.h"
++#include "misc.h"
++
+ #include <signal.h>
+ #include <grp.h>
+ #include <sys/stat.h>
+@@ -49,10 +51,8 @@ static const struct pam_conv conv = {
+ /* #include <selinux/get_context_list.h> */
+ #endif
+ 
+-
+ static void		child_process __P((entry *, user *)),
+ 			do_univ __P((user *));
+-static int		safe_p(const char *, const char *);
+ 
+ /* Build up the job environment from the PAM environment plus the
+    crontab environment */
+@@ -746,17 +746,3 @@ do_univ(u)
+ #endif
+ }
+ 
+-static int safe_p(const char *usernm, const char *s) {
+-	static const char safe_delim[] = "@!:%-.,_+=/"; /* conservative! */
+-	const char *t;
+-	int ch, first;
+-
+-	for (t = s, first = 1; (ch = *t++) != '\0'; first = 0) {
+-		if (isascii(ch) && isprint(ch) &&
+-			(isalnum(ch) || (!first && strchr(safe_delim, ch))))
+-			continue;
+-		log_it(usernm, getpid(), "UNSAFE MAIL", s);
+-		return (FALSE);
+-	}
+-	return (TRUE);
+-}
+diff --git a/misc.c b/misc.c
+index a307ab7..121a4d1 100644
+--- a/misc.c
++++ b/misc.c
+@@ -25,6 +25,8 @@ static char rcsid[] = "$Id: misc.c,v 2.9 1994/01/15 20:43:43 vixie Exp $";
+ 
+ 
+ #include "cron.h"
++#include "misc.h"
++
+ #if SYS_TIME_H
+ # include <sys/time.h>
+ #else
+@@ -598,6 +600,20 @@ log_it(username, xpid, event, detail)
+ #endif
+ }
+ 
++int safe_p(const char *usernm, const char *s) {
++	static const char safe_delim[] = "@!:%-.,_+=/"; /* conservative! */
++	const char *t;
++	int ch, first;
++
++	for (t = s, first = 1; (ch = *t++) != '\0'; first = 0) {
++		if (isascii(ch) && isprint(ch) &&
++			(isalnum(ch) || (!first && strchr(safe_delim, ch))))
++			continue;
++		log_it(strdup(usernm), getpid(), "UNSAFE MAIL", strdup(s));
++		return (FALSE);
++	}
++	return (TRUE);
++}
+ 
+ void
+ log_close() {
+diff --git a/misc.h b/misc.h
+new file mode 100644
+index 0000000..c3ec9bd
+--- /dev/null
++++ b/misc.h
+@@ -0,0 +1,6 @@
++#ifndef MISC_H
++#define MISC_H
++
++int safe_p(const char *, const char *);
++
++#endif

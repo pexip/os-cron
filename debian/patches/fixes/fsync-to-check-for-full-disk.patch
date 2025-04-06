@@ -9,10 +9,14 @@ Based on an initial fix by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/110612
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index c71bc38..0514cba 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -541,9 +541,8 @@ replace_cmd() {
  	Set_LineNum(1)
  	while (EOF != (ch = get_char(NewCrontab)))

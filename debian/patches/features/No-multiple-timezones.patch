@@ -1,14 +1,21 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:22 +0200
+Subject: No-multiple-timezones
+
 This patch adds an example for people who wish to address the multiple
 timezone issue, without adding any new feature inside crontabs or cron 
 itself.
 
 It modifies only the file crontab.5
+---
+ crontab.5 | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
-@@ -361,7 +361,17 @@ configured timezone.  Even if a user spe
+diff --git a/crontab.5 b/crontab.5
+index e60228a..260fee9 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -366,7 +366,16 @@ configured timezone.  Even if a user specifies the
  environment variable in his
  .I crontab
  this will affect only the commands executed in the crontab, not the execution
@@ -20,9 +27,8 @@ Index: cron/crontab.5
 +.nf
 +    # m h  dom mon dow   command
 +
-+    SHELL=/bin/bash
-+    TZ=Australia/Sydney
-+    0 * * * * [ "$(date +\\%H\\%M)" == "0000" ] && run_some_script
++    TZ=UTC
++    0 * * * * [ "$(date +\e%R)" = 00:00 ] && run_some_script
 +.fi
  
  POSIX specifies that the day of month and the day of week fields both need to

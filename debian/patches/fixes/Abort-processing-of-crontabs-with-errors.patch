@@ -15,10 +15,14 @@ slightly extended.
 Bug-Debian: https://bugs.debian.org/378153
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/user.c
-===================================================================
---- cron.orig/user.c
-+++ cron/user.c
+---
+ user.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/user.c b/user.c
+index 221eb9e..38a8799 100644
+--- a/user.c
++++ b/user.c
 @@ -99,7 +99,10 @@ load_user(crontab_fd, pw, name)
  			 */
  			if (envstr[0] != '\0') {

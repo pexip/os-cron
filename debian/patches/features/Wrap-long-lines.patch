@@ -1,0 +1,133 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 22 Nov 2023 17:10:27 +0100
+Subject: Wrap long lines
+
+To avoid loosing cronjob mails with a "line too long" error
+(exim4, for example) cron will wrap very long lines. The default encoding is
+set to QUOTED-PRINTABLE
+
+A new test is provided for autopkgtests
+
+Contributed by Frank Heckenbach <f.heckenbach@fh-soft.de>
+
+Bug-Debian: https://bugs.debian.org/777584
+Forwarded: no
+Last-Update: 2023-11-22
+---
+ config.h     | 17 +++++++++++++++++
+ do_command.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 65 insertions(+), 5 deletions(-)
+
+diff --git a/config.h b/config.h
+index b7f4340..dd1a495 100644
+--- a/config.h
++++ b/config.h
+@@ -70,6 +70,23 @@
+ 			 * generate the Date: header.
+ 			 */
+ 
++			/* Content-Transfer-Encoding used in mail sent
++			 * if CONTENT_TRANSFER_ENCODING is not set.
++			 *
++			 * "8bit", the previous default, does not do
++			 * any encoding and will fail with long lines
++			 * (> 998 characters according to RFC 5322).
++			 *
++			 * "auto" means some suitable encoding (currently
++			 * quoted-printable) which cron will do internally.
++			 *
++			 * In contrast, setting this define or
++			 * CONTENT_TRANSFER_ENCODING to quoted-printable means
++			 * the command output must be encoded already.
++			 */
++/*#define DEFAULT_CONTENT_TRANSFER_ENCODING "8bit"			/*-*/
++#define DEFAULT_CONTENT_TRANSFER_ENCODING "auto"			/*-*/
++
+ 			/* if ALLOW_FILE and DENY_FILE are not defined or are
+ 			 * defined but neither exists, should crontab(1) be
+ 			 * usable only by root?
+diff --git a/do_command.c b/do_command.c
+index 43054ee..eb70b8a 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -543,6 +543,7 @@ child_process(e, u)
+ 	auto char	hostname[MAXHOSTNAMELEN];
+ 	char		*content_type = env_get("CONTENT_TYPE",jobenv),
+ 			*content_transfer_encoding = env_get("CONTENT_TRANSFER_ENCODING",jobenv);
++	int encoding_auto = 0;
+ 
+ 	(void) gethostname(hostname, MAXHOSTNAMELEN);
+ 	(void) snprintf(mailcmd, sizeof(mailcmd),
+@@ -590,12 +591,13 @@ child_process(e, u)
+ 				(nl < (content_transfer_encoding+ctlen))) {
+ 			*nl = ' ';
+ 		}
+-
+-		fprintf(mail,"Content-Transfer-Encoding: %s\n",
+-				content_transfer_encoding);
+ 	} else {
+-		fprintf(mail,"Content-Transfer-Encoding: 8bit\n");
++		content_transfer_encoding = DEFAULT_CONTENT_TRANSFER_ENCODING;
+ 	}
++	encoding_auto = strcmp (content_transfer_encoding,"auto") == 0;
++	fprintf(mail,"Content-Transfer-Encoding: %s\n",
++			encoding_auto ? "quoted-printable"
++				: content_transfer_encoding);
+ 
+ 	for (env = e->envp;  *env;  env++)
+ 		fprintf(mail, "X-Cron-Env: <%s>\n",
+@@ -606,12 +608,53 @@ child_process(e, u)
+ 
+ 	char buf[4096];
+ 	int ret, remain;
++	/* A QP character results in 3 characters. Inserted soft line breaks
++	 * may need a bit more. 4 is more than enough over the whole buffer.
++	 */
++	char buf_encoded[4 * sizeof(buf)];
++	char *buf_out = buf;
++	int qp_line_length = 0;
+ 
+ 	while(1) {
+ 		if ((ret = fread(buf, 1, sizeof(buf), tmpout)) == 0)
+ 			break;
++		
++		if (encoding_auto) {
++			// Quoted-printable encoding according to RFC 2045, 6.7
++			char *in, *out = buf_encoded;
++			for (in = buf; in < buf + ret; in++) {
++				// maximum output line width is 76 characters
++				if (qp_line_length > 72) {
++					*out++ = '=';
++					*out++ = '\n';
++					qp_line_length = 0;
++				}
++				if (*in == '\n') {
++					// encoded lines may not end with SPACE or TAB
++					if (out > buf_encoded
++						&& (out[-1] == ' ' || out[-1] == '\t')) {
++						*out++ = '=';
++						*out++ = '\n';
++					}
++					*out++ = *in;
++					qp_line_length = 0;
++				} else if ((*in >= 33 && *in <= 126 && *in != '=')
++					|| ((*in == ' ' || *in == '\t')
++						&& in + 1 < buf + ret)) {
++					*out++ = *in;
++					qp_line_length++;
++				} else {
++					int r = sprintf(out, "=%02X", (unsigned char)*in);
++					out += r;
++					qp_line_length += r;
++				}
++			}
++			buf_out = buf_encoded;
++			ret = out - buf_encoded;
++		}
++		
+ 		for (remain = ret; remain != 0; ) {
+-			ret = fwrite(buf, 1, remain, mail);
++			ret = fwrite(buf_out, 1, remain, mail);
+ 			if (ret > 0) {
+ 				remain -= ret;
+ 				bytes += ret;

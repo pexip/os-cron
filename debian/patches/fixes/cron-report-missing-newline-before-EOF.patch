@@ -8,10 +8,65 @@ of a crontab. Print a warning instead.
 Bug-Debian: https://bugs.debian.org/79037
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/user.c
-===================================================================
---- cron.orig/user.c
-+++ cron/user.c
+---
+ crontab.1 |  5 +++++
+ crontab.5 |  6 ++++++
+ entry.c   |  4 ++++
+ user.c    | 17 +++++++++++++----
+ 4 files changed, 28 insertions(+), 4 deletions(-)
+
+diff --git a/crontab.1 b/crontab.1
+index 8dee61d..a948c46 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -116,6 +116,11 @@ SVR3 syntax.
+ .SH DIAGNOSTICS
+ A fairly informative usage message appears if you run it with a bad command
+ line.
++
++cron requires that each entry in a crontab end in a newline character. If the
++last entry in a crontab is missing the newline, cron will consider the crontab
++(at least partially) broken and refuse to install it.
++
+ .SH AUTHOR
+ .nf
+ Paul Vixie <paul@vix.com>
+diff --git a/crontab.5 b/crontab.5
+index d094699..ad2c6d2 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -326,6 +326,12 @@ the following wrapper code:
+ .fi
+ 
+ 
++.SH DIAGNOSTICS
++cron requires that each entry in a crontab end in a newline character.  If the
++last entry in a crontab is missing a newline (i.e.\& terminated by EOF),
++cron will consider the crontab (at least partially) broken.
++A warning will be written to syslog.
++
+ .SH AUTHOR
+ .nf
+ Paul Vixie <paul@vix.com>
+diff --git a/entry.c b/entry.c
+index 84ccac4..429d8c0 100644
+--- a/entry.c
++++ b/entry.c
+@@ -313,6 +313,10 @@ load_entry(file, error_func, pw, envp)
+ 	ch = get_string(cmd, MAX_COMMAND, file, "\n");
+ 
+ 	/* a file without a \n before the EOF is rude, so we'll complain...
++
++	   CK 2010-04-14: this code will never be reached. All calls to
++	   load_entry are proceeded by calls to load_env, which aborts on EOF, and
++	   where load_env fails, the code bails out.
+ 	 */
+ 	if (ch == EOF) {
+ 		ecode = e_cmd;
+diff --git a/user.c b/user.c
+index 3e36b86..221eb9e 100644
+--- a/user.c
++++ b/user.c
 @@ -87,11 +87,20 @@ load_user(crontab_fd, pw, name)
  	 * load the crontab
  	 */
@@ -45,51 +100,3 @@ Index: cron/user.c
  
   done:
  	env_free(envp);
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
-@@ -313,6 +313,10 @@ load_entry(file, error_func, pw, envp)
- 	ch = get_string(cmd, MAX_COMMAND, file, "\n");
- 
- 	/* a file without a \n before the EOF is rude, so we'll complain...
-+
-+	   CK 2010-04-14: this code will never be reached. All calls to
-+	   load_entry are proceeded by calls to load_env, which aborts on EOF, and
-+	   where load_env fails, the code bails out.
- 	 */
- 	if (ch == EOF) {
- 		ecode = e_cmd;
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
-@@ -116,6 +116,11 @@ SVR3 syntax.
- .SH DIAGNOSTICS
- A fairly informative usage message appears if you run it with a bad command
- line.
-+
-+cron requires that each entry in a crontab end in a newline character. If the
-+last entry in a crontab is missing the newline, cron will consider the crontab
-+(at least partially) broken and refuse to install it.
-+
- .SH AUTHOR
- .nf
- Paul Vixie <paul@vix.com>
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
-@@ -321,6 +321,12 @@ the following wrapper code:
- .fi
- 
- 
-+.SH DIAGNOSTICS
-+cron requires that each entry in a crontab end in a newline character.  If the
-+last entry in a crontab is missing a newline (i.e.\& terminated by EOF),
-+cron will consider the crontab (at least partially) broken.
-+A warning will be written to syslog.
-+
- .SH AUTHOR
- .nf
- Paul Vixie <paul@vix.com>

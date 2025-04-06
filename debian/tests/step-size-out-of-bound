@@ -1,0 +1,23 @@
+#! /bin/sh
+
+set -e
+
+dir=$(pwd)/debian/tests
+. $dir/textutils.sh
+
+frame "Here we are testing the patch" \
+      "fixes/Step-size_out_of_bound_handling.patch"
+
+echo "================= adding user 'dummy' ====================="
+getent passwd dummy || adduser --disabled-password --gecos "" dummy
+
+echo "========= make user 'dummy' fill his crontab =============="
+
+# stderr is redirected towards stdout so the variable warning can catch it
+warning=$(su dummy -c "(export LINES=' * */25 * * * echo hello'; EDITOR=$(pwd)/debian/tests/cronfiller.py crontab -e)" 2>&1 | grep Warning)
+
+echo "====== check that */25 is disallowed in crontabs =========="
+expected="Warning: Step size 25 higher than possible maximum of 23"
+(echo "$warning" | grep -q "$expected") || (echo "variable warning = $warning"; \
+     echo "The expected warning about out-of-bound steps was not issued" >&2)
+

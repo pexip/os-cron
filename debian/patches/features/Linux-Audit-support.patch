@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Jan 2016 23:21:25 +0100
+Date: Thu, 7 Jan 2016 23:21:25 +0100
 Subject: Linux Audit support
 
 Add support for logging using the Linux Auditing System.
@@ -9,10 +9,16 @@ Contributed by Steve Grubb.
 Bug-Debian: https://bugs.debian.org/383741
 Forwarded: no
 Last-Update: 2015-01-07
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
+---
+ Makefile |  4 ++--
+ cron.8   |  2 ++
+ misc.c   | 12 ++++++++++++
+ 3 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index ce16df8..8877e33 100644
+--- a/Makefile
++++ b/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -22,7 +28,7 @@ Index: cron/Makefile
  #<<optimize or debug?>>
  #OPTIM		=	-O
  OPTIM		=	-g
-@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $
+@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
  #<<manifest defines>>
  # Allow override from command line
  DEBUG_DEFS	?= -DDEBUGGING=0
@@ -31,11 +37,24 @@ Index: cron/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -35,6 +35,9 @@ static char rcsid[] = "$Id: misc.c,v 2.9
+diff --git a/cron.8 b/cron.8
+index dd40322..cd49d4b 100644
+--- a/cron.8
++++ b/cron.8
+@@ -120,6 +120,8 @@ PAM support,
+ .IP \(em
+ SELinux support,
+ .IP \(em
++auditlog support,
++.IP \(em
+ Debian-specific file locations and commands,
+ .IP \(em
+ Debian-specific configuration (/etc/default/cron),
+diff --git a/misc.c b/misc.c
+index 8dd6b24..935d87f 100644
+--- a/misc.c
++++ b/misc.c
+@@ -35,6 +35,9 @@ static char rcsid[] = "$Id: misc.c,v 2.9 1994/01/15 20:43:43 vixie Exp $";
  #include <errno.h>
  #include <string.h>
  #include <fcntl.h>
@@ -61,16 +80,3 @@ Index: cron/misc.c
  	return isallowed;
  }
  
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -120,6 +120,8 @@ PAM support,
- .IP \(em
- SELinux support,
- .IP \(em
-+auditlog support,
-+.IP \(em
- Debian-specific file locations and commands,
- .IP \(em
- Debian-specific configuration (/etc/default/cron),

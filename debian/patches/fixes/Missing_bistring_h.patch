@@ -1,13 +1,21 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:22 +0200
+Subject: Missing_bistring_h
+
 [proposed by Stefanos Chaliasos on 2019-12-22]
 
 add bitstring.h as a dependency to CRON_OBJ and CRONTAB_OBJ.
 The build can cause incorrect results when the project is incrementally
 built. For example, any changes in bitstring.h will not cause the object
 files to be rebuilt.
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 8877e33..47f1248 100644
+--- a/Makefile
++++ b/Makefile
 @@ -127,5 +127,5 @@ clean		:
  kit		:	$(SHAR_SOURCE)
  			makekit -m -s99k $(SHAR_SOURCE)

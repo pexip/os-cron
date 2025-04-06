@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Sat, 09 Jan 2016 18:21:39 +0100
+Date: Sat, 9 Jan 2016 18:21:39 +0100
 Subject: Better timeskip handling
 
 Better handling of time skips (when the clock jumps either forwards or
@@ -13,191 +13,56 @@ Bug-Debian: https://bugs.debian.org/474157
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/36690
 Forwarded: no
 Last-Update: 2016-01-09
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
-@@ -40,6 +40,13 @@
- #include "config.h"
- #include "externs.h"
- 
-+#if SYS_TIME_H
-+# include <sys/time.h>
-+#else
-+# include <time.h>
-+#endif
-+
-+
- #ifdef WITH_SELINUX
- #include <selinux/selinux.h>
- #endif
-@@ -129,6 +136,10 @@
- 			 LineNumber = ln; \
- 			}
- 
-+typedef int time_min;
-+
-+#define SECONDS_PER_MINUTE 60
-+
- #define	FIRST_MINUTE	0
- #define	LAST_MINUTE	59
- #define	MINUTE_COUNT	(LAST_MINUTE - FIRST_MINUTE + 1)
-@@ -171,6 +182,8 @@ typedef	struct _entry {
- #define	DOM_STAR	0x01
- #define	DOW_STAR	0x02
- #define	WHEN_REBOOT	0x04
-+#define	MIN_STAR	0x08
-+#define	HR_STAR		0x10
- } entry;
- 
- 			/* the crontab database will be a list of the
-@@ -228,6 +241,8 @@ int		job_runqueue __P((void)),
- 		allowed __P((char *)),
- 		strdtb __P((char *));
- 
-+long		get_gmtoff(time_t *, struct tm *);
-+
- char		*env_get __P((char *, char **)),
- 		*arpadate __P((time_t *)),
- 		*mkprints __P((unsigned char *, unsigned int)),
-@@ -271,7 +286,11 @@ char	*DowNames[] = {
- 
- char	*ProgramName;
- int	LineNumber;
--time_t	TargetTime;
-+time_t	StartTime;
-+time_min timeRunning;
-+time_min virtualTime;
-+time_min clockTime;
-+static long GMToff;
- 
- int	lsbsysinit_mode;
- 
-@@ -289,7 +308,10 @@ extern	char	*copyright[],
- 		*ProgramName;
- extern	int	lsbsysinit_mode;
- extern	int	LineNumber;
--extern	time_t	TargetTime;
-+extern	time_t	StartTime;
-+extern  time_min timeRunning;
-+extern  time_min virtualTime;
-+extern  time_min clockTime;
- # if DEBUGGING
- extern	int	DebugFlags;
- extern	char	*DebugFlagNames[];
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
-@@ -162,6 +162,7 @@ load_entry(file, error_func, pw, envp)
- 			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
- 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
- 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
-+			e->flags |= HR_STAR;
- 		} else {
- 			ecode = e_timespec;
- 			goto eof;
-@@ -169,6 +170,8 @@ load_entry(file, error_func, pw, envp)
- 	} else {
- 		Debug(DPARS, ("load_entry()...about to parse numerics\n"))
- 
-+		if (ch == '*')
-+			e->flags |= MIN_STAR;
- 		ch = get_list(e->minute, FIRST_MINUTE, LAST_MINUTE,
- 			      PPC_NULL, ch, file);
- 		if (ch == EOF) {
-@@ -179,6 +182,8 @@ load_entry(file, error_func, pw, envp)
- 		/* hours
- 		 */
- 
-+		if (ch == '*')
-+			e->flags |= HR_STAR;
- 		ch = get_list(e->hour, FIRST_HOUR, LAST_HOUR,
- 			      PPC_NULL, ch, file);
- 		if (ch == EOF) {
-@@ -251,6 +256,9 @@ load_entry(file, error_func, pw, envp)
- 			goto eof;
- 		}
- 		Debug(DPARS, ("load_entry()...uid %d, gid %d\n",e->uid,e->gid))
-+	} else if (ch == '*') {
-+		ecode = e_cmd;
-+		goto eof;
- 	}
- 
- 	e->uid = pw->pw_uid;
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -487,7 +487,7 @@ child_process(e, u)
- 					e->cmd);
- # if defined(MAIL_DATE)
- 				fprintf(mail, "Date: %s\n",
--					arpadate(&TargetTime));
-+					arpadate(&StartTime));
- # endif /* MAIL_DATE */
- 				fprintf(mail, "MIME-Version: 1.0\n");
- 				fprintf(mail, "Content-Transfer-Encoding: 8bit\n");
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -683,8 +683,9 @@ arpadate(clock)
- 	struct tm *tm = localtime(&t);
- 	char *qmark;
- 	size_t len;
--	int hours = tm->tm_gmtoff / 3600;
--	int minutes = (tm->tm_gmtoff - (hours * 3600)) / 60;
-+	long gmtoff = get_gmtoff(&t, tm);
-+	int hours = gmtoff / 3600;
-+	int minutes = (gmtoff - (hours * 3600)) / 60;
- 
- 	if (minutes < 0)
- 		minutes = -minutes;
-@@ -725,3 +726,38 @@ int swap_uids()
- }
- int swap_uids_back() { return swap_uids(); }
- #endif /*HAVE_SAVED_UIDS*/
-+
-+
-+/* Return the offset from GMT in seconds (algorithm taken from sendmail).
-+ *
-+ * warning:
-+ *	clobbers the static storage space used by localtime() and gmtime().
-+ *	If the local pointer is non-NULL it *must* point to a local copy.
-+ */
-+#ifndef HAVE_TM_GMTOFF
-+long get_gmtoff(time_t *clock, struct tm *local)
-+{
-+	struct tm gmt;
-+	long offset;
-+
-+	gmt = *gmtime(clock);
-+	if (local == NULL)
-+		local = localtime(clock);
-+
-+	offset = (local->tm_sec - gmt.tm_sec) +
-+		((local->tm_min - gmt.tm_min) * 60) +
-+		((local->tm_hour - gmt.tm_hour) * 3600);
-+
-+	/* Timezone may cause year rollover to happen on a different day. */
-+	if (local->tm_year < gmt.tm_year)
-+		offset -= 24 * 3600;
-+	else if (local->tm_year > gmt.tm_year)
-+		offset += 24 * 3600;
-+	else if (local->tm_yday < gmt.tm_yday)
-+		offset -= 24 * 3600;
-+	else if (local->tm_yday > gmt.tm_yday)
-+		offset += 24 * 3600;
-+
-+	return (offset);
-+}
-+#endif /* HAVE_TM_GMTOFF */
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -25,11 +25,6 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+---
+ cron.8       |  18 +++++
+ cron.c       | 242 +++++++++++++++++++++++++++++++++++++++++------------------
+ cron.h       |  26 ++++++-
+ do_command.c |   2 +-
+ entry.c      |   8 ++
+ misc.c       |  40 +++++++++-
+ 6 files changed, 260 insertions(+), 76 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index 3461c83..86831e7 100644
+--- a/cron.8
++++ b/cron.8
+@@ -112,6 +112,22 @@ need not be restarted whenever a crontab file is modified.  Note that the
+ .IR crontab (1)
+ command updates the modtime of the spool directory whenever it changes a
+ crontab.
++.PP
++Special considerations exist when the clock is changed by less than 3
++hours, for example at the beginning and end of daylight savings
++time.  If the time has moved forwards, those jobs which would have
++run in the time that was skipped will be run soon after the change.
++Conversely, if the time has moved backwards by less than 3 hours,
++those jobs that fall into the repeated time will not be re-run.
++.PP
++Only jobs that run at a particular time (not specified as
++@hourly, nor with '*' in the hour or minute specifier) are
++affected.  Jobs which are specified with wildcards are run based on the
++new time immediately.
++.PP
++Clock changes of more than 3 hours are considered to be corrections to
++the clock, and the new time is used immediately.
++.PP
+ .I cron
+ logs its action to the syslog facility 'cron', and logging may be
+ controlled using the standard
+@@ -163,6 +179,8 @@ SELinux support,
+ .IP \(em
+ auditlog support,
+ .IP \(em
++DST and other time-related changes/fixes,
++.IP \(em
+ Debian-specific file locations and commands,
+ .IP \(em
+ Debian-specific configuration (/etc/default/cron),
+diff --git a/cron.c b/cron.c
+index 7e10cdc..b073ecc 100644
+--- a/cron.c
++++ b/cron.c
+@@ -25,11 +25,6 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  
  #include "cron.h"
  #include <signal.h>
@@ -209,7 +74,7 @@ Index: cron/cron.c
  
  #include <sys/stat.h>
  #include <sys/types.h>
-@@ -38,9 +33,9 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+@@ -38,9 +33,9 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  
  static	void	usage __P((void)),
  		run_reboot_jobs __P((cron_db *)),
@@ -248,7 +113,8 @@ Index: cron/cron.c
 -			cron_sleep();
 +		time_min timeDiff;
 +		int wakeupKind;
-+
+ 
+-		load_database(&database);
 +		/* ... wait for the time (in minutes) to change ... */
 +		do {
 +			cron_sleep(timeRunning + 1);
@@ -256,20 +122,20 @@ Index: cron/cron.c
 +		} while (clockTime == timeRunning);
 +		timeRunning = clockTime;
  
- 		load_database(&database);
- 
 -		/* do this iteration
+-		 */
+-		cron_tick(&database);
++		load_database(&database);
+ 
+-		/* sleep 1 minute
 +		/*
 +		 * ... calculate how the current time differs from
 +		 * our virtual clock. Classify the change into one
 +		 * of 4 cases
  		 */
--		cron_tick(&database);
-+		timeDiff = timeRunning - virtualTime;
- 
--		/* sleep 1 minute
--		 */
 -		TargetTime += 60;
++		timeDiff = timeRunning - virtualTime;
++
 +		Debug(DSCH, ("[%d] pulse: %d = %d - %d\n",
 +			getpid(), timeDiff, timeRunning, virtualTime));
 +
@@ -434,17 +300,17 @@ Index: cron/cron.c
  static void
 -cron_sync() {
 - 	register struct tm	*tm;
+-
+-	TargetTime = time((time_t*)0);
+-	tm = localtime(&TargetTime);
+-	TargetTime += (60 - tm->tm_sec);
 +set_time(int initialize)
 +{
 +    struct tm tm;
 +    static int isdst;
- 
--	TargetTime = time((time_t*)0);
--	tm = localtime(&TargetTime);
--	TargetTime += (60 - tm->tm_sec);
--}
++
 +    StartTime = time(NULL);
- 
++
 +    /* We adjust the time to GMT so we can catch DST changes. */
 +    tm = *localtime(&StartTime);
 +    if (initialize || tm.tm_isdst != isdst) {
@@ -454,20 +320,16 @@ Index: cron/cron.c
 +           getpid(), (long)GMToff))
 +    }
 +    clockTime = (StartTime + GMToff) / (time_t)SECONDS_PER_MINUTE;
-+}
+ }
  
+-
 +/*
 + * try to just hit the next minute
 + */
  static void
 -cron_sleep() {
 -	register int	seconds_to_wait;
-+cron_sleep(target)
-+	time_min target;
-+{
-+	time_t t;
-+	int seconds_to_wait;
- 
+-
 -	do {
 -		seconds_to_wait = (int) (TargetTime - time((time_t*)0));
 -		Debug(DSCH, ("[%d] TargetTime=%ld, sec-to-wait=%d\n",
@@ -483,13 +345,19 @@ Index: cron/cron.c
 -		 * of &&, and the short-circuiting.
 -		 */
 -	} while (seconds_to_wait > 0 && job_runqueue());
-+	t = time(NULL) + GMToff;
++cron_sleep(target)
++	time_min target;
++{
++	time_t t;
++	int seconds_to_wait;
  
 -	while (seconds_to_wait > 0) {
 -		Debug(DSCH, ("[%d] sleeping for %d seconds\n",
 -			getpid(), seconds_to_wait))
 -		seconds_to_wait = (int) sleep((unsigned int) seconds_to_wait);
 -	}
++	t = time(NULL) + GMToff;
++
 +	seconds_to_wait = (int)(target * SECONDS_PER_MINUTE - t) + 1;
 +	Debug(DSCH, ("[%d] TargetTime=%ld, sec-to-wait=%d\n",
 +	    getpid(), (long)target*SECONDS_PER_MINUTE, seconds_to_wait))
@@ -499,39 +367,183 @@ Index: cron/cron.c
  }
  
  
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -111,6 +111,22 @@ need not be restarted whenever a crontab
- .IR crontab (1)
- command updates the modtime of the spool directory whenever it changes a
- crontab.
-+.PP
-+Special considerations exist when the clock is changed by less than 3
-+hours, for example at the beginning and end of daylight savings
-+time.  If the time has moved forwards, those jobs which would have
-+run in the time that was skipped will be run soon after the change.
-+Conversely, if the time has moved backwards by less than 3 hours,
-+those jobs that fall into the repeated time will not be re-run.
-+.PP
-+Only jobs that run at a particular time (not specified as
-+@hourly, nor with '*' in the hour or minute specifier) are
-+affected.  Jobs which are specified with wildcards are run based on the
-+new time immediately.
-+.PP
-+Clock changes of more than 3 hours are considered to be corrections to
-+the clock, and the new time is used immediately.
-+.PP
- .I cron
- logs its action to the syslog facility 'cron', and logging may be
- controlled using the standard
-@@ -162,6 +178,8 @@ SELinux support,
- .IP \(em
- auditlog support,
- .IP \(em
-+DST and other time-related changes/fixes,
-+.IP \(em
- Debian-specific file locations and commands,
- .IP \(em
- Debian-specific configuration (/etc/default/cron),
+diff --git a/cron.h b/cron.h
+index a167026..7cce1c5 100644
+--- a/cron.h
++++ b/cron.h
+@@ -40,6 +40,13 @@
+ #include "config.h"
+ #include "externs.h"
+ 
++#if SYS_TIME_H
++# include <sys/time.h>
++#else
++# include <time.h>
++#endif
++
++
+ #ifdef WITH_SELINUX
+ #include <selinux/selinux.h>
+ #endif
+@@ -129,6 +136,10 @@
+ 			 LineNumber = ln; \
+ 			}
+ 
++typedef int time_min;
++
++#define SECONDS_PER_MINUTE 60
++
+ #define	FIRST_MINUTE	0
+ #define	LAST_MINUTE	59
+ #define	MINUTE_COUNT	(LAST_MINUTE - FIRST_MINUTE + 1)
+@@ -171,6 +182,8 @@ typedef	struct _entry {
+ #define	DOM_STAR	0x01
+ #define	DOW_STAR	0x02
+ #define	WHEN_REBOOT	0x04
++#define	MIN_STAR	0x08
++#define	HR_STAR		0x10
+ } entry;
+ 
+ 			/* the crontab database will be a list of the
+@@ -228,6 +241,8 @@ int		job_runqueue __P((void)),
+ 		allowed __P((char *)),
+ 		strdtb __P((char *));
+ 
++long		get_gmtoff(time_t *, struct tm *);
++
+ char		*env_get __P((char *, char **)),
+ 		*arpadate __P((time_t *)),
+ 		*mkprints __P((unsigned char *, unsigned int)),
+@@ -271,7 +286,11 @@ char	*DowNames[] = {
+ 
+ char	*ProgramName;
+ int	LineNumber;
+-time_t	TargetTime;
++time_t	StartTime;
++time_min timeRunning;
++time_min virtualTime;
++time_min clockTime;
++static long GMToff;
+ 
+ int	lsbsysinit_mode;
+ 
+@@ -289,7 +308,10 @@ extern	char	*copyright[],
+ 		*ProgramName;
+ extern	int	lsbsysinit_mode;
+ extern	int	LineNumber;
+-extern	time_t	TargetTime;
++extern	time_t	StartTime;
++extern  time_min timeRunning;
++extern  time_min virtualTime;
++extern  time_min clockTime;
+ # if DEBUGGING
+ extern	int	DebugFlags;
+ extern	char	*DebugFlagNames[];
+diff --git a/do_command.c b/do_command.c
+index a04ed83..82c2cc6 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -487,7 +487,7 @@ child_process(e, u)
+ 					e->cmd);
+ # if defined(MAIL_DATE)
+ 				fprintf(mail, "Date: %s\n",
+-					arpadate(&TargetTime));
++					arpadate(&StartTime));
+ # endif /* MAIL_DATE */
+ 				fprintf(mail, "MIME-Version: 1.0\n");
+ 				fprintf(mail, "Content-Transfer-Encoding: 8bit\n");
+diff --git a/entry.c b/entry.c
+index 0cfa8c0..c3602ae 100644
+--- a/entry.c
++++ b/entry.c
+@@ -162,6 +162,7 @@ load_entry(file, error_func, pw, envp)
+ 			bit_nset(e->dom, 0, (LAST_DOM-FIRST_DOM+1));
+ 			bit_nset(e->month, 0, (LAST_MONTH-FIRST_MONTH+1));
+ 			bit_nset(e->dow, 0, (LAST_DOW-FIRST_DOW+1));
++			e->flags |= HR_STAR;
+ 		} else {
+ 			ecode = e_timespec;
+ 			goto eof;
+@@ -169,6 +170,8 @@ load_entry(file, error_func, pw, envp)
+ 	} else {
+ 		Debug(DPARS, ("load_entry()...about to parse numerics\n"))
+ 
++		if (ch == '*')
++			e->flags |= MIN_STAR;
+ 		ch = get_list(e->minute, FIRST_MINUTE, LAST_MINUTE,
+ 			      PPC_NULL, ch, file);
+ 		if (ch == EOF) {
+@@ -179,6 +182,8 @@ load_entry(file, error_func, pw, envp)
+ 		/* hours
+ 		 */
+ 
++		if (ch == '*')
++			e->flags |= HR_STAR;
+ 		ch = get_list(e->hour, FIRST_HOUR, LAST_HOUR,
+ 			      PPC_NULL, ch, file);
+ 		if (ch == EOF) {
+@@ -251,6 +256,9 @@ load_entry(file, error_func, pw, envp)
+ 			goto eof;
+ 		}
+ 		Debug(DPARS, ("load_entry()...uid %d, gid %d\n",e->uid,e->gid))
++	} else if (ch == '*') {
++		ecode = e_cmd;
++		goto eof;
+ 	}
+ 
+ 	e->uid = pw->pw_uid;
+diff --git a/misc.c b/misc.c
+index 935d87f..b04d792 100644
+--- a/misc.c
++++ b/misc.c
+@@ -683,8 +683,9 @@ arpadate(clock)
+ 	struct tm *tm = localtime(&t);
+ 	char *qmark;
+ 	size_t len;
+-	int hours = tm->tm_gmtoff / 3600;
+-	int minutes = (tm->tm_gmtoff - (hours * 3600)) / 60;
++	long gmtoff = get_gmtoff(&t, tm);
++	int hours = gmtoff / 3600;
++	int minutes = (gmtoff - (hours * 3600)) / 60;
+ 
+ 	if (minutes < 0)
+ 		minutes = -minutes;
+@@ -725,3 +726,38 @@ int swap_uids()
+ }
+ int swap_uids_back() { return swap_uids(); }
+ #endif /*HAVE_SAVED_UIDS*/
++
++
++/* Return the offset from GMT in seconds (algorithm taken from sendmail).
++ *
++ * warning:
++ *	clobbers the static storage space used by localtime() and gmtime().
++ *	If the local pointer is non-NULL it *must* point to a local copy.
++ */
++#ifndef HAVE_TM_GMTOFF
++long get_gmtoff(time_t *clock, struct tm *local)
++{
++	struct tm gmt;
++	long offset;
++
++	gmt = *gmtime(clock);
++	if (local == NULL)
++		local = localtime(clock);
++
++	offset = (local->tm_sec - gmt.tm_sec) +
++		((local->tm_min - gmt.tm_min) * 60) +
++		((local->tm_hour - gmt.tm_hour) * 3600);
++
++	/* Timezone may cause year rollover to happen on a different day. */
++	if (local->tm_year < gmt.tm_year)
++		offset -= 24 * 3600;
++	else if (local->tm_year > gmt.tm_year)
++		offset += 24 * 3600;
++	else if (local->tm_yday < gmt.tm_yday)
++		offset -= 24 * 3600;
++	else if (local->tm_yday > gmt.tm_yday)
++		offset += 24 * 3600;
++
++	return (offset);
++}
++#endif /* HAVE_TM_GMTOFF */

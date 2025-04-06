@@ -1,6 +1,9 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Sat, 09 Jan 2016 00:11:10 +0100
+Date: Sat, 9 Jan 2016 00:11:10 +0100
 Subject: crontab allow/deny logic fix
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 Looking at config.h and pathnames.h, it is evident that the intention was to
 always allow root to execute jobs. Furthermore, the conditional tests for the
@@ -13,10 +16,34 @@ Bug-Debian: https://bugs.debian.org/383741
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/1813833
 Forwarded: no
 Last-Update: 2019-03-23
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
+---
+ crontab.1 |  8 ++++++++
+ misc.c    | 41 +++++++++++++++++++++++++++++++++--------
+ 2 files changed, 41 insertions(+), 8 deletions(-)
+
+diff --git a/crontab.1 b/crontab.1
+index a948c46..92b69f0 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -102,6 +102,14 @@ crontab(5), cron(8)
+ /var/cron/crontabs
+ .fi
+ .PP
++The files
++.I /etc/cron.allow
++and
++.I /etc/cron.deny
++if, they exist, must be either world-readable, or readable by group
++``crontab''. If they are not, then cron will deny access to all users until the
++permissions are fixed.
++.PP
+ There is one file for each user's crontab under the /var/cron/crontabs
+ directory.  Users are not allowed to edit the files under that directory
+ directly to ensure that only users allowed by the system to run periodic tasks
+diff --git a/misc.c b/misc.c
+index 0a815e7..93023e5 100644
+--- a/misc.c
++++ b/misc.c
 @@ -432,12 +432,38 @@ allowed(username)
  {
  	static int	init = FALSE;
@@ -79,22 +106,3 @@ Index: cron/misc.c
  }
  
  
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
-@@ -102,6 +102,14 @@ crontab(5), cron(8)
- /var/cron/crontabs
- .fi
- .PP
-+The files
-+.I /etc/cron.allow
-+and
-+.I /etc/cron.deny
-+if, they exist, must be either world-readable, or readable by group
-+``crontab''. If they are not, then cron will deny access to all users until the
-+permissions are fixed.
-+.PP
- There is one file for each user's crontab under the /var/cron/crontabs
- directory.  Users are not allowed to edit the files under that directory
- directly to ensure that only users allowed by the system to run periodic tasks

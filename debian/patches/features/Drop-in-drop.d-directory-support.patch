@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Sat, 09 Jan 2016 00:46:32 +0100
+Date: Sat, 9 Jan 2016 00:46:32 +0100
 Subject: Drop-in cron.d directory support
 
 Add support for /etc/cron.d, a drop-in directory for packages. This involves
@@ -12,10 +12,245 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2016-01-09
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
+---
+ cron.8      | 108 ++++++++++++++++++++++-
+ cron.c      |  13 ++-
+ cron.h      |   7 +-
+ database.c  | 285 ++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ pathnames.h |   2 +
+ 5 files changed, 370 insertions(+), 45 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index cd49d4b..3461c83 100644
+--- a/cron.8
++++ b/cron.8
+@@ -23,10 +23,17 @@
+ cron \- daemon to execute scheduled commands (Vixie Cron)
+ .SH SYNOPSIS
+ cron
++.RB [ \-l ]
+ .SH DESCRIPTION
+ .I cron
+ is started automatically from /etc/init.d on entering multi-user
+ runlevels.
++.SH OPTIONS
++.TP 8
++.B \-l
++Enable LSB compliant names for /etc/cron.d files.  This setting, however, does
++not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
++/etc/cron.weekly or /etc/cron.monthly.
+ .SH NOTES
+ .PP
+ .I cron
+@@ -47,8 +54,40 @@ to run programs under /etc/cron.hourly, /etc/cron.daily,
+ Debian, see the note under
+ .B DEBIAN SPECIFIC
+ below.
+-/etc/crontab must be owned by root, and must not
+-be group-or other-writable.
++
++Additionally, in Debian,
++.I cron
++reads the files in the /etc/cron.d directory.
++.I cron
++treats the files in /etc/cron.d as in the same way as the /etc/crontab
++file (they follow the special format of that file,
++i.e.\& they include the
++.I user
++field).  However, they are independent of /etc/crontab: they do not, for
++example, inherit environment variable settings from it.  This change is
++specific to Debian see the note under
++.B DEBIAN SPECIFIC
++below.
++
++Like /etc/crontab, the files in the /etc/cron.d directory are
++monitored for changes.
++The system administrator may create cron jobs in /etc/cron.d/
++with file names like "local" or "local-foo".
++
++
++/etc/crontab and the files in /etc/cron.d must be owned by root, and must not
++be group- or other-writable.  In contrast to the spool area, the files
++under /etc/cron.d or the files under /etc/cron.hourly, /etc/cron.daily,
++/etc/cron.weekly and /etc/cron.monthly may also be symlinks,
++provided that both the symlink and the file it points to are owned by root.
++The files under /etc/cron.d do not need to be executable, while the files
++under /etc/cron.hourly, /etc/cron.daily,
++/etc/cron.weekly and /etc/cron.monthly do, as they are run by
++.I run-parts
++(see
++.IR run-parts (8)
++for more information).
++
+ .I cron
+ then wakes up every minute, examining all stored crontabs, checking
+ each command to see if it should be run in the current minute.  When
+@@ -116,6 +155,8 @@ changes introduced are:
+ .IP \(em
+ Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,
+ .IP \(em
++Support for /etc/cron.d (drop-in dir for package crontabs),
++.IP \(em
+ PAM support,
+ .IP \(em
+ SELinux support,
+@@ -141,6 +182,63 @@ These tasks are disabled if
+ .B anacron
+ is installed (except for the hourly task) to prevent conflicts between
+ both daemons.
++
++As described above, the files under these directories have to pass
++some sanity checks including the following: be executable, be owned by root,
++not be writable by group or other and, if symlinks, point to files owned by
++root.  Additionally, the file names must conform to the filename requirements
++of
++.BR run-parts :
++they must be entirely made up of letters, digits and can only contain the
++special signs underscores ('_') and hyphens ('-').  Any file that does
++not conform to these requirements will not be executed by
++.BR run-parts .
++For example, any file containing dots will be ignored.
++This is done to prevent cron from running any of the files
++that are left by the Debian package management system when handling files in
++/etc/cron.d/ as configuration files (i.e.\& files ending in
++\&.dpkg-dist, \&.dpkg-orig, \&.dpkg-old, and \&.dpkg-new).
++
++This feature can be used by system administrators and packages to include
++tasks that will be run at defined intervals.  Files created by packages in these
++directories should be named after the package that supplies them.
++
++.PP
++Support for /etc/cron.d is included in the
++.I cron
++daemon itself, which handles this location as the system-wide crontab spool.
++This directory can contain any file defining tasks following the format
++used in /etc/crontab, i.e.\& unlike the user cron spool, these files must
++provide the username to run the task as in the task definition.
++
++Files in this directory have to be owned by root, do not need to be executable
++(they are configuration files, just like /etc/crontab) and
++must conform to the same naming convention as used by
++.IR run-parts "(8) :"
++they
++must consist solely of upper- and lower-case letters, digits, underscores,
++and hyphens.  This means that they
++.B cannot
++contain any dots.
++If the
++.B \-l
++option is specified to
++.I cron
++(this option can be setup through /etc/default/cron, see below), then they must
++conform to the LSB namespace specification, exactly as in the
++.B \-\-lsbsysinit
++option in
++.IR run-parts .
++
++The intended purpose of this feature is to allow packages that require
++finer control of their scheduling than the
++/etc/cron.{hourly,daily,weekly,monthly}
++directories to add a crontab file to /etc/cron.d.  Such files
++should be named after the package that supplies them.
++
++
++Also, the default configuration of
++.I cron
+ is controlled by
+ .I /etc/default/cron
+ which is read by the init.d script that launches the
+@@ -150,9 +248,11 @@ daemon.  This file determines whether
+ will read the system's environment variables and makes it possible to add
+ additional options to the
+ .I cron
+-program before it is executed.
++program before it is executed, for example to define how
++it will treat the files under /etc/cron.d.
++
+ .SH "SEE ALSO"
+-crontab(1), crontab(5)
++crontab(1), crontab(5), run-parts(8)
+ .SH AUTHOR
+ Paul Vixie <paul@vix.com> is the author of
+ .I cron
+diff --git a/cron.c b/cron.c
+index 1d93f1b..7e10cdc 100644
+--- a/cron.c
++++ b/cron.c
+@@ -131,7 +131,9 @@ main(argc, argv)
+ 	acquire_daemonlock(0);
+ 	database.head = NULL;
+ 	database.tail = NULL;
+-	database.mtime = (time_t) 0;
++	database.sys_mtime = (time_t) 0;
++	database.user_mtime = (time_t) 0;
++	database.sysd_mtime = (time_t) 0;
+ 	load_database(&database);
+ 	run_reboot_jobs(&database);
+ 	cron_sync();
+@@ -329,9 +331,9 @@ sighup_handler(int x) {
+ 
+ 
+ #if DEBUGGING
+-const char *getoptarg = "x:";
++const char *getoptarg = "lx:";
+ #else
+-const char *getoptarg = "";
++const char *getoptarg = "l";
+ #endif
+ 
+ static void
+@@ -341,10 +343,15 @@ parse_args(argc, argv)
+ {
+ 	int	argch;
+ 
++	lsbsysinit_mode = 0;
++
+ 	while (EOF != (argch = getopt(argc, argv, getoptarg))) {
+ 		switch (argch) {
+ 		default:
+ 			usage();
++		case 'l':
++			lsbsysinit_mode = 1;
++			break;
+ #if DEBUGGING
+ 		case 'x':
+ 			if (!set_debug_flags(optarg))
+diff --git a/cron.h b/cron.h
+index 86e7a74..a167026 100644
+--- a/cron.h
++++ b/cron.h
+@@ -192,7 +192,9 @@ typedef	struct _user {
+ 
+ typedef	struct _cron_db {
+ 	user		*head, *tail;	/* links */
+-	time_t		mtime;		/* last modtime on spooldir */
++	time_t		user_mtime;     /* last modtime on spooldir */
++	time_t		sys_mtime;      /* last modtime on system crontab */
++	time_t		sysd_mtime;     /* last modtime on system crondir */
+ } cron_db;
+ 
+ 
+@@ -271,6 +273,8 @@ char	*ProgramName;
+ int	LineNumber;
+ time_t	TargetTime;
+ 
++int	lsbsysinit_mode;
++
+ # if DEBUGGING
+ int	DebugFlags;
+ char	*DebugFlagNames[] = {	/* sync with #defines */
+@@ -283,6 +287,7 @@ extern	char	*copyright[],
+ 		*MonthNames[],
+ 		*DowNames[],
+ 		*ProgramName;
++extern	int	lsbsysinit_mode;
+ extern	int	LineNumber;
+ extern	time_t	TargetTime;
+ # if DEBUGGING
+diff --git a/database.c b/database.c
+index e08a3e1..40317b1 100644
+--- a/database.c
++++ b/database.c
 @@ -47,7 +47,8 @@ going to be lazy */
  static	void		process_crontab __P((char *, char *, char *,
  					     struct stat *,
@@ -161,7 +396,7 @@ Index: cron/database.c
  	/* we used to keep this dir open all the time, for the sake of
  	 * efficiency.  however, we need to close it in every fork, and
  	 * we fork a lot more often than the mtime of the dir changes.
-@@ -215,51 +309,118 @@ process_crontab(uname, fname, tabname, s
+@@ -215,51 +309,118 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  	int		crontab_fd = OK - 1;
  	user		*u;
  
@@ -367,10 +602,10 @@ Index: cron/database.c
 +			break;
 +	return curtab;
 +}
-Index: cron/pathnames.h
-===================================================================
---- cron.orig/pathnames.h
-+++ cron/pathnames.h
+diff --git a/pathnames.h b/pathnames.h
+index 9a6e349..0f5c1b9 100644
+--- a/pathnames.h
++++ b/pathnames.h
 @@ -62,6 +62,8 @@
  
  			/* 4.3BSD-style crontab */
@@ -380,229 +615,3 @@ Index: cron/pathnames.h
  
  			/* what editor to use if no EDITOR or VISUAL
  			 * environment variable specified.
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
-@@ -192,7 +192,9 @@ typedef	struct _user {
- 
- typedef	struct _cron_db {
- 	user		*head, *tail;	/* links */
--	time_t		mtime;		/* last modtime on spooldir */
-+	time_t		user_mtime;     /* last modtime on spooldir */
-+	time_t		sys_mtime;      /* last modtime on system crontab */
-+	time_t		sysd_mtime;     /* last modtime on system crondir */
- } cron_db;
- 
- 
-@@ -271,6 +273,8 @@ char	*ProgramName;
- int	LineNumber;
- time_t	TargetTime;
- 
-+int	lsbsysinit_mode;
-+
- # if DEBUGGING
- int	DebugFlags;
- char	*DebugFlagNames[] = {	/* sync with #defines */
-@@ -283,6 +287,7 @@ extern	char	*copyright[],
- 		*MonthNames[],
- 		*DowNames[],
- 		*ProgramName;
-+extern	int	lsbsysinit_mode;
- extern	int	LineNumber;
- extern	time_t	TargetTime;
- # if DEBUGGING
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -131,7 +131,9 @@ main(argc, argv)
- 	acquire_daemonlock(0);
- 	database.head = NULL;
- 	database.tail = NULL;
--	database.mtime = (time_t) 0;
-+	database.sys_mtime = (time_t) 0;
-+	database.user_mtime = (time_t) 0;
-+	database.sysd_mtime = (time_t) 0;
- 	load_database(&database);
- 	run_reboot_jobs(&database);
- 	cron_sync();
-@@ -329,9 +331,9 @@ sighup_handler(int x) {
- 
- 
- #if DEBUGGING
--const char *getoptarg = "x:";
-+const char *getoptarg = "lx:";
- #else
--const char *getoptarg = "";
-+const char *getoptarg = "l";
- #endif
- 
- static void
-@@ -341,10 +343,15 @@ parse_args(argc, argv)
- {
- 	int	argch;
- 
-+	lsbsysinit_mode = 0;
-+
- 	while (EOF != (argch = getopt(argc, argv, getoptarg))) {
- 		switch (argch) {
- 		default:
- 			usage();
-+		case 'l':
-+			lsbsysinit_mode = 1;
-+			break;
- #if DEBUGGING
- 		case 'x':
- 			if (!set_debug_flags(optarg))
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -23,10 +23,17 @@
- cron \- daemon to execute scheduled commands (Vixie Cron)
- .SH SYNOPSIS
- cron
-+.RB [ \-l ]
- .SH DESCRIPTION
- .I cron
- is started automatically from /etc/init.d on entering multi-user
- runlevels.
-+.SH OPTIONS
-+.TP 8
-+.B \-l
-+Enable LSB compliant names for /etc/cron.d files.  This setting, however, does
-+not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
-+/etc/cron.weekly or /etc/cron.monthly.
- .SH NOTES
- .PP
- .I cron
-@@ -47,8 +54,39 @@ to run programs under /etc/cron.hourly,
- Debian, see the note under
- .B DEBIAN SPECIFIC
- below.
--/etc/crontab must be owned by root, and must not
--be group-or other-writable.
-+
-+Additionally, in Debian,
-+.I cron
-+reads the files in the /etc/cron.d directory.
-+.I cron
-+treats the files in /etc/cron.d as in the same way as the /etc/crontab
-+file (they follow the special format of that file,
-+i.e.\& they include the
-+.I user
-+field).  However, they are independent of /etc/crontab: they do not, for
-+example, inherit environment variable settings from it.  This change is
-+specific to Debian see the note under
-+.B DEBIAN SPECIFIC
-+below.
-+
-+Like /etc/crontab, the files in the /etc/cron.d directory are
-+monitored for changes.
-+In general, the system administrator should not use /etc/cron.d/,
-+but use the standard system crontab /etc/crontab.
-+
-+/etc/crontab and the files in /etc/cron.d must be owned by root, and must not
-+be group- or other-writable.  In contrast to the spool area, the files
-+under /etc/cron.d or the files under /etc/cron.hourly, /etc/cron.daily,
-+/etc/cron.weekly and /etc/cron.monthly may also be symlinks,
-+provided that both the symlink and the file it points to are owned by root.
-+The files under /etc/cron.d do not need to be executable, while the files
-+under /etc/cron.hourly, /etc/cron.daily,
-+/etc/cron.weekly and /etc/cron.monthly do, as they are run by
-+.I run-parts
-+(see
-+.IR run-parts (8)
-+for more information).
-+
- .I cron
- then wakes up every minute, examining all stored crontabs, checking
- each command to see if it should be run in the current minute.  When
-@@ -116,6 +154,8 @@ changes introduced are:
- .IP \(em
- Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,
- .IP \(em
-+Support for /etc/cron.d (drop-in dir for package crontabs),
-+.IP \(em
- PAM support,
- .IP \(em
- SELinux support,
-@@ -141,6 +181,63 @@ These tasks are disabled if
- .B anacron
- is installed (except for the hourly task) to prevent conflicts between
- both daemons.
-+
-+As described above, the files under these directories have to pass
-+some sanity checks including the following: be executable, be owned by root,
-+not be writable by group or other and, if symlinks, point to files owned by
-+root.  Additionally, the file names must conform to the filename requirements
-+of
-+.BR run-parts :
-+they must be entirely made up of letters, digits and can only contain the
-+special signs underscores ('_') and hyphens ('-').  Any file that does
-+not conform to these requirements will not be executed by
-+.BR run-parts .
-+For example, any file containing dots will be ignored.
-+This is done to prevent cron from running any of the files
-+that are left by the Debian package management system when handling files in
-+/etc/cron.d/ as configuration files (i.e.\& files ending in
-+\&.dpkg-dist, \&.dpkg-orig, \&.dpkg-old, and \&.dpkg-new).
-+
-+This feature can be used by system administrators and packages to include
-+tasks that will be run at defined intervals.  Files created by packages in these
-+directories should be named after the package that supplies them.
-+
-+.PP
-+Support for /etc/cron.d is included in the
-+.I cron
-+daemon itself, which handles this location as the system-wide crontab spool.
-+This directory can contain any file defining tasks following the format
-+used in /etc/crontab, i.e.\& unlike the user cron spool, these files must
-+provide the username to run the task as in the task definition.
-+
-+Files in this directory have to be owned by root, do not need to be executable
-+(they are configuration files, just like /etc/crontab) and
-+must conform to the same naming convention as used by
-+.IR run-parts "(8) :"
-+they
-+must consist solely of upper- and lower-case letters, digits, underscores,
-+and hyphens.  This means that they
-+.B cannot
-+contain any dots.
-+If the
-+.B \-l
-+option is specified to
-+.I cron
-+(this option can be setup through /etc/default/cron, see below), then they must
-+conform to the LSB namespace specification, exactly as in the
-+.B \-\-lsbsysinit
-+option in
-+.IR run-parts .
-+
-+The intended purpose of this feature is to allow packages that require
-+finer control of their scheduling than the
-+/etc/cron.{hourly,daily,weekly,monthly}
-+directories to add a crontab file to /etc/cron.d.  Such files
-+should be named after the package that supplies them.
-+
-+
-+Also, the default configuration of
-+.I cron
- is controlled by
- .I /etc/default/cron
- which is read by the init.d script that launches the
-@@ -150,9 +247,11 @@ daemon.  This file determines whether
- will read the system's environment variables and makes it possible to add
- additional options to the
- .I cron
--program before it is executed.
-+program before it is executed, for example to define how
-+it will treat the files under /etc/cron.d.
-+
- .SH "SEE ALSO"
--crontab(1), crontab(5)
-+crontab(1), crontab(5), run-parts(8)
- .SH AUTHOR
- Paul Vixie <paul@vix.com> is the author of
- .I cron

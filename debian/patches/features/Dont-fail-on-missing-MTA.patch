@@ -15,11 +15,15 @@ output to it.
 Bug-Debian: https://bugs.debian.org/577133
 Forwarded: no
 Last-Update: 2016-01-15
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -23,6 +23,8 @@ static char rcsid[] = "$Id: do_command.c
+---
+ do_command.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/do_command.c b/do_command.c
+index cbca2d1..923e507 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -23,6 +23,8 @@ static char rcsid[] = "$Id: do_command.c,v 2.12 1994/01/15 20:43:43 vixie Exp $"
  #include "cron.h"
  #include <signal.h>
  #include <grp.h>

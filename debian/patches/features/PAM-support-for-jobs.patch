@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Jan 2016 23:02:33 +0100
+Date: Thu, 7 Jan 2016 23:02:33 +0100
 Subject: PAM support for jobs
 
 Add support for PAM for job execution.
@@ -10,10 +10,16 @@ Bug-Debian: https://bugs.debian.org/68366
 Bug-Debian: https://bugs.debian.org/67586
 Forwarded: no
 Last-Update: 2016-01-07
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
+---
+ Makefile     |  4 ++--
+ cron.8       |  2 ++
+ do_command.c | 33 +++++++++++++++++++++++++++++++++
+ 3 files changed, 37 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 5f74507..c8dd2f4 100644
+--- a/Makefile
++++ b/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -23,7 +29,7 @@ Index: cron/Makefile
  #<<optimize or debug?>>
  #OPTIM		=	-O
  OPTIM		=	-g
-@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $
+@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
  #<<manifest defines>>
  # Allow override from command line
  DEBUG_DEFS	?= -DDEBUGGING=0
@@ -32,11 +38,24 @@ Index: cron/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -29,6 +29,18 @@ static char rcsid[] = "$Id: do_command.c
+diff --git a/cron.8 b/cron.8
+index 54b1ef5..9b2c01d 100644
+--- a/cron.8
++++ b/cron.8
+@@ -116,6 +116,8 @@ changes introduced are:
+ .IP \(em
+ Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,
+ .IP \(em
++PAM support,
++.IP \(em
+ Debian-specific file locations and commands,
+ .IP \(em
+ Debian-specific configuration (/etc/default/cron),
+diff --git a/do_command.c b/do_command.c
+index f3c37f8..1a75ed4 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -29,6 +29,18 @@ static char rcsid[] = "$Id: do_command.c,v 2.12 1994/01/15 20:43:43 vixie Exp $"
  #if defined(SYSLOG)
  # include <syslog.h>
  #endif
@@ -97,16 +116,3 @@ Index: cron/do_command.c
  }
  
  
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -116,6 +116,8 @@ changes introduced are:
- .IP \(em
- Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,
- .IP \(em
-+PAM support,
-+.IP \(em
- Debian-specific file locations and commands,
- .IP \(em
- Debian-specific configuration (/etc/default/cron),

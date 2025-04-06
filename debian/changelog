@@ -1,3 +1,354 @@
+cron (3.0pl1-196) unstable; urgency=medium
+
+  * Fixed a lot of inconsistencies in man pages cron(8), crontab(1) and
+    crontab(5), many thanks to Helge Kreutzmann's very detailed bug
+    report. Closes: #1102192
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 06 Apr 2025 20:47:59 +0200
+
+cron (3.0pl1-195) unstable; urgency=medium
+
+  * declared sensible-editor as the command used by `crontab -e` in the
+    manpage crontab.1; Closes: #1079207
+  * now all manpages are created by xsltproc from XML source files.
+    I checked that '[g|n]roff -mandoc -t -ww -b -z -K utf8  cron.8'
+    report no longer any error. Closes: #1085713
+  * declared that cron is lauched by systemd. Closes: #1086495
+  * as the changes suggested by Paul Wise <pabs@debian.org> about
+    bug report #956953 are now reveted, due to the lack of implementation
+    and test, errors which were reported about the version 3.0pl1-190
+    in experimental are cleared. Closes: #1071709
+  * checked that the line "33 22 * * *     expr $(date +\%s) ..." is no
+    longer produced by the source file debian/crontab.5.xml; instead,
+    % characters are properly escaped in the examples:
+    $ man -l debian/crontab.5 | grep '\\%'
+           0 4 8-14 * *    test $(date +\%u) -eq 6 && echo "2nd Saturday"
+           0 * * * * [ "$(date +\%R)" = 00:00 ] && run_some_script
+           0 4 * * Sat   [ "$(date +\%e)" = "$(LANG=C ncal ...
+    So this Closes: #1101921
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 03 Apr 2025 12:04:09 +0200
+
+cron (3.0pl1-194) unstable; urgency=medium
+
+  * upload to unstable
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sat, 01 Mar 2025 09:27:21 +0100
+
+cron (3.0pl1-193) experimental; urgency=medium
+
+  * cleared warning and errors for gcc-15 compiler. Closes: #1096482
+
+ -- Georges Khaznadar <georgesk@debian.org>  Fri, 21 Feb 2025 16:33:32 +0100
+
+cron (3.0pl1-192) unstable; urgency=medium
+
+  * reverted changes which would add cron jobs to systemd scope cgroups.
+    #956953 will not be fixed.
+  * applied Jing Luo's patch, thanks! this patch fixes the licence
+    record regarding file debian/examples/crontab2english.pl
+    Closes: #1095226
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 05 Feb 2025 17:29:29 +0100
+
+cron (3.0pl1-191) experimental; urgency=medium
+
+  * fixed e-mail errors due to inconsistent MAILFROM and MAILTO
+    addresses
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 27 Oct 2024 12:06:08 +0100
+
+cron (3.0pl1-190) UNRELEASED; urgency=medium
+
+  * used searchmode=plain to fix the watch file
+  * add cron jobs to systemd scope cgroups (Closes: #956953)
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 23 May 2024 14:13:04 +0200
+
+cron (3.0pl1-189) unstable; urgency=medium
+
+  * rewritten the man pages in docbook XML format, so their typography
+    and layout can be mastered at a higher level: hacking groff sources
+    can be prone to error (Closes: #1065356)
+
+ -- Georges Khaznadar <georgesk@debian.org>  Tue, 26 Mar 2024 19:08:34 +0100
+
+cron (3.0pl1-188) unstable; urgency=medium
+
+  * trying to fix tests/sanity-checks
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 06 Mar 2024 14:42:47 +0100
+
+cron (3.0pl1-187) unstable; urgency=medium
+
+  * fixed the bug number in debian/tests/sanity-checks
+  * using check_error() to report errors with MAILTO or MAILFROM
+  * added support for unquoted empty environment strings. Closes: #773602
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 29 Feb 2024 13:58:46 +0100
+
+cron (3.0pl1-186) unstable; urgency=medium
+
+  * modified the attribution of patch Wrap-long-lines.patch, it was
+    authored by Frank Heckenbach <f.heckenbach@fh-soft.de>, while
+    Harald Dunkel reported the bug fixed by Frank Heckenbach's patch
+  * reorganized the source about function safe_p, so it can be used
+    in the file crontab.c, and let emit a warning when variables
+    MAITO or MAILFROM are defined "unsafely". Closes: #1061155
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 28 Feb 2024 16:27:09 +0100
+
+cron (3.0pl1-185) unstable; urgency=medium
+
+  * added bat as Suggests: and modified the manpage crontab.1 to
+    provide an example of colorization using the command batcat
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 21 Jan 2024 20:13:00 +0100
+
+cron (3.0pl1-184) unstable; urgency=medium
+
+  * created a new file /etc/supercat/spcrc-crontab-light for light
+    backgrounds, and modified /etc/supercat/spcrc-crontab for dark
+    backgrounds. Closes: #1061164
+  * demoted supercat from Recommends: to Suggests:. Closes: #1061196
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 21 Jan 2024 12:10:45 +0100
+
+cron (3.0pl1-183) unstable; urgency=medium
+
+  * deleted the patch features/Coloring_the_ouput_of_crontab_l.patch,
+    enhanced the patch docs/more_examples_for_crontab.patch, added
+    the file spcrc-crontab and recommended the package supercat, to
+    give an opportunity to colorize the output of `crontab -l`, while
+    keeping this output accessible. Closes: #1059828
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 18 Jan 2024 09:51:30 +0100
+
+cron (3.0pl1-182) unstable; urgency=medium
+
+  * patched crontab.5 to document the possible use of leading zeroes,
+    in order to line up columns. Closes: #946382
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 25 Dec 2023 19:13:06 +0100
+
+cron (3.0pl1-181) unstable; urgency=medium
+
+  * patched crontab.5 in order to give useful information about using eval
+    command, which makes easier to express environment assignments inside
+    commands to call with cron. Closes: #773513. Closes: #876975
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sat, 16 Dec 2023 17:15:15 +0100
+
+cron (3.0pl1-180) unstable; urgency=medium
+
+  * implemented a new feature: when a command outputs very long lines,
+    the message reporting them has wrapped lines. Closes: #777584
+    + added a new test for autopkgtests.
+  * renamed a test file to please lintian, which issued a warning
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 22 Nov 2023 17:10:27 +0100
+
+cron (3.0pl1-179) unstable; urgency=medium
+
+  * improved crontab.c: it now emits a COLOR_RESET escape sequence before
+    sending '\n' to ttys. Closes: #1055197
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 12 Nov 2023 20:11:18 +0100
+
+cron (3.0pl1-178) unstable; urgency=medium
+
+  * checked that debian/crontab.main keeps /bin and /sbin in the PATH.
+    Closes: #1051138
+  * modified crontab.c, so `crontab -l` emits a COLOR_RESET escape sequence
+    to a tty unconditionaly at the end of the lines, to prevent prompt
+    corruption later. Closes: #1054327
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 01 Nov 2023 17:56:35 +0100
+
+cron (3.0pl1-177) unstable; urgency=medium
+
+  * Included Alexander Schwinn's PR: this is about checking steps in crontabs,
+    to prevent insane divisions, like dividing one hour in more than 60 steps
+    for example
+  * added a new test 'step_size_out_of_bound' to check the previous change
+  * modified the fake editor debian/tests/cronfiller.py so it can take in
+    account an environment variable LINES to append some lines to a
+    crontab file.
+  * made a longer sleep (now 4 seconds) in the test
+    'check-messages-sent-by-cron' to prevent random failures due to a
+    heavily loaded host
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 19 Oct 2023 18:41:20 +0200
+
+cron (3.0pl1-176) unstable; urgency=medium
+
+  * added the switch -n in the synopsis line of cron.8
+  * enable debug by default (it must still be triggered by -x when
+    calling cron); enabled the -N switch when DEBUGGING is enabled for
+    cron.
+  * documented the -x switch in cron.8
+  * declared myself as maintainer
+  * made a roud trip with `gbp pq import/export`, which modifies the
+    debian patches (adding some information, like for example a summary
+    for every modified file)
+  * modified the patch features/Coloring_the_ouput_of_crontab_l.patch
+    in order to touch the background color when the foregroud color is
+    changed, and keep an acceptable contrast. Closes: #1053288
+  * added SyslogFacility=cron in the file cron.service. Closes: #1051619
+
+ -- Georges Khaznadar <georgesk@debian.org>  Tue, 10 Oct 2023 19:45:44 +0200
+
+cron (3.0pl1-175) unstable; urgency=medium
+
+  * removed the line SHELL=/usr/bin/sh from an example in crontab.5; this,
+    Closes: #166533
+  * according to Message-ID: <87il8y5n5c.8.fsf@jidanni.org> sent to
+    915289-done@bugs.debian.org, this bug should be closed now ??
+    Closes: #915289 anyway.
+  * uncommented EXTRA_OPTS="" in debian/cron.default; Closes: #1050702
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 03 Sep 2023 12:30:35 +0200
+
+cron (3.0pl1-174) unstable; urgency=medium
+
+  * modified the debian patch features/cron_now.patch. Removed the script
+    make_cron_now.py. Added a new switch (-N) to the cron command, which
+    makes it run the cron jobs once, like when a tick happens, an exit.
+    Documented the new features in cron.8, removed the command cron_now and
+    its manpage. Added an entry in debian/cron.NEWS. Simplified debian/rules.
+    Removed the dependency on libselinux1. Closes: #1050482
+  * modified the test suite to use `cron -N` instead of cron_now
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sun, 27 Aug 2023 19:30:24 +0200
+
+cron (3.0pl1-173) unstable; urgency=medium
+
+  * fixed the code which colorizes the output of `crontab -l`
+  * added an autopkgtest for this feature
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 24 Aug 2023 18:31:00 +0200
+
+cron (3.0pl1-172) unstable; urgency=medium
+
+  * added a dependency on libselinux1, which makes cron package unfit
+    for hurd-i386
+  * adopted Dan Jacobson's suggestion for "2nd Saturday" and "morning
+    following the first Thursday". Closes: #854581; Closes: #820507
+  * fixed the patch fixes/crontab_5_manpage.patch, which deleted too much
+    lines from crontab.5
+  * adopted Stéphane Blondon's patch to colorize the output of `crontab -l`
+    Closes: #813614
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 24 Aug 2023 14:56:03 +0200
+
+cron (3.0pl1-171) unstable; urgency=medium
+
+  * applied one change proposed by Helge Kreutzmann (thanks!).
+    Closes: #964386
+
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 24 Aug 2023 13:13:11 +0200
+
+cron (3.0pl1-170) unstable; urgency=medium
+
+  * removed the reference to the missing file debian/make_cron_now.py
+    in debian/copyright, since this file is created by a debian patch now.
+  * added an entry to NEWS.Debian
+  * taken in account Vincent Lefevre's last reply about bug #1049964:
+    simplified _PATH_DEFPATH in pathnames.h and restored debian/crontab.main
+    to a reasonable content. Closes: #1049964
+  * renamed one debian test, and added there a some lines to prevent a
+    regression about #1049964.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sat, 19 Aug 2023 17:15:58 +0200
+
+cron (3.0pl1-169) unstable; urgency=medium
+
+  * modified the patch fixes/Usr-bin-sbin.patch in order to add the
+    older path /sbin, necessary for some commands.
+    Closes: #1049964
+  * checked that the sentence « The system administrator may create cron
+    jobs in /etc/cron.d/ with file names like "local" or "local-foo" » is
+    part of the file cron.8 when it is patched. Closes: #1035914
+
+ -- Georges Khaznadar <georgesk@debian.org>  Sat, 19 Aug 2023 10:12:05 +0200
+
+cron (3.0pl1-168) unstable; urgency=medium
+
+  * modified the patch fixes/Usr-bin-sbin.patch in order to add the
+    older path /bin, still necessary for the command /bin/run-parts.
+    Closes: 1049969
+
+ -- Georges Khaznadar <georgesk@debian.org>  Fri, 18 Aug 2023 08:22:02 +0200
+
+cron (3.0pl1-167) unstable; urgency=medium
+
+  * adopted Daniel Lewart's suggestion for cron.8; Closes: #035914
+  * fixed crontab.5 for the example showing how to analyze the date
+    for a fine timing. Closes: #1032823
+  * modified debian/watch, so uscan does no longer report version 4.1 from
+    Vixie as the latest to consider.
+  * merged Alexandre Detiste's pull request
+    https://salsa.debian.org/debian/cron/-/merge_requests/11
+    Closes: #1049353
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 16 Aug 2023 12:53:31 +0200
+
+cron (3.0pl1-166) unstable; urgency=medium
+
+  * upgraded Standards-Version: 4.6.2
+  * modified the patch for crontab.5, according to Christian Buhtz' work,
+    thanks! see: https://salsa.debian.org/buhtz/cron
+  * reverted some of the changes brought by crontab_5_manpage.patch,
+    particularly those which broke the changes made by the patch
+    No-multiple-timezones.patch. Closes: #1025536
+  * marked cron-daemon-common package as Multi-Arch: foreign.
+    Closes: #1035314
+  * modified debian/cron.init in order to consider /etc/localtime, and the
+    patch features/Debian-manpage-and-doc-updates.patch
+    Closes: #1038836
+  * created the new patch debian/Usr-bin-sbin.patch, and mofified
+    debian/crontab.main, to modernize PATHs. Closes: #1042894
+  * removed the test compare-with-old-cron-files which makes less sense
+    now, as novelties which it was supposed to test were accepted by a
+    big number of users since the original changes, and because modernized
+    paths are different from the paths defined in older crontabs.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 14 Aug 2023 11:43:02 +0200
+
+cron (3.0pl1-165) unstable; urgency=medium
+
+  * increased the sleep time up to 2 seconds in an autopkgtest, to let
+    the MTA finalize cron_now's actions on every architecture, more
+    securely.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 14 Aug 2023 11:05:57 +0200
+
+cron (3.0pl1-164) unstable; urgency=medium
+
+  * added a new command named cron_now; it is meant to launch cron
+    jobs immediately, quite exactly as when one minute has elapsed
+    with cron. A debian patch provides the file contrib/make_cron_now.py
+    which derives a file cron_now.c from the source cron.c
+  * wrote a man page for the command cron_now
+  * modified one test for autopkgtest, to make use of cron_now
+  * added a build-dependency on python3 (needed to build cron_now.c),
+    and modified debian/rules to compile cron_now.
+
+ -- Georges Khaznadar <georgesk@debian.org>  Mon, 07 Aug 2023 22:30:01 +0200
+
+cron (3.0pl1-163) unstable; urgency=medium
+
+  * Checked that the patch debian/patches/fixes/crontab_5_manpage.patch
+    confirms that all features about @reboot were removed. Closes: #779845;
+    checked that crontab(5) manual page is no longer outdated as
+    Tobias Köck used to notice it. Closes: #1037442
+  * adopted Daniel Lewart's patch (thanks!), which improves debian patch
+    No-multiple-timezones.patch. Closes: #1025536
+  * modified debian/cron.postinst in a way which allows script lines added
+    by debhelper to be considered. Closes: #1038938
+
+ -- Georges Khaznadar <georgesk@debian.org>  Wed, 26 Jul 2023 15:01:18 +0200
+
 cron (3.0pl1-162) unstable; urgency=medium
 
   * moved "Breaks: systemd-cron(<<1.15.19-5~)" to the package
@@ -291,7 +642,7 @@ cron (3.0pl1-134) unstable; urgency=medium
     (Closes: #925276)
   * Add NEWS entry for crontab line limit increase.
 
- -- Christian Kastner <ckk@debian.org>  Sun, 23 Jun 2019 19:49:01 +0200
+ -- Christian Kastner <ckk@debian.org>  Sun, 23 Jun 2019 19:50:01 +0200
 
 cron (3.0pl1-133) unstable; urgency=medium
 

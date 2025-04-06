@@ -1,0 +1,56 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:23 +0200
+Subject: Enabling_debug_by_default
+
+As debugging is not enabled at compile time, adding a documentation
+of the -x switch in cron.8 manpage
+---
+ cron.8 | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/cron.8 b/cron.8
+index 8a7d4b8..e1f2900 100644
+--- a/cron.8
++++ b/cron.8
+@@ -27,8 +27,10 @@ cron
+ .RB [ \-l ]
+ .RB [ \-L
+ .IR loglevel ]
+-.RB [ \-N
++.RB [ \-n
+ .IR fqdn ]
++.RB [ \-x
++.IR debugflags ]
+ 
+ cron
+ .RB [ \-N ]
+@@ -74,6 +76,29 @@ Logging will be disabled if
+ .I levels
+ is set to zero (0).
+ A value of fifteen (15) will select all options.
++.TP
++.B \-x debugflags
++Tell cron to be more verbose and output debugging information; debugflags is
++the sum of those values:
++.br
++.RS 12
++.IP \fB1\fR
++"ext": ...
++.IP \fB2\fR
++"sch": ...
++.IP \fB4\fR
++"proc": ...
++.IP \fB8\fR
++"pars": ...
++.IP \fB16\fR
++"load": ...
++.IP \fB32\fR
++"misc": ...
++.IP \fB64\fR
++"test": ...
++.IP \fB128\fR
++"bit": ...
++.RE
+ .SH NOTES
+ .PP
+ .I cron

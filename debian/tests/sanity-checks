@@ -1,0 +1,47 @@
+#! /bin/sh
+
+set -e
+
+dir=$(pwd)/debian/tests
+. $dir/textutils.sh
+
+frame "This test is to check that installing cron (and cron-daemon-common) " \
+      "keep enventually a previous version of crontab without changes, " \
+      "that the path to run-parts is OK (to prevent a regression as " \
+      "documented in bug #1049964)"
+
+echo "================= purge cron and cron-daemon-common ================="
+apt-get --yes purge cron cron-daemon-common
+echo "========== create the file /etc/crontab with fancy contents ========="
+
+cat > /etc/crontab <<EOF
+# Hello, here is a fancy header for an "older" crontab
+# Let us see whether an install of packages cron-daemon-common and cron
+#   will preserve the original file ...
+EOF
+
+echo '=== install cron, reply "N" when prompted to replace /etc/crontab ==='
+echo "N" | apt-get --yes install cron 2>/dev/null
+
+grep -q "Hello, here is a fancy header for an \"older\" crontab" /etc/crontab
+echo "=== OK: cron-daemon-common did preserve older configuration files ==="
+
+which run-parts
+echo "=================== OK: the PATH includes run-parts =================="
+
+# CAUTION: the crontab file will become invalid after that test
+
+frame "This other test is to check that the command crontab will send a " \
+      "significant warning to the user when declarations of MAILTO or " \
+      "MAILFROM are not safe, like in the example documented in bug #1061155"
+
+reply=$(echo "MAILTO=a@example.com, b@example.com" | crontab -n - 2>&1 || echo "returned $?")
+if  echo $reply | grep -q "returned 1" && echo $reply | grep -q "unsafe mail"; then
+    echo "Fine, we got an error about \"MAILTO=a@example.com, b@example.com\""
+else
+    echo "The expected error about an incorrect MAILTO value is missing"
+    false
+fi
+
+echo "===== OK: incorrect definition of MAILTO raises an error ============="
+

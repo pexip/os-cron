@@ -13,10 +13,21 @@ Bug-Debian: https://bugs.debian.org/62268
 Bug-Debian: https://bugs.debian.org/89040
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/compat.c
-===================================================================
---- cron.orig/compat.c
-+++ cron/compat.c
+---
+ compat.c     |  8 +++++---
+ cron.h       |  4 ++--
+ crontab.c    | 36 +++++++++++++++++++++++-------------
+ database.c   |  2 +-
+ do_command.c |  6 +++---
+ entry.c      | 10 +++++-----
+ env.c        |  8 ++++++--
+ misc.c       | 25 +++++++++++++------------
+ 8 files changed, 58 insertions(+), 41 deletions(-)
+
+diff --git a/compat.c b/compat.c
+index cd73d36..6601c27 100644
+--- a/compat.c
++++ b/compat.c
 @@ -76,7 +76,7 @@ strerror(error)
  		return sys_errlist[error];
  	}
@@ -47,11 +58,26 @@ Index: cron/compat.c
  	return putenv(tmp);	/* intentionally orphan 'tmp' storage */
  }
  #endif
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -55,7 +55,7 @@ static char	*Options[] = { "???", "list"
+diff --git a/cron.h b/cron.h
+index a71dc17..d1861be 100644
+--- a/cron.h
++++ b/cron.h
+@@ -66,8 +66,8 @@
+ #define	OK_EXIT		0	/* exit() with this is considered 'normal' */
+ #define	MAX_FNAME	100	/* max length of internally generated fn */
+ #define	MAX_COMMAND	1000	/* max length of internally generated cmd */
+-#define	MAX_ENVSTR	1000	/* max length of envvar=value\0 strings */
+-#define	MAX_TEMPSTR	100	/* obvious */
++#define	MAX_TEMPSTR	1000	/* max length of envvar=value\0 strings */
++#define	MAX_ENVSTR	MAX_TEMPSTR	/* DO NOT change - buffer overruns otherwise */
+ #define	MAX_UNAME	20	/* max length of username, should be overkill */
+ #define	ROOT_UID	0	/* don't change this, it really must be root */
+ #define	ROOT_USER	"root"	/* ditto */
+diff --git a/crontab.c b/crontab.c
+index 3abbad0..95afc4a 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -55,7 +55,7 @@ static char	*Options[] = { "???", "list", "delete", "edit", "replace" };
  
  
  static	PID_T		Pid;
@@ -164,58 +190,23 @@ Index: cron/crontab.c
  	if (rename(tn, n)) {
  		fprintf(stderr, "%s: error renaming %s to %s\n",
  			ProgramName, tn, n);
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
-@@ -66,8 +66,8 @@
- #define	OK_EXIT		0	/* exit() with this is considered 'normal' */
- #define	MAX_FNAME	100	/* max length of internally generated fn */
- #define	MAX_COMMAND	1000	/* max length of internally generated cmd */
--#define	MAX_ENVSTR	1000	/* max length of envvar=value\0 strings */
--#define	MAX_TEMPSTR	100	/* obvious */
-+#define	MAX_TEMPSTR	1000	/* max length of envvar=value\0 strings */
-+#define	MAX_ENVSTR	MAX_TEMPSTR	/* DO NOT change - buffer overruns otherwise */
- #define	MAX_UNAME	20	/* max length of username, should be overkill */
- #define	ROOT_UID	0	/* don't change this, it really must be root */
- #define	ROOT_USER	"root"	/* ditto */
-Index: cron/env.c
-===================================================================
---- cron.orig/env.c
-+++ cron/env.c
-@@ -140,15 +140,17 @@ load_env(envstr, f)
- {
- 	long	filepos;
- 	int	fileline;
--	char	name[MAX_TEMPSTR], val[MAX_ENVSTR];
-+	char	name[MAX_ENVSTR], val[MAX_ENVSTR];
- 	int	fields;
+diff --git a/database.c b/database.c
+index 67b71a0..8e49159 100644
+--- a/database.c
++++ b/database.c
+@@ -125,7 +125,7 @@ load_database(old_db)
+ 			continue;
  
- 	filepos = ftell(f);
- 	fileline = LineNumber;
- 	skip_comments(f);
--	if (EOF == get_string(envstr, MAX_ENVSTR, f, "\n"))
-+	if (EOF == get_string(envstr, MAX_ENVSTR - 1, f, "\n"))
- 		return (ERR);
+ 		(void) strcpy(fname, dp->d_name);
+-		sprintf(tabname, CRON_TAB(fname));
++		snprintf(tabname, PATH_MAX+1, CRON_TAB(fname));
  
-+    envstr[MAX_ENVSTR - 1] = '\0';
-+
- 	Debug(DPARS, ("load_env, read <%s>\n", envstr))
- 
- 	name[0] = val[0] = '\0';
-@@ -179,6 +181,8 @@ load_env(envstr, f)
- 		}
- 	}
- 
-+	if (strlen(name) + 1 + strlen(val) >= MAX_ENVSTR-1)
-+		return (FALSE);
- 	(void) sprintf(envstr, "%s=%s", name, val);
- 	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
- 	return (TRUE);
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+ 		process_crontab(fname, fname, tabname,
+ 				&statbuf, &new_db, old_db);
+diff --git a/do_command.c b/do_command.c
+index b8e32df..d6491c5 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -365,8 +365,8 @@ child_process(e, u)
  				auto char	hostname[MAXHOSTNAMELEN];
  
@@ -236,10 +227,10 @@ Index: cron/do_command.c
  			"mailed %d byte%s of output but got status 0x%04x\n",
  					bytes, (bytes==1)?"":"s",
  					status);
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
+diff --git a/entry.c b/entry.c
+index f9bf5aa..e439ae5 100644
+--- a/entry.c
++++ b/entry.c
 @@ -257,7 +257,7 @@ load_entry(file, error_func, pw, envp)
  		goto eof;
  	}
@@ -285,10 +276,43 @@ Index: cron/entry.c
  	if ((tenvp = env_set(e->envp, envstr))) {
  		e->envp = tenvp;
  	} else {
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
+diff --git a/env.c b/env.c
+index 9ab55a6..7e156f7 100644
+--- a/env.c
++++ b/env.c
+@@ -140,15 +140,17 @@ load_env(envstr, f)
+ {
+ 	long	filepos;
+ 	int	fileline;
+-	char	name[MAX_TEMPSTR], val[MAX_ENVSTR];
++	char	name[MAX_ENVSTR], val[MAX_ENVSTR];
+ 	int	fields;
+ 
+ 	filepos = ftell(f);
+ 	fileline = LineNumber;
+ 	skip_comments(f);
+-	if (EOF == get_string(envstr, MAX_ENVSTR, f, "\n"))
++	if (EOF == get_string(envstr, MAX_ENVSTR - 1, f, "\n"))
+ 		return (ERR);
+ 
++    envstr[MAX_ENVSTR - 1] = '\0';
++
+ 	Debug(DPARS, ("load_env, read <%s>\n", envstr))
+ 
+ 	name[0] = val[0] = '\0';
+@@ -179,6 +181,8 @@ load_env(envstr, f)
+ 		}
+ 	}
+ 
++	if (strlen(name) + 1 + strlen(val) >= MAX_ENVSTR-1)
++		return (FALSE);
+ 	(void) sprintf(envstr, "%s=%s", name, val);
+ 	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
+ 	return (TRUE);
+diff --git a/misc.c b/misc.c
+index ca2ddfc..0a815e7 100644
+--- a/misc.c
++++ b/misc.c
 @@ -267,11 +267,11 @@ acquire_daemonlock(closeflag)
  		char	buf[MAX_TEMPSTR];
  		int	fd, otherpid;
@@ -371,16 +395,3 @@ Index: cron/misc.c
  		       DowNames[tm->tm_wday],
  		       tm->tm_mday,
  		       MonthNames[tm->tm_mon],
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -125,7 +125,7 @@ load_database(old_db)
- 			continue;
- 
- 		(void) strcpy(fname, dp->d_name);
--		sprintf(tabname, CRON_TAB(fname));
-+		snprintf(tabname, PATH_MAX+1, CRON_TAB(fname));
- 
- 		process_crontab(fname, fname, tabname,
- 				&statbuf, &new_db, old_db);

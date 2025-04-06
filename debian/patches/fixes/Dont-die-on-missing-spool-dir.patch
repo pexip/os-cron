@@ -10,10 +10,14 @@ Fix provided by Justin Pryzby <justinpryzby@users.sourceforge.net>.
 Bug-Debian: https://bugs.debian.org/470564
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
+---
+ database.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/database.c b/database.c
+index 8e49159..09f44a4 100644
+--- a/database.c
++++ b/database.c
 @@ -68,7 +68,7 @@ load_database(old_db)
  	 */
  	if (stat(SPOOL_DIR, &statbuf) < OK) {

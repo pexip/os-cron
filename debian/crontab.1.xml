@@ -1,0 +1,419 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+
+<!--
+
+`xsltproc -''-nonet \
+          -''-param man.charmap.use.subset "0" \
+          -''-param make.year.ranges "1" \
+          -''-param make.single.year.ranges "1" \
+          /usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl \
+          manpage.xml`
+
+A manual page <package>.<section> will be generated. You may view the
+manual page with: nroff -man <package>.<section> | less'. A typical entry
+in a Makefile or Makefile.am is:
+
+DB2MAN = /usr/share/sgml/docbook/stylesheet/xsl/docbook-xsl/manpages/docbook.xsl
+XP     = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
+
+manpage.1: manpage.xml
+        $(XP) $(DB2MAN) $<
+
+The xsltproc binary is found in the xsltproc package. The XSL files are in
+docbook-xsl. A description of the parameters you can use can be found in the
+docbook-xsl-doc-* packages. Please remember that if you create the nroff
+version in one of the debian/rules file targets (such as build), you will need
+to include xsltproc and docbook-xsl in your Build-Depends control field.
+Alternatively use the xmlto command/package. That will also automatically
+pull in xsltproc and docbook-xsl.
+
+Notes for using docbook2x: docbook2x-man does not automatically create the
+AUTHOR(S) and COPYRIGHT sections. In this case, please add them manually as
+<refsect1> ... </refsect1>.
+
+To disable the automatic creation of the AUTHOR(S) and COPYRIGHT sections
+read /usr/share/doc/docbook-xsl/doc/manpages/authors.html. This file can be
+found in the docbook-xsl-doc-html package.
+
+Validation can be done using: `xmllint -''-noout -''-valid manpage.xml`
+
+General documentation about man-pages and man-page-formatting:
+man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
+
+-->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "Georges">
+  <!ENTITY dhsurname   "Khaznadar">
+  <!-- dhusername could also be set to "&dhfirstname; &dhsurname;". -->
+  <!ENTITY dhusername  "Georges Khaznadar">
+  <!ENTITY dhemail     "georgesk@debian.org">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1) and
+       http://www.tldp.org/HOWTO/Man-Page/q2.html. -->
+  <!ENTITY dhsection   "1">
+  <!-- TITLE should be something like "User commands" or similar (see
+       http://www.tldp.org/HOWTO/Man-Page/q2.html). -->
+  <!ENTITY dhtitle     "crontab User Manual">
+  <!ENTITY dhucpackage "Crontab">
+  <!ENTITY dhpackage   "crontab">
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhtitle;</title>
+    <productname>&dhpackage;</productname>
+    <authorgroup>
+      <author>
+       <firstname>Paul</firstname> <surname>Vixie</surname>
+        <contrib>Wrote this manpage (1994).</contrib>
+        <address>
+          <email>paul@vix.com</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Steve</firstname> <surname>Greenland</surname>
+        <contrib>Maintained the package (1996-2005).</contrib>
+        <address>
+          <email>stevegr@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Javier</firstname>
+	<surname>Fernández-Sanguino Peña</surname>
+        <contrib>Maintained the package (2005-2014).</contrib>
+        <address>
+          <email>jfs@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Christian</firstname>
+	<surname>Kastner</surname>
+        <contrib>Maintained the package (2010-2016).</contrib>
+        <address>
+          <email>ckk@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Georges</firstname>
+	<surname>Khaznadar</surname>
+        <contrib>Maintained the package (2022-2024).</contrib>
+        <address>
+          <email>georgesk@debian.org</email>
+        </address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>1994</year>
+      <holder>Paul Vixie</holder>
+    </copyright>
+    <legalnotice>
+      <para>
+	Distribute freely, except: don't remove my name from the
+	source or documentation (don't take credit for my work), mark your
+	changes (don't get me blamed for your possible bugs), don't alter or
+	remove this notice.  May be sold if buildable source is provided to
+	buyer.  No warranty of any kind, express or implied, is included with
+	this software; use at your own risk, responsibility for damages (if
+	any) to anyone resulting from the use of this software rests entirely
+	with the user.
+      </para>
+      <para>
+	Since year 1994, many modifications were made in this manpage,
+	authored by Debian Developers which maintained
+	<productname>cron</productname>; above is a short list, more
+	information can be found in the file
+	<emphasis><filename>/usr/share/doc/cron/copyright</filename></emphasis>.
+      </para>
+    </legalnotice>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhucpackage;</refentrytitle>
+    <manvolnum>&dhsection;</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>maintain crontab files for individual users (Vixie Cron)</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-h</option></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-u <replaceable>user</replaceable></option></arg>
+      <arg choice="opt"><option>-n</option></arg>
+       <arg choice="plain"><option><replaceable>file</replaceable></option></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-u <replaceable>user</replaceable></option></arg>
+      <arg choice="opt"><option>-i</option></arg>
+      <arg choice="plain">
+	<group choice="req">
+	  <arg choice="plain"><option>-e</option></arg>
+	  <arg choice="plain"><option>-l</option></arg>
+	  <arg choice="plain"><option>-r</option></arg>
+	</group>
+      </arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+    <para>
+      <command>&dhpackage;</command> is the program used to install,
+      deinstall or list the tables used to drive the
+      <citerefentry>
+	<refentrytitle>cron</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      daemon in Vixie Cron.  Each user can
+      have their own crontab, and though these are files in
+      <emphasis><filename>/var/spool/cron/crontabs</filename></emphasis>, they are not intended
+      to be edited directly.
+    </para>
+    <para>
+      If the <emphasis><filename>/etc/cron.allow</filename></emphasis>
+      file exists, then you must be listed (one user per line)
+      therein in order to be allowed to use this command.
+      If the <emphasis><filename>/etc/cron.allow</filename></emphasis>
+      file does not exist but the
+      <emphasis><filename>/etc/cron.deny</filename></emphasis> file
+      does exist, then you must not be listed in the
+      <emphasis><filename>/etc/cron.deny</filename></emphasis> file
+      in order to use this command.
+    </para>
+    <para>
+      If neither of these files exists, then depending on
+      site-dependent configuration parameters, only the super user will be
+      allowed to use this command, or all users will be able to use this
+      command.
+    </para>
+    <para>
+      If both files exist then
+      <emphasis><filename>/etc/cron.allow</filename></emphasis> takes
+      precedence. Which means that
+      <emphasis><filename>/etc/cron.deny</filename></emphasis>
+      is not considered and your user must be listed in
+      <emphasis><filename>/etc/cron.allow</filename></emphasis>
+      in order to be able to use the crontab.
+    </para>
+    <para>
+      Regardless of the existence of any of these files, the root
+      administrative user is always allowed to setup a crontab.  For
+      standard Debian systems, all users may use this command.
+    </para>
+    <para>
+      If the <emphasis role="bold">-h</emphasis> option is given,
+      <command>crontab</command> shows a help message and
+      quits immediately.
+    </para>
+    <para>
+      If  the  <emphasis role="bold">-u</emphasis> option is given,
+      it specifies the name of the user whose crontab is
+      to be used (when listing) or modified (when editing).
+      If this  option  is  not given, <command>crontab</command>
+      examines "your" crontab file, i.e., the crontab file of the person
+      executing the command.  Note that
+      <citerefentry>
+	<refentrytitle>su</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      can confuse <command>crontab</command> and that if you
+      are running inside of
+      <citerefentry>
+	<refentrytitle>su</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      you should always use the <emphasis role="bold">-u</emphasis> option
+      for safety's sake.
+    </para>
+    <para>
+      The first form of this command is used to install a new crontab
+      from some named file or standard input if the pseudo-filename
+      ``-'' is given.
+    </para>
+    <para>
+      If the <replaceable>-n</replaceable> option is given, it means
+      "dry run": <command>crontab</command>
+      examines "your"  crontab for its syntax,
+      and outputs a success message if this syntax is correct, but
+      nothing is written to any crontab.
+    </para>
+    <para>
+      The <replaceable>-l</replaceable> option causes the current crontab
+      to be displayed on standard  output. See the note under
+      <xref linkend="debian_specific"/> below.
+    </para>
+    <para>
+      The <emphasis role="bold">-r</emphasis> option causes the current
+      crontab to be removed.
+    </para>
+    <para>
+      The <emphasis role="bold">-e</emphasis> option is used to edit the
+      current crontab using
+      <citerefentry>
+	<refentrytitle>sensible-editor</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>.
+      After you exit from the editor,
+      the modified crontab will be installed automatically.
+    </para>
+    <para>
+      The <replaceable>-i</replaceable> option modifies the
+      <replaceable>-r</replaceable> option to prompt the user for a 'y/Y'
+      response before actually removing the crontab.
+    </para>
+  </refsect1>
+  <refsect1 id="debian_specific">
+    <title>DEBIAN SPECIFIC</title>
+    <para>
+      The "out-of-the-box" behaviour for
+      <command>crontab -l</command> is to display the three line
+      "DO NOT  EDIT THIS FILE" header  that is placed at the beginning
+      of the crontab when it is installed. The problem is that it makes
+      the sequence
+    </para>
+    <para>
+      <command>crontab -l | crontab -</command>
+    </para>
+    <para>
+      non-idempotent — you keep adding copies of the header. This causes
+      pain to scripts that use sed to edit a crontab. Therefore, the default
+      behaviour of the <replaceable>-l</replaceable> option has been changed
+      to not output such header. You may obtain the original behaviour by
+      setting the environment variable <envar>CRONTAB_NOHEADER</envar> to 'N',
+      which will cause the <command>crontab -l</command> command to emit
+      the extraneous header.
+    </para>
+  </refsect1>
+  <refsect1 id="highlight">
+    <title>HIGHLIGHTING THE OUTPUT of <command>crontab -l</command></title>
+    <para>
+      The command <command>crontab -l</command> outputs plain text.
+      When a tty can support ANSI sequences to colourise this text,
+      one  can  highlight  the  output,  by  calling:
+      <command>crontab -l | spc -t crontab</command>
+      when the ttybackground is dark, or
+      <command>crontab -l | spc -t crontab-light</command>
+      when this background is light.
+    </para>
+    <para>
+      The highlighting scheme can be modified by using customised versions
+      of files
+      <emphasis><filename>/etc/supercat/spcrc-crontab*</filename></emphasis>
+    </para>
+    <para>
+      One can also colourise this text with the program
+      <citerefentry>
+	<refentrytitle>batcat</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+      provided by the package
+      <command>bat</command>,
+      here is an example:
+    </para>
+    <para>
+       <command>crontab -l | batcat --language Crontab</command>
+    </para>
+  </refsect1>
+  <refsect1 id="see_also">
+    <title>SEE ALSO</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>crontab</refentrytitle>
+        <manvolnum>5</manvolnum>
+	</citerefentry>,
+	<citerefentry>
+        <refentrytitle>cron</refentrytitle>
+        <manvolnum>8</manvolnum>
+	</citerefentry>,
+	<citerefentry>
+        <refentrytitle>spc</refentrytitle>
+        <manvolnum>1</manvolnum>
+	</citerefentry>
+    </para>
+  </refsect1>
+  <refsect1 id="files">
+    <title>FILES</title>
+    <variablelist>
+      <varlistentry>
+        <term><emphasis><filename>/etc/cron.allow</filename></emphasis></term>
+        <term><emphasis><filename>/etc/cron.deny</filename></emphasis></term>
+        <listitem>
+          <para>
+	    The files <emphasis><filename>/etc/cron.allow</filename></emphasis>
+	    and <emphasis><filename>/etc/cron.deny</filename></emphasis>
+	    if they exist, must be either world-readable, or readable
+	    by group ``crontab''. If they are not, then
+	    <citerefentry>
+	      <refentrytitle>cron</refentrytitle>
+	      <manvolnum>8</manvolnum>
+	    </citerefentry>
+	    will deny access to all users until the permissions are fixed.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><emphasis><filename>/var/spool/cron/crontabs</filename></emphasis></term>
+        <listitem>
+	  <para>
+	    There is one file for each user's crontab  under  the
+	    <emphasis><filename>/var/spool/cron/crontabs</filename></emphasis>
+	    directory. Users are not allowed to edit the files under
+	    that directory directly to ensure that only users allowed
+	    by the system to run periodic tasks can add them, and only
+	    syntactically correct crontabs will be written there.
+	    This is enforced by having the directory writable only by
+	    the ``crontab'' group and configuring
+	    <command>crontab</command> command with the setgid bid set
+	    for that specific group.
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1 id="standards">
+    <title>STANDARDS</title>
+    <para>
+      The <command>crontab</command> command conforms to IEEE Std1003.2-1992
+      (``POSIX''). This new command syntax differs from previous versions of
+      Vixie Cron, as well as from the classic SVR3 syntax.
+    </para>
+  </refsect1>    
+  <refsect1 id="diagnostics">
+    <title>DIAGNOSTICS</title>
+    <para>
+      A  fairly informative usage message appears if you run it with a
+      bad command line.
+    </para>
+    <para>
+      <citerefentry>
+	<refentrytitle>cron</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      requires that each entry in a crontab end
+      in a newline character. If the last entry in a crontab is missing
+      the newline,
+      <citerefentry>
+	<refentrytitle>cron</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      will consider the crontab
+      (at least partially) broken and refuse to install it.
+    </para>
+    <para>
+      The files under
+      <emphasis><filename>/var/spool/cron/crontabs</filename></emphasis>
+      are named based on the user's account name. Crontab jobs will not
+      be run for users whose accounts have been renamed either due to
+      changes in the local system or because they are managed through a
+      central user database (external to the system, for example an
+      LDAP directory).
+    </para>
+  </refsect1>    
+</refentry>
+

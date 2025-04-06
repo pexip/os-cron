@@ -1,0 +1,149 @@
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Test of quoted-printable encoding.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+This is activated by a content-transfer-encoding of "auto" =
+
+(which may be the default).
+
+A normal line.
+
+A long line which needs to be broken because quoted-printable requires a =
+maximum line length of 76 characters.
+
+A line containing non-ASCII ch=C3=A4r=C3=A1=C3=A7ters which must be encod=
+ed. (Here, UTF-8, but same for any non-ASCII charset.)
+
+Critical position of line breaks with encoded characters:
+=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=
+=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4
+a=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=
+=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4
+aa=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=
+=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4=C3=A4
+
+The "=3D" character must be encoded.
+
+Spaces and tabs	do not have to be encoded.
+
+But they must not occur at the end of encoded lines, space: =
+
+tab:	=
+
+
+Finally, some very long lines which originally prompted this change. Line=
+s longer than 998 characters violate SMTP limits. To test this, these are=
+ some very long lines which originally prompted this change. Lines longer=
+ than 998 characters violate SMTP limits. To test this, these are some ve=
+ry long lines which originally prompted this change. Lines longer than 99=
+8 characters violate SMTP limits. To test this, these are some very long =
+lines which originally prompted this change. Lines longer than 998 charac=
+ters violate SMTP limits. To test this, these are some very long lines wh=
+ich originally prompted this change. Lines longer than 998 characters vio=
+late SMTP limits. To test this, these are some very long lines which orig=
+inally prompted this change. Lines longer than 998 characters violate SMT=
+P limits. To test this, these are some very long lines which originally p=
+rompted this change. Lines longer than 998 characters violate SMTP limits=
+. To test this, these are some very long lines which originally prompted =
+this change. Lines longer than 998 characters violate SMTP limits. To tes=
+t this, these are some very long lines which originally prompted this cha=
+nge. Lines longer than 998 characters violate SMTP limits. To test this, =
+these are some very long lines which originally prompted this change. Lin=
+es longer than 998 characters violate SMTP limits. To test this, these ar=
+e some very long lines which originally prompted this change. Lines longe=
+r than 998 characters violate SMTP limits. To test this, these are some v=
+ery long lines which originally prompted this change. Lines longer than 9=
+98 characters violate SMTP limits. To test this, these are some very long=
+ lines which originally prompted this change. Lines longer than 998 chara=
+cters violate SMTP limits.
+Finally, some very long lines which originally prompted this change. Line=
+s longer than 998 characters violate SMTP limits. To test this, these are=
+ some very long lines which originally prompted this change. Lines longer=
+ than 998 characters violate SMTP limits. To test this, these are some ve=
+ry long lines which originally prompted this change. Lines longer than 99=
+8 characters violate SMTP limits. To test this, these are some very long =
+lines which originally prompted this change. Lines longer than 998 charac=
+ters violate SMTP limits. To test this, these are some very long lines wh=
+ich originally prompted this change. Lines longer than 998 characters vio=
+late SMTP limits. To test this, these are some very long lines which orig=
+inally prompted this change. Lines longer than 998 characters violate SMT=
+P limits. To test this, these are some very long lines which originally p=
+rompted this change. Lines longer than 998 characters violate SMTP limits=
+. To test this, these are some very long lines which originally prompted =
+this change. Lines longer than 998 characters violate SMTP limits. To tes=
+t this, these are some very long lines which originally prompted this cha=
+nge. Lines longer than 998 characters violate SMTP limits. To test this, =
+these are some very long lines which originally prompted this change. Lin=
+es longer than 998 characters violate SMTP limits. To test this, these ar=
+e some very long lines which originally prompted this change. Lines longe=
+r than 998 characters violate SMTP limits. To test this, these are some v=
+ery long lines which originally prompted this change. Lines longer than 9=
+98 characters violate SMTP limits. To test this, these are some very long=
+ lines which originally prompted this change. Lines longer than 998 chara=
+cters violate SMTP limits.
+Finally, some very long lines which originally prompted this change. Line=
+s longer than 998 characters violate SMTP limits. To test this, these are=
+ some very long lines which originally prompted this change. Lines longer=
+ than 998 characters violate SMTP limits. To test this, these are some ve=
+ry long lines which originally prompted this change. Lines longer than 99=
+8 characters violate SMTP limits. To test this, these are some very long =
+lines which originally prompted this change. Lines longer than 998 charac=
+ters violate SMTP limits. To test this, these are some very long lines wh=
+ich originally prompted this change. Lines longer than 998 characters vio=
+late SMTP limits. To test this, these are some very long lines which orig=
+inally prompted this change. Lines longer than 998 characters violate SMT=
+P limits. To test this, these are some very long lines which originally p=
+rompted this change. Lines longer than 998 characters violate SMTP limits=
+. To test this, these are some very long lines which originally prompted =
+this change. Lines longer than 998 characters violate SMTP limits. To tes=
+t this, these are some very long lines which originally prompted this cha=
+nge. Lines longer than 998 characters violate SMTP limits. To test this, =
+these are some very long lines which originally prompted this change. Lin=
+es longer than 998 characters violate SMTP limits. To test this, these ar=
+e some very long lines which originally prompted this change. Lines longe=
+r than 998 characters violate SMTP limits. To test this, these are some v=
+ery long lines which originally prompted this change. Lines longer than 9=
+98 characters violate SMTP limits. To test this, these are some very long=
+ lines which originally prompted this change. Lines longer than 998 chara=
+cters violate SMTP limits.
+Finally, some very long lines which originally prompted this change. Line=
+s longer than 998 characters violate SMTP limits. To test this, these are=
+ some very long lines which originally prompted this change. Lines longer=
+ than 998 characters violate SMTP limits. To test this, these are some ve=
+ry long lines which originally prompted this change. Lines longer than 99=
+8 characters violate SMTP limits. To test this, these are some very long =
+lines which originally prompted this change. Lines longer than 998 charac=
+ters violate SMTP limits. To test this, these are some very long lines wh=
+ich originally prompted this change. Lines longer than 998 characters vio=
+late SMTP limits. To test this, these are some very long lines which orig=
+inally prompted this change. Lines longer than 998 characters violate SMT=
+P limits. To test this, these are some very long lines which originally p=
+rompted this change. Lines longer than 998 characters violate SMTP limits=
+. To test this, these are some very long lines which originally prompted =
+this change. Lines longer than 998 characters violate SMTP limits. To tes=
+t this, these are some very long lines which originally prompted this cha=
+nge. Lines longer than 998 characters violate SMTP limits. To test this, =
+these are some very long lines which originally prompted this change. Lin=
+es longer than 998 characters violate SMTP limits. To test this, these ar=
+e some very long lines which originally prompted this change. Lines longe=
+r than 998 characters violate SMTP limits. To test this, these are some v=
+ery long lines which originally prompted this change. Lines longer than 9=
+98 characters violate SMTP limits. To test this, these are some very long=
+ lines which originally prompted this change. Lines longer than 998 chara=
+cters violate SMTP limits.
+
+Special case:
+
+Space or tab at end of line and simultaneously also at the end of an inte=
+rnal read buffer (4096 bytes).
+We could append a soft line break if the next buffer starts with a newlin=
+e or it was the last buffer.
+Alternatively, and a bit easier, we can just encode this character.
+
+Tab at end of buffer: =09
+
+Space at end of file (no line break afterwards):=20

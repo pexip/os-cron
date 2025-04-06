@@ -16,10 +16,16 @@ Bug-Debian: https://bugs.debian.org/893579
 Bug-Debian: https://bugs.debian.org/934543
 Forwarded: no
 Last-Update: 2019-09-15
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
+---
+ cron.8    |  54 +++++++++------
+ crontab.1 |  65 ++++++++++++------
+ crontab.5 | 227 ++++++++++++++++++++++++++++++++++++++++++++++++++------------
+ 3 files changed, 263 insertions(+), 83 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index 1d6dcda..2f3e7a4 100644
+--- a/cron.8
++++ b/cron.8
 @@ -14,9 +14,9 @@
  .\" * I'll try to keep a version up to date.  I can be reached as follows:
  .\" * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
@@ -32,7 +38,7 @@ Index: cron/cron.8
  .TH CRON 8 "20 December 1993"
  .UC 4
  .SH NAME
-@@ -24,36 +24,52 @@ cron \- daemon to execute scheduled comm
+@@ -24,36 +24,52 @@ cron \- daemon to execute scheduled commands (Vixie Cron)
  .SH SYNOPSIS
  cron
  .SH DESCRIPTION
@@ -102,10 +108,10 @@ Index: cron/cron.8
  .SH "SEE ALSO"
  crontab(1), crontab(5)
  .SH AUTHOR
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
+diff --git a/crontab.1 b/crontab.1
+index c3c3943..8dee61d 100644
+--- a/crontab.1
++++ b/crontab.1
 @@ -20,37 +20,50 @@
  .TH CRONTAB 1 "29 December 1993"
  .UC 4
@@ -226,10 +232,10 @@ Index: cron/crontab.1
  .SH DIAGNOSTICS
  A fairly informative usage message appears if you run it with a bad command
  line.
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
+diff --git a/crontab.5 b/crontab.5
+index 01b52f0..d094699 100644
+--- a/crontab.5
++++ b/crontab.5
 @@ -16,7 +16,7 @@
  .\" */
  .\"
@@ -239,7 +245,7 @@ Index: cron/crontab.5
  .TH CRONTAB 5 "24 January 1994"
  .UC 4
  .SH NAME
-@@ -34,15 +34,19 @@ their own crontabs, eliminating the need
+@@ -34,15 +34,19 @@ their own crontabs, eliminating the need for explicitly running
  as part of a cron command.
  .PP
  Blank lines and leading spaces and tabs are ignored.  Lines whose first
@@ -251,12 +257,11 @@ Index: cron/crontab.5
  .PP
  An active line in a crontab will be either an environment setting or a cron
 -command.  An environment setting is of the form,
--.PP
--    name = value
 +command.  The crontab file is parsed from top to bottom, so any environment
 +settings will affect only the cron commands below them in the file.
 +An environment setting is of the form,
-+.PP
+ .PP
+-    name = value
 +.in +4n
 +name = value
 +.in
@@ -284,11 +289,11 @@ Index: cron/crontab.5
 +PATH = $HOME/bin:$PATH
 +.fi
 +.in
-+.PP
-+will not work as you might expect. And neither will this work
  .PP
 -Several environment variables are set up
 -automatically by the
++will not work as you might expect. And neither will this work
++.PP
 +.in +4n
 +.nf
 +A=1
@@ -380,7 +385,7 @@ Index: cron/crontab.5
  field to specify command execution every other hour (the alternative
  in the V7 standard is ``0,2,4,6,8,10,12,14,16,18,20,22'').  Steps are
  also permitted after an asterisk, so if you want to say ``every two
-@@ -131,58 +167,160 @@ The ``sixth'' field (the rest of the lin
+@@ -131,58 +167,165 @@ The ``sixth'' field (the rest of the line) specifies the command to be
  run.
  The entire command portion of the line, up to a newline or %
  character, will be executed by /bin/sh or by the shell
@@ -466,6 +471,11 @@ Index: cron/crontab.5
 +5 4 * * sun     echo "run at 5 after 4 every Sunday"
 +# Run on every second Saturday of the month
 +0 4 8\-14 * *    test $(date +\e%u) \-eq 6 && echo "2nd Saturday"
++# Same thing, efficient too:
++0 4 * * * Sat   d=$(date +\%e) && test $d -ge 8 -a $d -le 14 && echo "2nd Saturday"
++#Execute early the next morning following the first
++#Thursday of each month
++57 2 * * 5 case $(date +\%d) in 0[2-8]) echo "After 1st Thursday"; esac
 +.fi
 +.SH EXAMPLE SYSTEM CRON FILE
 +

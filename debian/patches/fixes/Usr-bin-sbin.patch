@@ -1,0 +1,62 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:23 +0200
+Subject: Usr-bin-sbin
+
+Modernize paths, to coply with Debian Merged Usr
+---
+ crontab.5 | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/crontab.5 b/crontab.5
+index a49d89f..15f9fef 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -65,7 +65,7 @@ tilde(~) expansion, thus lines like
+ .in +4n
+ .nf
+ PATH = $HOME/bin:$PATH
+-PATH = ~/bin:/usr/bin:/bin
++PATH = ~/bin:/usr/bin
+ .fi
+ .in
+ .PP
+@@ -85,7 +85,7 @@ last value.
+ Several environment variables are set up automatically by the
+ .IR cron (8)
+ daemon.
+-SHELL is set to /bin/sh, and LOGNAME and HOME are set from the /etc/passwd
++SHELL is set to /usr/bin/sh, and LOGNAME and HOME are set from the /etc/passwd
+ line of the crontab's owner.
+ HOME and SHELL may be overridden by settings in the crontab; LOGNAME may not.
+ .PP
+@@ -98,8 +98,8 @@ will look at MAILTO if it has any reason to send mail as a result of running
+ commands in ``this'' crontab.  If MAILTO is defined (and non-empty), mail is
+ sent to the user so named.  If MAILTO is defined but empty (MAILTO=""), no
+ mail will be sent.  Otherwise mail is sent to the owner of the crontab.  This
+-option is useful if you decide on /bin/mail instead of /usr/lib/sendmail as
+-your mailer when you install cron -- /bin/mail doesn't do aliasing, and UUCP
++option is useful if you decide on /usr/bin/mail instead of /usr/lib/sendmail as
++your mailer when you install cron -- /usr/bin/mail doesn't do aliasing, and UUCP
+ usually doesn't read its mail.
+ .PP
+ The format of a cron command is very much the V7 standard, with a number of
+@@ -163,7 +163,7 @@ lists of names are not allowed.
+ The ``sixth'' field (the rest of the line) specifies the command to be
+ run.
+ The entire command portion of the line, up to a newline or %
+-character, will be executed by /bin/sh or by the shell
++character, will be executed by /usr/bin/sh or by the shell
+ specified in the SHELL variable of the cronfile.
+ Percent-signs (%) in the command, unless escaped with backslash
+ (\\), will be changed into newline characters, and all data
+@@ -216,8 +216,8 @@ sequence of the machine.
+ .SH EXAMPLE CRON FILE
+ .nf
+ 
+-# use /bin/sh to run commands, no matter what /etc/passwd says
+-SHELL=/bin/sh
++# use /usr/bin/sh to run commands, no matter what /etc/passwd says
++SHELL=/usr/bin/sh
+ # mail any output to `paul', no matter whose crontab this is
+ MAILTO=paul
+ #

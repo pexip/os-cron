@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Jan 2016 22:19:41 +0100
+Date: Thu, 7 Jan 2016 22:19:41 +0100
 Subject: Improved debugging options handling
 
 When building cron with debugging support, include the ability to print the
@@ -8,10 +8,32 @@ from option parsing.
 
 Forwarded: no
 Last-Update: 2016-01-07
-Index: cron/config.h
-===================================================================
---- cron.orig/config.h
-+++ cron/config.h
+---
+ Makefile  |  4 +++-
+ config.h  |  1 +
+ cron.c    | 22 ++++++++++++++++++++--
+ crontab.c | 12 ++++++++++--
+ 4 files changed, 34 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index c8c3bcf..5f74507 100644
+--- a/Makefile
++++ b/Makefile
+@@ -71,7 +71,9 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
+ #<<want to use a nonstandard CC?>>
+ #CC		=	vcc
+ #<<manifest defines>>
+-DEFS		=
++# Allow override from command line
++DEBUG_DEFS	?= -DDEBUGGING=0
++DEFS		= $(DEBUG_DEFS)
+ #(SGI IRIX systems need this)
+ #DEFS		=	-D_BSD_SIGNALS -Dconst=
+ #<<the name of the BSD-like install program>>
+diff --git a/config.h b/config.h
+index 3d2b614..b7f4340 100644
+--- a/config.h
++++ b/config.h
 @@ -29,6 +29,7 @@
   */
  
@@ -20,10 +42,10 @@ Index: cron/config.h
  #define DEBUGGING 1	/* 1 or 0 -- do you want debugging code built in? */
  #endif
  
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
+diff --git a/cron.c b/cron.c
+index 3659a1f..1d93f1b 100644
+--- a/cron.c
++++ b/cron.c
 @@ -50,7 +50,17 @@ static	void	usage __P((void)),
  
  static void
@@ -74,10 +96,10 @@ Index: cron/cron.c
  		}
  	}
  }
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+diff --git a/crontab.c b/crontab.c
+index 76c83be..8cfbeb6 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -149,7 +149,12 @@ main(argc, argv)
  	exit(exitstatus);
  	/*NOTREACHED*/
@@ -109,18 +131,3 @@ Index: cron/crontab.c
  		case 'u':
  			if (!(pw = getpwnam(optarg)))
  			{
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
-@@ -71,7 +71,9 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $
- #<<want to use a nonstandard CC?>>
- #CC		=	vcc
- #<<manifest defines>>
--DEFS		=
-+# Allow override from command line
-+DEBUG_DEFS	?= -DDEBUGGING=0
-+DEFS		= $(DEBUG_DEFS)
- #(SGI IRIX systems need this)
- #DEFS		=	-D_BSD_SIGNALS -Dconst=
- #<<the name of the BSD-like install program>>

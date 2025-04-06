@@ -15,10 +15,28 @@ Fix provided by brian m. carlson <sandals@crustytoothpaste.net>.
 Bug-Debian: https://bugs.debian.org/694686
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+---
+ config.h     | 2 +-
+ do_command.c | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/config.h b/config.h
+index 7a8e2fc..2940392 100644
+--- a/config.h
++++ b/config.h
+@@ -42,7 +42,7 @@
+ 			 */
+ 
+ #define MAILCMD _PATH_SENDMAIL					/*-*/
+-#define MAILARGS "%s -FCronDaemon -odi -oem -or0s %s"		/*-*/
++#define MAILARGS "%s -FCronDaemon -odi -oem -or0s -B8BITMIME %s"		/*-*/
+ 			/* -Fx	 = set full-name of sender
+ 			 * -odi	 = Option Deliverymode Interactive
+ 			 * -oem	 = Option Errors Mailedtosender
+diff --git a/do_command.c b/do_command.c
+index 73362a6..b649c61 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -407,6 +407,9 @@ child_process(e, u)
  				fprintf(mail, "Date: %s\n",
  					arpadate(&TargetTime));
@@ -29,16 +47,3 @@ Index: cron/do_command.c
  				for (env = e->envp;  *env;  env++)
  					fprintf(mail, "X-Cron-Env: <%s>\n",
  						*env);
-Index: cron/config.h
-===================================================================
---- cron.orig/config.h
-+++ cron/config.h
-@@ -42,7 +42,7 @@
- 			 */
- 
- #define MAILCMD _PATH_SENDMAIL					/*-*/
--#define MAILARGS "%s -FCronDaemon -odi -oem -or0s %s"		/*-*/
-+#define MAILARGS "%s -FCronDaemon -odi -oem -or0s -B8BITMIME %s"		/*-*/
- 			/* -Fx	 = set full-name of sender
- 			 * -odi	 = Option Deliverymode Interactive
- 			 * -oem	 = Option Errors Mailedtosender

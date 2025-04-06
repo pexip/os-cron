@@ -1,16 +1,22 @@
-Description: Runs PAM_REINITIALIZE_CRED after fork to apply correct rights to child process.
-Author: Jorge Rocha Gualtieri <jorge@jrg.com.br>
+From: Jorge Rocha Gualtieri <jorge@jrg.com.br>
+Date: Wed, 11 Oct 2023 11:43:20 +0200
+Subject: Runs PAM_REINITIALIZE_CRED after fork to apply correct rights to
+ child process.
+
 Last-Update: 2021-03-01
 Bug-Debian: https://bugs.debian.org/983817
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/1917350
 
 The feature provided by this patch is tested with the script
 debian/tests/check-messages-sent-by-cron (second part of the script)
+---
+ do_command.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/do_command.c b/do_command.c
+index b649c61..f3c37f8 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -231,6 +231,12 @@ child_process(e, u)
  		  exit(ERROR_EXIT);
  		}

@@ -9,10 +9,14 @@ Bug-Debian: https://bugs.debian.org/437180
 Origin: backport, http://ftp.isc.org/isc/cron/cron_4.1.shar
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/env.c
-===================================================================
---- cron.orig/env.c
-+++ cron/env.c
+---
+ env.c | 101 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 91 insertions(+), 10 deletions(-)
+
+diff --git a/env.c b/env.c
+index 7e156f7..a03bfac 100644
+--- a/env.c
++++ b/env.c
 @@ -128,6 +128,17 @@ env_set(envp, envstr)
  	return (p);
  }

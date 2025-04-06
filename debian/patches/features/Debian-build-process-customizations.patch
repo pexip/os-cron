@@ -7,10 +7,14 @@ upstream's optimization and stripping; our build process does that.
 
 Forwarded: not-needed
 Last-Update: 2015-12-26
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
+---
+ Makefile | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index c4c32ad..c8c3bcf 100644
+--- a/Makefile
++++ b/Makefile
 @@ -78,11 +78,11 @@ DEFS		=
  #INSTALL = installbsd
  INSTALL = install

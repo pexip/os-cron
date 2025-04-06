@@ -1,6 +1,9 @@
 From: Christian Kastner <ckk@kvr.at>
 Date: Fri, 15 Jan 2016 21:50:01 +0100
 Subject: Add helpful header to new crontab
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 When creating a new crontab, prepend a header with a helpful description of the
 crontab(5) syntax.
@@ -13,10 +16,14 @@ feature is tested by debian/tests/check_significant_header
 
 Forwarded: no
 Last-Update: 2016-01-15
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/crontab.c b/crontab.c
+index c48900c..555cc6c 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -549,6 +549,7 @@ edit_cmd() {
  	WAIT_T		waiter;
  	PID_T		pid, xpid;

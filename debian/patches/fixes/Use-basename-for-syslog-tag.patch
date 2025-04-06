@@ -11,11 +11,16 @@ already considered the dirname of argv[0] to be an optional prefix.
 Bug-Debian: https://bugs.debian.org/752750
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -34,6 +34,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+---
+ cron.c    | 3 ++-
+ crontab.c | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/cron.c b/cron.c
+index 490ea9e..3659a1f 100644
+--- a/cron.c
++++ b/cron.c
+@@ -34,6 +34,7 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  #include <sys/stat.h>
  #include <sys/types.h>
  #include <fcntl.h>
@@ -32,11 +37,11 @@ Index: cron/cron.c
  
  #if defined(BSD)
  	setlinebuf(stdout);
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: crontab.c,v
+diff --git a/crontab.c b/crontab.c
+index fae9fc2..d31abe8 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -31,6 +31,7 @@ static char rcsid[] = "$Id: crontab.c,v 2.13 1994/01/17 03:20:37 vixie Exp $";
  #include "cron.h"
  #include <errno.h>
  #include <fcntl.h>

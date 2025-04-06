@@ -8,10 +8,14 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/crontab.c b/crontab.c
+index 77e3949..24de55f 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -143,6 +143,7 @@ parse_args(argc, argv)
  	char	*argv[];
  {

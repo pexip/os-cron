@@ -1,0 +1,474 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:23 +0200
+Subject: cron_now
+
+This patch provides a way to create a new command: cron_now
+
+This patch provides a way to create a new command: cron_now
+This command is meant to be used only during automated tests, as it
+allows one to run cron jobs immediately, without the need to wait a minute
+---
+ cron.8       |   9 ++
+ cron.c       | 297 +++++++++++++++++++++++++++++++----------------------------
+ cron.h       |   4 +
+ do_command.c |  10 ++
+ job.c        |  20 ++++
+ 5 files changed, 198 insertions(+), 142 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index fb0f5fe..8a7d4b8 100644
+--- a/cron.8
++++ b/cron.8
+@@ -27,6 +27,11 @@ cron
+ .RB [ \-l ]
+ .RB [ \-L
+ .IR loglevel ]
++.RB [ \-N
++.IR fqdn ]
++
++cron
++.RB [ \-N ]
+ .SH DESCRIPTION
+ .I cron
+ is started automatically from /etc/init.d on entering multi-user
+@@ -45,6 +50,10 @@ not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
+ Include the FQDN in the subject when sending mails.  By default, cron will
+ abbreviate the hostname.
+ .TP
++.B \-N
++Run cron jobs Now, immediately, and exit. This option is useful to perform
++tests.
++.TP
+ .B \-L loglevel
+ Tell cron what to log about \fBjobs\fR (errors are logged regardless of this
+ value) as the sum of the following values:
+diff --git a/cron.c b/cron.c
+index 5432f21..0d96b48 100644
+--- a/cron.c
++++ b/cron.c
+@@ -89,7 +89,7 @@ main(argc, argv)
+ 		(void) open("dev/null", 0);
+ 	}
+ 
+-	acquire_daemonlock(0);
++	if (! do_now) acquire_daemonlock(0);
+ 	set_cron_uid();
+ 	set_cron_cwd();
+ 
+@@ -111,35 +111,37 @@ main(argc, argv)
+ 	else
+ 		strcpy( cron_default_mail_charset, "US-ASCII");
+ 
+-	/* if there are no debug flags turned on, fork as a daemon should.
+-	 */
++	if (! do_now){
++	  /* if there are no debug flags turned on, fork as a daemon should.
++	   */
+ # if DEBUGGING
+-	if (DebugFlags) {
++	  if (DebugFlags) {
+ # else
+-	if (0) {
++	  if (0) {
+ # endif
+-		(void) fprintf(stderr, "[%d] cron started\n", getpid());
+-	} else if (!stay_foreground) {
+-		switch (fork()) {
+-		case -1:
+-			log_it("CRON",getpid(),"DEATH","can't fork");
+-			exit(0);
+-			break;
+-		case 0:
+-			/* child process */
+-			log_it("CRON",getpid(),"STARTUP","fork ok");
+-			(void) setsid();
+-			freopen("/dev/null", "r", stdin);
+-			freopen("/dev/null", "w", stdout);
+-			freopen("/dev/null", "w", stderr);
+-			break;
+-		default:
+-			/* parent process should just die */
+-			_exit(0);
+-		}
++	    (void) fprintf(stderr, "[%d] cron started\n", getpid());
++	  } else if (!stay_foreground) {
++	    switch (fork()) {
++	    case -1:
++	      log_it("CRON",getpid(),"DEATH","can't fork");
++	      exit(0);
++	      break;
++	    case 0:
++	      /* child process */
++	      log_it("CRON",getpid(),"STARTUP","fork ok");
++	      (void) setsid();
++	      freopen("/dev/null", "r", stdin);
++	      freopen("/dev/null", "w", stdout);
++	      freopen("/dev/null", "w", stderr);
++	      break;
++	    default:
++	      /* parent process should just die */
++	      _exit(0);
++	    }
++	  }
++
++	  acquire_daemonlock(0);
+ 	}
+-
+-	acquire_daemonlock(0);
+ 	database.head = NULL;
+ 	database.tail = NULL;
+ 	database.sys_mtime = (time_t) 0;
+@@ -148,124 +150,132 @@ main(argc, argv)
+ 	load_database(&database);
+ 	set_time(TRUE);
+ 	run_reboot_jobs(&database);
+-	timeRunning = virtualTime = clockTime;
+-
+-	/*
+-	 * too many clocks, not enough time (Al. Einstein)
+-	 * These clocks are in minutes since the epoch (time()/60).
+-	 * virtualTime: is the time it *would* be if we woke up
+-	 * promptly and nobody ever changed the clock. It is
+-	 * monotonically increasing... unless a timejump happens.
+-	 * At the top of the loop, all jobs for 'virtualTime' have run.
+-	 * timeRunning: is the time we last awakened.
+-	 * clockTime: is the time when set_time was last called.
+-	 */
+-	while (TRUE) {
+-		time_min timeDiff;
+-		int wakeupKind;
++	if (do_now) {
++	  /* run cron jobs once and exit */
++	  load_database(&database);
++	  find_jobs(clockTime, &database, TRUE, TRUE);
++	  /* jobs to be run (if any) are loaded. clear the queue */
++	  job_runqueue_now();
++	} else {
++	  timeRunning = virtualTime = clockTime;
++
++	  /*
++	   * too many clocks, not enough time (Al. Einstein)
++	   * These clocks are in minutes since the epoch (time()/60).
++	   * virtualTime: is the time it *would* be if we woke up
++	   * promptly and nobody ever changed the clock. It is
++	   * monotonically increasing... unless a timejump happens.
++	   * At the top of the loop, all jobs for 'virtualTime' have run.
++	   * timeRunning: is the time we last awakened.
++	   * clockTime: is the time when set_time was last called.
++	   */
++	  while (TRUE) {
++	    time_min timeDiff;
++	    int wakeupKind;
++
++	    /* ... wait for the time (in minutes) to change ... */
++	    do {
++	      cron_sleep(timeRunning + 1);
++	      set_time(FALSE);
++	    } while (clockTime == timeRunning);
++	    timeRunning = clockTime;
++
++	    check_orphans(&database);
++	    load_database(&database);
++
++	    /*
++	     * ... calculate how the current time differs from
++	     * our virtual clock. Classify the change into one
++	     * of 4 cases
++	     */
++	    timeDiff = timeRunning - virtualTime;
++
++	    Debug(DSCH, ("[%d] pulse: %d = %d - %d\n",
++			 getpid(), timeDiff, timeRunning, virtualTime));
++
++	    /* shortcut for the most common case */
++	    if (timeDiff == 1) {
++	      virtualTime = timeRunning;
++	      find_jobs(virtualTime, &database, TRUE, TRUE);
++	    } else {
++	      wakeupKind = -1;
++	      if (timeDiff > -(3*MINUTE_COUNT))
++		wakeupKind = 0;
++	      if (timeDiff > 0)
++		wakeupKind = 1;
++	      if (timeDiff > 5)
++		wakeupKind = 2;
++	      if (timeDiff > (3*MINUTE_COUNT))
++		wakeupKind = 3;
++
++	      switch (wakeupKind) {
++	      case 1:
++		/*
++		 * case 1: timeDiff is a small positive number
++		 * (wokeup late) run jobs for each virtual minute
++		 * until caught up.
++		 */
++		Debug(DSCH, ("[%d], normal case %d minutes to go\n",
++			     getpid(), timeRunning - virtualTime))
++		  do {
++		    if (job_runqueue())
++		      sleep(10);
++		    virtualTime++;
++		    find_jobs(virtualTime, &database, TRUE, TRUE);
++		  } while (virtualTime< timeRunning);
++		break;
++
++	      case 2:
++		/*
++		 * case 2: timeDiff is a medium-sized positive number,
++		 * for example because we went to DST run wildcard
++		 * jobs once, then run any fixed-time jobs that would
++		 * otherwise be skipped if we use up our minute
++		 * (possible, if there are a lot of jobs to run) go
++		 * around the loop again so that wildcard jobs have
++		 * a chance to run, and we do our housekeeping
++		 */
++		Debug(DSCH, ("[%d], DST begins %d minutes to go\n",
++			     getpid(), timeRunning - virtualTime))
++		  /* run wildcard jobs for current minute */
++		  find_jobs(timeRunning, &database, TRUE, FALSE);
+ 
+-		/* ... wait for the time (in minutes) to change ... */
++		/* run fixed-time jobs for each minute missed */
+ 		do {
+-			cron_sleep(timeRunning + 1);
+-			set_time(FALSE);
+-		} while (clockTime == timeRunning);
+-		timeRunning = clockTime;
+-
+-		check_orphans(&database);
+-		load_database(&database);
+-
++		  if (job_runqueue())
++		    sleep(10);
++		  virtualTime++;
++		  find_jobs(virtualTime, &database, FALSE, TRUE);
++		  set_time(FALSE);
++		} while (virtualTime< timeRunning &&
++			 clockTime == timeRunning);
++		break;
++
++	      case 0:
+ 		/*
+-		 * ... calculate how the current time differs from
+-		 * our virtual clock. Classify the change into one
+-		 * of 4 cases
++		 * case 3: timeDiff is a small or medium-sized
++		 * negative num, eg. because of DST ending just run
++		 * the wildcard jobs. The fixed-time jobs probably
++		 * have already run, and should not be repeated
++		 * virtual time does not change until we are caught up
+ 		 */
+-		timeDiff = timeRunning - virtualTime;
+-
+-		Debug(DSCH, ("[%d] pulse: %d = %d - %d\n",
+-			getpid(), timeDiff, timeRunning, virtualTime));
+-
+-		/* shortcut for the most common case */
+-		if (timeDiff == 1) {
+-			virtualTime = timeRunning;
+-			find_jobs(virtualTime, &database, TRUE, TRUE);
+-		} else {
+-			wakeupKind = -1;
+-			if (timeDiff > -(3*MINUTE_COUNT))
+-				wakeupKind = 0;
+-			if (timeDiff > 0)
+-				wakeupKind = 1;
+-			if (timeDiff > 5)
+-				wakeupKind = 2;
+-			if (timeDiff > (3*MINUTE_COUNT))
+-				wakeupKind = 3;
+-
+-			switch (wakeupKind) {
+-			case 1:
+-				/*
+-				 * case 1: timeDiff is a small positive number
+-				 * (wokeup late) run jobs for each virtual minute
+-				 * until caught up.
+-				 */
+-				Debug(DSCH, ("[%d], normal case %d minutes to go\n",
+-					getpid(), timeRunning - virtualTime))
+-				do {
+-					if (job_runqueue())
+-						sleep(10);
+-					virtualTime++;
+-					find_jobs(virtualTime, &database, TRUE, TRUE);
+-				} while (virtualTime< timeRunning);
+-				break;
+-
+-			case 2:
+-				/*
+-				 * case 2: timeDiff is a medium-sized positive number,
+-				 * for example because we went to DST run wildcard
+-				 * jobs once, then run any fixed-time jobs that would
+-				 * otherwise be skipped if we use up our minute
+-				 * (possible, if there are a lot of jobs to run) go
+-				 * around the loop again so that wildcard jobs have
+-				 * a chance to run, and we do our housekeeping
+-				 */
+-				Debug(DSCH, ("[%d], DST begins %d minutes to go\n",
+-					getpid(), timeRunning - virtualTime))
+-				/* run wildcard jobs for current minute */
+-				find_jobs(timeRunning, &database, TRUE, FALSE);
+-
+-				/* run fixed-time jobs for each minute missed */
+-				do {
+-					if (job_runqueue())
+-						sleep(10);
+-					virtualTime++;
+-					find_jobs(virtualTime, &database, FALSE, TRUE);
+-					set_time(FALSE);
+-				} while (virtualTime< timeRunning &&
+-					clockTime == timeRunning);
+-				break;
+-
+-			case 0:
+-				/*
+-				 * case 3: timeDiff is a small or medium-sized
+-				 * negative num, eg. because of DST ending just run
+-				 * the wildcard jobs. The fixed-time jobs probably
+-				 * have already run, and should not be repeated
+-				 * virtual time does not change until we are caught up
+-				 */
+-				Debug(DSCH, ("[%d], DST ends %d minutes to go\n",
+-					getpid(), virtualTime - timeRunning))
+-				find_jobs(timeRunning, &database, TRUE, FALSE);
+-				break;
+-			default:
+-				/*
+-				 * other: time has changed a *lot*,
+-				 * jump virtual time, and run everything
+-				 */
+-				Debug(DSCH, ("[%d], clock jumped\n", getpid()))
+-				virtualTime = timeRunning;
+-				find_jobs(timeRunning, &database, TRUE, TRUE);
+-			}
+-		}
+-		/* jobs to be run (if any) are loaded. clear the queue */
+-		job_runqueue();
++		Debug(DSCH, ("[%d], DST ends %d minutes to go\n",
++			     getpid(), virtualTime - timeRunning))
++		  find_jobs(timeRunning, &database, TRUE, FALSE);
++		break;
++	      default:
++		/*
++		 * other: time has changed a *lot*,
++		 * jump virtual time, and run everything
++		 */
++		Debug(DSCH, ("[%d], clock jumped\n", getpid()))
++		  virtualTime = timeRunning;
++		find_jobs(timeRunning, &database, TRUE, TRUE);
++	      }
++	    }
++	    /* jobs to be run (if any) are loaded. clear the queue */
++	    job_runqueue();
++	  }
+ 	}
+ }
+ 
+@@ -449,9 +459,9 @@ sighup_handler(int x) {
+ 
+ 
+ #if DEBUGGING
+-const char *getoptarg = "flL:nx:";
++const char *getoptarg = "flL:nNx:";
+ #else
+-const char *getoptarg = "flL:n";
++const char *getoptarg = "flL:nN";
+ #endif
+ 
+ static void
+@@ -482,6 +492,9 @@ parse_args(argc, argv)
+ 		case 'n':
+ 			fqdn_in_subject = 1;
+ 			break;
++		case 'N': /* do the cron jobs now, then quit */
++			do_now = 1;
++			break;
+ #if DEBUGGING
+ 		case 'x':
+ 			if (!set_debug_flags(optarg))
+diff --git a/cron.h b/cron.h
+index b58753d..da31126 100644
+--- a/cron.h
++++ b/cron.h
+@@ -230,6 +230,7 @@ void		set_cron_uid __P((void)),
+ 		sigpipe_func __P((void)),
+ 		job_add __P((entry *, user *)),
+ 		do_command __P((entry *, user *)),
++		do_command_now __P((entry *, user *)),
+ 		link_user __P((cron_db *, user *)),
+ 		unlink_user __P((cron_db *, user *)),
+ 		free_user __P((user *)),
+@@ -243,6 +244,7 @@ void		set_cron_uid __P((void)),
+ 		check_orphans __P((cron_db *));
+ 
+ int		job_runqueue __P((void)),
++                job_runqueue_now __P((void)),
+ 		set_debug_flags __P((char *)),
+ 		get_char __P((FILE *)),
+ 		get_string __P((char *, int, FILE *, char *)),
+@@ -309,6 +311,7 @@ int	stay_foreground;
+ int	lsbsysinit_mode;
+ int	log_level;
+ int	fqdn_in_subject;
++int     do_now;
+ 
+ char	cron_default_mail_charset[MAX_ENVSTR] = "";
+ 
+@@ -327,6 +330,7 @@ extern	char	*copyright[],
+ extern	int	lsbsysinit_mode;
+ extern	int	log_level;
+ extern	int	fqdn_in_subject;
++extern  int     do_now;
+ extern	int	LineNumber;
+ extern	time_t	StartTime;
+ extern  time_min timeRunning;
+diff --git a/do_command.c b/do_command.c
+index 78eaa33..43054ee 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -114,6 +114,16 @@ do_command(e, u)
+ }
+ 
+ 
++void
++do_command_now(e, u)
++	entry	*e;
++	user	*u;
++{
++  child_process(e, u);
++  _exit(OK_EXIT);
++}
++
++
+ /*
+  * CROND
+  *  - cron (runs child_process);
+diff --git a/job.c b/job.c
+index 3e9da8f..941d492 100644
+--- a/job.c
++++ b/job.c
+@@ -73,3 +73,23 @@ job_runqueue()
+ 	jhead = jtail = NULL;
+ 	return run;
+ }
++
++int
++job_runqueue_now()
++{
++        /**
++	 * does the same as job_runqueue() but without checking pid lock
++	 **/
++
++	register job	*j, *jn;
++	register int	run = 0;
++
++	for (j=jhead; j; j=jn) {
++		do_command_now(j->e, j->u);
++		jn = j->next;
++		free(j);
++		run++;
++	}
++	jhead = jtail = NULL;
++	return run;
++}

@@ -1,3 +1,7 @@
 version=4
 
-https://ftp.isc.org/isc/cron/cron_(.*)\.shar
+# GitLab hosted projects.
+opts="searchmode=plain,uversionmangle=s/-\d*$//, \
+    filenamemangle=s%([^-]*-\d*)*%@PACKAGE@-$1%" \
+    https://salsa.debian.org/debian/cron/-/tags \
+    archive/debian/@ANY_VERSION@/cron-debian-\d\S*@ARCHIVE_EXT@

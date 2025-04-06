@@ -11,10 +11,14 @@ Contributed by Justin Pryzby <justinpryzby@users.sourceforge.net>.
 Bug-Debian: https://bugs.debian.org/155109
 Forwarded: no
 Last-Update: 2016-01-15
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+---
+ do_command.c | 342 +++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 168 insertions(+), 174 deletions(-)
+
+diff --git a/do_command.c b/do_command.c
+index f646722..cbca2d1 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -111,12 +111,21 @@ do_command(e, u)
  }
  
@@ -121,16 +125,7 @@ Index: cron/do_command.c
 -	/*local*/{
 -		register FILE	*in = fdopen(stdout_pipe[READ_PIPE], "r");
 -		register int	ch = getc(in);
-+		Debug(DPROC, ("[%d] waiting for grandchild #%d to finish\n",
-+			getpid(), children))
-+		pid = wait(&waiter);
-+		if (pid < OK) {
-+			Debug(DPROC, ("[%d] no more grandchildren\n", getpid()))
-+			break;
-+		}
-+		Debug(DPROC, ("[%d] grandchild #%d finished, status=%04x\n",
-+			getpid(), pid, WEXITSTATUS(waiter)))
- 
+-
 -		if (ch != EOF) {
 -			register FILE	*mail = NULL;
 -			register int	bytes = 1;
@@ -183,6 +178,16 @@ Index: cron/do_command.c
 -				fprintf(mail, "Subject: Cron <%s@%s> %s\n",
 -					usernm, first_word(hostname, "."),
 -					e->cmd);
++		Debug(DPROC, ("[%d] waiting for grandchild #%d to finish\n",
++			getpid(), children))
++		pid = wait(&waiter);
++		if (pid < OK) {
++			Debug(DPROC, ("[%d] no more grandchildren\n", getpid()))
++			break;
++		}
++		Debug(DPROC, ("[%d] grandchild #%d finished, status=%04x\n",
++			getpid(), pid, WEXITSTATUS(waiter)))
++
 +		if (WIFEXITED(waiter) && WEXITSTATUS(waiter)) {
 +			status = waiter;
 +			snprintf(msg, 256, "grandchild #%d failed with exit "
@@ -248,8 +253,7 @@ Index: cron/do_command.c
 +			arpadate(&StartTime));
  # endif /* MAIL_DATE */
 -				fprintf(mail, "MIME-Version: 1.0\n");
-+	fprintf(mail, "MIME-Version: 1.0\n");
- 
+-
 -				if (content_type == 0L) {
 -					fprintf(mail, "Content-Type: text/plain; charset=%s\n",
 -						cron_default_mail_charset);
@@ -268,6 +272,17 @@ Index: cron/do_command.c
 -					}
 -				       fprintf(mail,"Content-Type: %s\n", content_type);
 -				}
+-
+-				if (content_transfer_encoding != 0L) {
+-					char *nl=content_transfer_encoding;
+-					size_t ctlen = strlen(content_transfer_encoding);
+-					while ((*nl != '\0') &&
+-							((nl=strchr(nl,'\n')) != 0L) &&
+-							(nl < (content_transfer_encoding+ctlen))) {
+-						*nl = ' ';
+-					}
++	fprintf(mail, "MIME-Version: 1.0\n");
++
 +	if (content_type == 0L) {
 +		fprintf(mail, "Content-Type: text/plain; charset=%s\n",
 +			cron_default_mail_charset);
@@ -278,7 +293,12 @@ Index: cron/do_command.c
 +		 */
 +		char *nl = content_type;
 +		size_t ctlen = strlen(content_type);
-+
+ 
+-					fprintf(mail,"Content-Transfer-Encoding: %s\n",
+-							content_transfer_encoding);
+-				} else {
+-					fprintf(mail,"Content-Transfer-Encoding: 8bit\n");
+-				}
 +		while ((*nl != '\0') &&
 +				((nl=strchr(nl,'\n')) != 0L) &&
 +				(nl < (content_type+ctlen))) {
@@ -287,14 +307,10 @@ Index: cron/do_command.c
 +	       fprintf(mail,"Content-Type: %s\n", content_type);
 +	}
  
--				if (content_transfer_encoding != 0L) {
--					char *nl=content_transfer_encoding;
--					size_t ctlen = strlen(content_transfer_encoding);
--					while ((*nl != '\0') &&
--							((nl=strchr(nl,'\n')) != 0L) &&
--							(nl < (content_transfer_encoding+ctlen))) {
--						*nl = ' ';
--					}
+-				for (env = e->envp;  *env;  env++)
+-					fprintf(mail, "X-Cron-Env: <%s>\n",
+-						*env);
+-				fprintf(mail, "\n");
 +	if (content_transfer_encoding != 0L) {
 +		char *nl = content_transfer_encoding;
 +		size_t ctlen = strlen(content_transfer_encoding);
@@ -304,36 +320,25 @@ Index: cron/do_command.c
 +			*nl = ' ';
 +		}
  
--					fprintf(mail,"Content-Transfer-Encoding: %s\n",
--							content_transfer_encoding);
--				} else {
--					fprintf(mail,"Content-Transfer-Encoding: 8bit\n");
--				}
+-				/* this was the first char from the pipe
+-				 */
+-				putc(ch, mail);
+-			}
 +		fprintf(mail,"Content-Transfer-Encoding: %s\n",
 +				content_transfer_encoding);
 +	} else {
 +		fprintf(mail,"Content-Transfer-Encoding: 8bit\n");
 +	}
  
--				for (env = e->envp;  *env;  env++)
--					fprintf(mail, "X-Cron-Env: <%s>\n",
--						*env);
--				fprintf(mail, "\n");
--
--				/* this was the first char from the pipe
--				 */
--				putc(ch, mail);
--			}
+-			/* we have to read the input pipe no matter whether
+-			 * we mail or not, but obviously we only write to
+-			 * mail pipe if we ARE mailing.
+-			 */
 +	for (env = e->envp;  *env;  env++)
 +		fprintf(mail, "X-Cron-Env: <%s>\n",
 +				*env);
 +	fputc('\n', mail);
  
--			/* we have to read the input pipe no matter whether
--			 * we mail or not, but obviously we only write to
--			 * mail pipe if we ARE mailing.
--			 */
--
 -			while (EOF != (ch = getc(in))) {
 -				bytes++;
 -				if (mailto)

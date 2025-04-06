@@ -4,6 +4,8 @@ set -e
 crondir="/var/spool/cron"
 action="$1"
 
+#DEBHELPER#
+
 if [ "$action" != configure ]; then
     exit 0
 fi
@@ -50,6 +52,3 @@ if [ -d $crondir/crontabs ] ; then
     done
     set -e
 fi
-
-
-#DEBHELPER#
