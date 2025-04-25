@@ -6,11 +6,15 @@ Include y/n in the prompt to indicate the expected input.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -638,7 +638,7 @@ again: /* Loop point for retrying edit a
+---
+ crontab.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/crontab.c b/crontab.c
+index 015da98..0c9e2d9 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -638,7 +638,7 @@ again: /* Loop point for retrying edit after error */
  		break;
  	case -1:
  		for (;;) {

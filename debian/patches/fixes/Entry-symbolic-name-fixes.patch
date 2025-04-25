@@ -1,4 +1,4 @@
-From: Christian Kastner <ckk@kvr.at>                                                                             
+From: Christian Kastner <ckk@kvr.at>
 Date: Wed, 23 Dec 2015 12:26:33 +0100
 Subject: Correct which/how flags are set for entries
 
@@ -13,10 +13,14 @@ Bug-Debian: https://bugs.debian.org/84727
 Bug-Debian: https://bugs.debian.org/150591
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
+---
+ entry.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/entry.c b/entry.c
+index e439ae5..84ccac4 100644
+--- a/entry.c
++++ b/entry.c
 @@ -134,18 +134,21 @@ load_entry(file, error_func, pw, envp)
  			bit_set(e->dom, 0);
  			bit_set(e->month, 0);

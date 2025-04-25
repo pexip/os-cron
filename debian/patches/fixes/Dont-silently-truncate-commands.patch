@@ -8,11 +8,16 @@ instead of silently truncated the command.
 Bug-Debian: https://bugs.debian.org/686223
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
-@@ -112,7 +112,8 @@ followed by a command, followed by a new
+---
+ crontab.5 |  3 ++-
+ entry.c   | 14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/crontab.5 b/crontab.5
+index ad2c6d2..9db8166 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -112,7 +112,8 @@ followed by a command, followed by a newline character ('\en').
  The system crontab (/etc/crontab) uses the same format, except that
  the username for the command is specified after the time and
  date fields and before the command.  The fields may be separated
@@ -22,11 +27,11 @@ Index: cron/crontab.5
  .PP
  Commands are executed by
  .IR cron (8)
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
-@@ -31,7 +31,7 @@ static char rcsid[] = "$Id: entry.c,v 2.
+diff --git a/entry.c b/entry.c
+index 567562f..0cfa8c0 100644
+--- a/entry.c
++++ b/entry.c
+@@ -31,7 +31,7 @@ static char rcsid[] = "$Id: entry.c,v 2.12 1994/01/17 03:20:37 vixie Exp $";
  
  typedef	enum ecode {
  	e_none, e_minute, e_hour, e_dom, e_month, e_dow,

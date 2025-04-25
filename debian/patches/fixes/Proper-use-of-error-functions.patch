@@ -11,70 +11,16 @@ Fix provided by Justin Pryzby <justinpryzby@users.sourceforge.net>.
 Bug-Debian: https://bugs.debian/org/470587
 Forwarded: no
 Last Update: 2015-12-22
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -245,8 +245,7 @@ child_process(e, u)
- 			}
- # endif /*DEBUGGING*/
- 			execle(shell, shell, "-c", e->cmd, (char *)0, e->envp);
--			fprintf(stderr, "execl: couldn't exec `%s'\n", shell);
--			perror("execl");
-+			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
- 			_exit(ERROR_EXIT);
- 		}
- 		break;
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -204,8 +204,7 @@ set_cron_cwd()
- 			fprintf(stderr, "%s: created\n", CRONDIR);
- 			stat(CRONDIR, &sb);
- 		} else {
--			fprintf(stderr, "%s: ", CRONDIR);
--			perror("mkdir");
-+			fprintf(stderr, "%s: mkdir: %s\n", CRONDIR, strerror(errno));
- 			exit(ERROR_EXIT);
- 		}
- 	}
-@@ -215,8 +214,7 @@ set_cron_cwd()
- 		exit(ERROR_EXIT);
- 	}
- 	if (chdir(CRONDIR) < OK) {
--		fprintf(stderr, "cannot chdir(%s), bailing out.\n", CRONDIR);
--		perror(CRONDIR);
-+		fprintf(stderr, "%s: chdir: %s\n", CRONDIR, strerror(errno));
- 		exit(ERROR_EXIT);
- 	}
- 
-@@ -228,8 +226,7 @@ set_cron_cwd()
- 			fprintf(stderr, "%s: created\n", SPOOL_DIR);
- 			stat(SPOOL_DIR, &sb);
- 		} else {
--			fprintf(stderr, "%s: ", SPOOL_DIR);
--			perror("mkdir");
-+			fprintf(stderr, "%s: mkdir: %s\n", SPOOL_DIR, strerror(errno));
- 			exit(ERROR_EXIT);
- 		}
- 	}
-@@ -512,9 +509,8 @@ log_it(username, xpid, event, detail)
- 	if (LogFD < OK) {
- 		LogFD = open(LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0600);
- 		if (LogFD < OK) {
--			fprintf(stderr, "%s: can't open log file\n",
--				ProgramName);
--			perror(LOG_FILE);
-+			fprintf(stderr, "%s: %s: open: %s\n",
-+				ProgramName, LOG_FILE, strerror(errno));
- 		} else {
- 			(void) fcntl(LogFD, F_SETFD, 1);
- 		}
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c    | 29 +++++++++++++++--------------
+ do_command.c |  3 +--
+ misc.c       | 14 +++++---------
+ 3 files changed, 21 insertions(+), 25 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index 3a7d8f1..a43d9ce 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -265,8 +265,9 @@ list_cmd() {
  	if (!(f = fopen(n, "r"))) {
  		if (errno == ENOENT)
@@ -150,3 +96,63 @@ Index: cron/crontab.c
  		return;
  	}
  #endif /*USE_UTIMES*/
+diff --git a/do_command.c b/do_command.c
+index 6f6590b..f596252 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -245,8 +245,7 @@ child_process(e, u)
+ 			}
+ # endif /*DEBUGGING*/
+ 			execle(shell, shell, "-c", e->cmd, (char *)0, e->envp);
+-			fprintf(stderr, "execl: couldn't exec `%s'\n", shell);
+-			perror("execl");
++			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
+ 			_exit(ERROR_EXIT);
+ 		}
+ 		break;
+diff --git a/misc.c b/misc.c
+index 93023e5..edf4ee6 100644
+--- a/misc.c
++++ b/misc.c
+@@ -204,8 +204,7 @@ set_cron_cwd()
+ 			fprintf(stderr, "%s: created\n", CRONDIR);
+ 			stat(CRONDIR, &sb);
+ 		} else {
+-			fprintf(stderr, "%s: ", CRONDIR);
+-			perror("mkdir");
++			fprintf(stderr, "%s: mkdir: %s\n", CRONDIR, strerror(errno));
+ 			exit(ERROR_EXIT);
+ 		}
+ 	}
+@@ -215,8 +214,7 @@ set_cron_cwd()
+ 		exit(ERROR_EXIT);
+ 	}
+ 	if (chdir(CRONDIR) < OK) {
+-		fprintf(stderr, "cannot chdir(%s), bailing out.\n", CRONDIR);
+-		perror(CRONDIR);
++		fprintf(stderr, "%s: chdir: %s\n", CRONDIR, strerror(errno));
+ 		exit(ERROR_EXIT);
+ 	}
+ 
+@@ -228,8 +226,7 @@ set_cron_cwd()
+ 			fprintf(stderr, "%s: created\n", SPOOL_DIR);
+ 			stat(SPOOL_DIR, &sb);
+ 		} else {
+-			fprintf(stderr, "%s: ", SPOOL_DIR);
+-			perror("mkdir");
++			fprintf(stderr, "%s: mkdir: %s\n", SPOOL_DIR, strerror(errno));
+ 			exit(ERROR_EXIT);
+ 		}
+ 	}
+@@ -512,9 +509,8 @@ log_it(username, xpid, event, detail)
+ 	if (LogFD < OK) {
+ 		LogFD = open(LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0600);
+ 		if (LogFD < OK) {
+-			fprintf(stderr, "%s: can't open log file\n",
+-				ProgramName);
+-			perror(LOG_FILE);
++			fprintf(stderr, "%s: %s: open: %s\n",
++				ProgramName, LOG_FILE, strerror(errno));
+ 		} else {
+ 			(void) fcntl(LogFD, F_SETFD, 1);
+ 		}

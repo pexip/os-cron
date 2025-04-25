@@ -1,0 +1,57 @@
+#! /bin/sh
+set -e
+
+dir=$(pwd)/debian/tests
+. $dir/textutils.sh
+
+frame "Here are all the tests to check messages eventually sent by cron." \
+      "A dummy user is created, and a crontab is created for this user;" \
+      "then cron is launched once and should produce a very long output" \
+      "and emails got by the dummy user are tested."
+
+echo "============ enable pam_group for cron ====================="
+echo "auth       optional   pam_group.so" >> /etc/pam.d/cron
+
+echo "================= adding user 'dummy' ====================="
+getent passwd dummy || adduser --disabled-password --gecos "" dummy
+touch /var/mail/dummy && chown dummy /var/mail/dummy
+
+echo "===== group 'plugdev' for user dummy, with group.conf ====="
+grep -q dummy /etc/security/group.conf || echo "*;*;dummy;Al0000-2400;plugdev" >> /etc/security/group.conf
+
+echo "======== create a crontab for user dummy =================="
+mylocalhost=$(cat /etc/hostname)
+cp $(pwd)/debian/tests/cron-qp.in /tmp/
+crontab -u dummy - <<EOF
+MAILTO=dummy@$mylocalhost
+MAILFROM=dummy@$mylocalhost
+* * * * * cat /tmp/cron-qp.in
+EOF
+
+echo "====== launch 'cron -N' in order to check it now =========="
+cron -N
+echo "================== sleep 5 seconds ========================"
+sleep 5
+echo "========== check e-mails got by user dummy ================"
+echo "type *" | (su - dummy -c mail || echo "something went wrong while launching 'mail' with dummy user, retcode = $?") > e-mails
+
+echo "========== e-mails content: ==============================="
+cat e-mails
+
+frame "the goal of the first test is to check whether environment variables" \
+      "MAILFROM and MAILTO are correctly taken in account"
+
+echo "==========================================================="
+grep "From: dummy@$mylocalhost" e-mails || abort "test failed"
+grep "To: dummy@$mylocalhost" e-mails || abort "test failed"
+
+frame "OK, this is great: MAILFROM and MAILTO variables are honored"
+
+frame "the goal of the next test is to check whether e-mails do contain" \
+      "QP-encoded wrapped long lines as expected."
+
+grep -q "$(cat $(pwd)/debian/tests/cron-qp.out)" e-mails || echo "contents of cron-qp.out were expected but not found" >&2
+
+frame "OK, this is great: long lines were wrapped."
+
+exit 0

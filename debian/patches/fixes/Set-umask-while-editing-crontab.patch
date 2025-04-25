@@ -6,10 +6,14 @@ When editing/replacing a crontab, set the umask to 077.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/crontab.c b/crontab.c
+index 7ec98d2..77e3949 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -317,6 +317,7 @@ edit_cmd() {
  	time_t		mtime;
  	WAIT_T		waiter;

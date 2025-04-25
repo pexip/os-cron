@@ -1,4 +1,4 @@
-From: Christian Kastner <ckk@kvr.at
+From: Christian Kastner <ckk@kvr.at>
 Date: Sun, 20 Dec 2015 12:36:14 +0100
 Subject: Hurd MAXPATHLEN workaround
 
@@ -9,11 +9,15 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/64382
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -31,6 +31,18 @@ static char rcsid[] = "$Id: database.c,v
+---
+ database.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/database.c b/database.c
+index 843401e..879aaaa 100644
+--- a/database.c
++++ b/database.c
+@@ -31,6 +31,18 @@ static char rcsid[] = "$Id: database.c,v 2.8 1994/01/15 20:43:43 vixie Exp $";
  
  #define TMAX(a,b) ((a)>(b)?(a):(b))
  

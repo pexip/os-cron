@@ -1,0 +1,694 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+
+<!--
+
+`xsltproc -''-nonet \
+          -''-param man.charmap.use.subset "0" \
+          -''-param make.year.ranges "1" \
+          -''-param make.single.year.ranges "1" \
+          /usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl \
+          manpage.xml`
+
+A manual page <package>.<section> will be generated. You may view the
+manual page with: nroff -man <package>.<section> | less'. A typical entry
+in a Makefile or Makefile.am is:
+
+DB2MAN = /usr/share/sgml/docbook/stylesheet/xsl/docbook-xsl/manpages/docbook.xsl
+XP     = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
+
+manpage.1: manpage.xml
+        $(XP) $(DB2MAN) $<
+
+The xsltproc binary is found in the xsltproc package. The XSL files are in
+docbook-xsl. A description of the parameters you can use can be found in the
+docbook-xsl-doc-* packages. Please remember that if you create the nroff
+version in one of the debian/rules file targets (such as build), you will need
+to include xsltproc and docbook-xsl in your Build-Depends control field.
+Alternatively use the xmlto command/package. That will also automatically
+pull in xsltproc and docbook-xsl.
+
+Notes for using docbook2x: docbook2x-man does not automatically create the
+AUTHOR(S) and COPYRIGHT sections. In this case, please add them manually as
+<refsect1> ... </refsect1>.
+
+To disable the automatic creation of the AUTHOR(S) and COPYRIGHT sections
+read /usr/share/doc/docbook-xsl/doc/manpages/authors.html. This file can be
+found in the docbook-xsl-doc-html package.
+
+Validation can be done using: `xmllint -''-noout -''-valid manpage.xml`
+
+General documentation about man-pages and man-page-formatting:
+man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
+
+-->
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "Georges">
+  <!ENTITY dhsurname   "Khaznadar">
+  <!-- dhusername could also be set to "&dhfirstname; &dhsurname;". -->
+  <!ENTITY dhusername  "Georges Khaznadar">
+  <!ENTITY dhemail     "georgesk@debian.org">
+  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1) and
+       http://www.tldp.org/HOWTO/Man-Page/q2.html. -->
+  <!ENTITY dhsection   "8">
+  <!-- TITLE should be something like "User commands" or similar (see
+       http://www.tldp.org/HOWTO/Man-Page/q2.html). -->
+  <!ENTITY dhtitle     "cron User Manual">
+  <!ENTITY dhucpackage "Cron">
+  <!ENTITY dhpackage   "cron">
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhtitle;</title>
+    <productname>&dhpackage;</productname>
+    <authorgroup>
+      <author>
+       <firstname>Paul</firstname> <surname>Vixie</surname>
+        <contrib>Wrote this manpage (1994).</contrib>
+        <address>
+          <email>paul@vix.com</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Steve</firstname> <surname>Greenland</surname>
+        <contrib>Maintained the package (1996-2005).</contrib>
+        <address>
+          <email>stevegr@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Javier</firstname>
+	<surname>Fernández-Sanguino Peña</surname>
+        <contrib>Maintained the package (2005-2014).</contrib>
+        <address>
+          <email>jfs@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Christian</firstname>
+	<surname>Kastner</surname>
+        <contrib>Maintained the package (2010-2016).</contrib>
+        <address>
+          <email>ckk@debian.org</email>
+        </address>
+      </author>
+      <author>
+	<firstname>Georges</firstname>
+	<surname>Khaznadar</surname>
+        <contrib>Maintained the package (2022-2024).</contrib>
+        <address>
+          <email>georgesk@debian.org</email>
+        </address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>1994</year>
+      <holder>Paul Vixie</holder>
+    </copyright>
+    <legalnotice>
+      <para>
+	Distribute freely, except: don't remove my name from the
+	source or documentation (don't take credit for my work), mark your
+	changes (don't get me blamed for your possible bugs), don't alter or
+	remove this notice.  May be sold if buildable source is provided to
+	buyer.  No warranty of any kind, express or implied, is included with
+	this software; use at your own risk, responsibility for damages (if
+	any) to anyone resulting from the use of this software rests entirely
+	with the user.
+      </para>
+      <para>
+	Since year 1994, many modifications were made in this manpage,
+	authored by Debian Developers which maintained
+	<productname>cron</productname>; above is a short list, more
+	information can be found in the file
+	<emphasis><filename>/usr/share/doc/cron/copyright</filename></emphasis>.
+      </para>
+    </legalnotice>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhucpackage;</refentrytitle>
+    <manvolnum>&dhsection;</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>daemon to execute scheduled commands (Vixie Cron)</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-f</option></arg>
+      <arg choice="opt"><option>-l</option></arg>
+      <arg choice="opt"><option>-L <replaceable>loglevel</replaceable></option></arg>
+      <arg choice="opt"><option>-n <replaceable>fqdn</replaceable></option></arg>
+      <arg choice="opt"><option>-x <replaceable>debugflags</replaceable></option></arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-N</option></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+    <para>
+      <command>&dhpackage;</command> is directly invoked by
+      <citerefentry>
+	<refentrytitle>systemd</refentrytitle>
+	<manvolnum>1</manvolnum>
+	</citerefentry> on entering multi-user runlevels.
+    </para>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-f</option></term>
+        <listitem>
+          <para>Stay in foreground mode, don't daemonize.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-l</option></term>
+        <listitem>
+          <para>
+	    Enable LSB compliant names for /etc/cron.d  files.
+	    This  setting,  however,  does  not  affect  the  parsing
+	    of files under
+            <emphasis><filename>/etc/cron.hourly</filename></emphasis>,
+	    <emphasis><filename>/etc/cron.daily</filename></emphasis>,
+	    <emphasis><filename>/etc/cron.weekly</filename></emphasis> or
+            <emphasis><filename>/etc/cron.monthly</filename></emphasis>.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n <replaceable>fqdn</replaceable></option></term>
+        <listitem>
+          <para>
+	    Include  the  FQDN  in  the subject when sending mails.
+	    By default, <command>cron</command> will abbreviate the hostname.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-N </option></term>
+        <listitem>
+          <para>
+	    Run cron jobs Now, immediately, and exit. This option is useful
+            to perform tests.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-L <replaceable>loglevel</replaceable></option></term>
+        <listitem>
+          <para>
+	    Tell <command>cron</command> what to log about
+	    <emphasis>jobs</emphasis>
+	    (errors are logged  regardless
+            of this value) as the sum of the following values:
+	    <variablelist>
+	      <varlistentry>
+		<term>1</term>
+		<listitem><para>
+		  will log the start of all cron jobs
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>2</term>
+		<listitem><para>
+		  will log the end of all cron jobs
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>4</term>
+		<listitem><para>
+		  will log all failed jobs (exit status != 0)
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>8</term>
+		<listitem><para>
+		  will log the process number of all cron jobs
+		</para></listitem>
+	      </varlistentry>
+	    </variablelist>
+	    The  default is to log the start of all jobs (1). Logging will
+	    be disabled if <replaceable>loglevel</replaceable>
+	    is set to zero (0). A value  of  fifteen
+            (15) will select all options.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-x <replaceable>debugflags</replaceable></option></term>
+        <listitem>
+          <para>
+	    Tell  <command>cron</command> to be more verbose and
+	    output debugging information;
+            debugflags is the sum of those values:
+	    <variablelist>
+	      <varlistentry>
+		<term>1</term>
+		<listitem><para>
+		  "ext": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>2</term>
+		<listitem><para>
+		  "sch": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>4</term>
+		<listitem><para>
+		  "proc": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>8</term>
+		<listitem><para>
+		  "pars": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>16</term>
+		<listitem><para>
+		  "load": ..
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>32</term>
+		<listitem><para>
+		  "misc": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>64</term>
+		<listitem><para>
+		  "test": ...
+		</para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>128</term>
+		<listitem><para>
+		  "bit": ...
+		</para></listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1 id="notes">
+    <title>NOTES</title>
+    <para>
+      <command>cron</command>
+      searches its spool area
+      (<emphasis><filename>/var/spool/cron/crontabs/</filename></emphasis>)
+      for  crontab
+      files  (which  are named after accounts in
+      <emphasis><filename>/etc/passwd</filename></emphasis>); crontabs found
+       are loaded into memory.  Note that crontabs in  this  directory  should
+       not be accessed directly - the
+       <citerefentry>
+	 <refentrytitle>crontab</refentrytitle>
+	 <manvolnum>1</manvolnum>
+       </citerefentry>
+       command should be used to access and update them.
+    </para>
+    <para>
+      <command>cron</command>  also  reads
+      <emphasis><filename>/etc/crontab</filename></emphasis>,
+      which is in a slightly different format
+      (see
+      <citerefentry>
+	<refentrytitle>crontab</refentrytitle>
+	<manvolnum>5</manvolnum>
+	</citerefentry>).
+	In Debian, the content of
+	<emphasis><filename>/etc/crontab</filename></emphasis>
+	is predefined to run programs under
+	<emphasis><filename>/etc/cron.hourly</filename></emphasis>,
+	<emphasis><filename>/etc/cron.daily</filename></emphasis>,
+	<emphasis><filename>/etc/cron.weekly</filename></emphasis> and
+	<emphasis><filename>/etc/cron.monthly</filename></emphasis>.
+	This configuration is specific
+	to Debian, see the note under <emphasis>DEBIAN SPECIFIC</emphasis>
+	below.
+    </para>
+    <para>
+      Additionally, in Debian, <command>cron</command> reads the files
+      in the <emphasis><filename>/etc/cron.d</filename></emphasis>
+      directory. <command>cron</command> treats the files in
+      <emphasis><filename>/etc/cron.d</filename></emphasis>
+      as in the same way as the
+      <emphasis><filename>/etc/crontab</filename></emphasis>
+      file (they follow the special format
+      of that file, i.e.  they include the <emphasis>user</emphasis> field).
+      However, they are independent of
+      <emphasis><filename>/etc/crontab</filename></emphasis>:
+      they do not, for example, inherit environment variable settings from
+      it.  This change is specific to Debian see the note under
+      <emphasis>DEBIAN SPECIFIC</emphasis> below.
+    </para>
+    <para>
+      Like <emphasis><filename>/etc/crontab</filename></emphasis>,
+      the files in the
+      <emphasis><filename>/etc/cron.d</filename></emphasis>
+      directory are monitored
+      for  changes.   The  system  administrator  may  create  cron  jobs  in
+      <emphasis><filename>/etc/cron.d/</filename></emphasis>
+      with file names like "local"
+      or "local-foo".
+    </para>
+    <para>
+      <emphasis><filename>/etc/crontab</filename></emphasis>
+      and the files in
+      <emphasis><filename>/etc/cron.d</filename></emphasis>
+      must be owned  by  root,  and
+      must  not  be group- or other-writable.  In contrast to the spool area,
+      the files  under  <emphasis><filename>/etc/cron.d</filename></emphasis>
+      or  the  files
+      under  <emphasis><filename>/etc/cron.hourly</filename></emphasis>,
+      <emphasis><filename>/etc/cron.daily</filename></emphasis>,
+      <emphasis><filename>/etc/cron.weekly</filename></emphasis>  and
+      <emphasis><filename> /etc/cron.monthly</filename></emphasis>
+      may also be
+      symlinks, provided that both the symlink and the file it points to  are
+      owned  by  root.   The  files  under
+      <emphasis><filename>/etc/cron.d</filename></emphasis>
+      do not need to be executable,  while  the  files  under
+      <emphasis><filename>/etc/cron.hourly</filename></emphasis>,
+       <emphasis><filename>/etc/cron.daily</filename></emphasis>,
+       <emphasis><filename>/etc/cron.weekly</filename></emphasis> and
+       <emphasis><filename>/etc/cron.monthly</filename></emphasis> do,
+       as they are run by run-parts
+       (see
+       <citerefentry>
+	 <refentrytitle>run-parts</refentrytitle>
+	 <manvolnum>8</manvolnum>
+       </citerefentry>
+       for more information).
+    </para>
+    <para>
+      <command>cron</command>
+      then wakes up every minute, examining all stored crontabs, checking
+      each command to see if it should be  run  in  the  current  minute.
+      When  executing  commands,  any  output  is  mailed to the owner of the
+      crontab (or to the user named in the
+      <emphasis role="bold">MAILTO</emphasis> environment variable in the
+      crontab, if such exists) from the owner of the  crontab  (or  from  the
+      email  address  given  in  the  <emphasis role="bold">MAILFROM</emphasis>
+      environment  variable  in the
+      crontab, if such exists).  The children copies of  cron  running  these
+      processes  have their name coerced to uppercase, as will be seen in the
+      syslog and
+      <citerefentry>
+	<refentrytitle>ps</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+      output.
+    </para>
+    <para>
+      Additionally, <command>cron</command>
+      checks each minute to see if its  spool  directory's
+      modtime  (or  the modtime on the
+      <emphasis><filename>/etc/crontab</filename></emphasis> file)
+      has changed, and if it has, <command>cron</command>
+      will then examine the modtime on all crontabs  and  reload
+      those  which  have changed.  Thus <command>cron</command>
+      need not be restarted whenever a
+      crontab file is modified.  Note that the
+      <citerefentry>
+	<refentrytitle>crontab</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+      command updates the
+      modtime of the spool directory whenever it changes a crontab.
+    </para>
+    <para>
+      Special considerations exist when the clock is changed by less  than  3
+      hours,  for  example at the beginning and end of daylight savings time.
+      If the time has moved forwards, those jobs which would have run in  the
+      time  that  was skipped will be run soon after the change.  Conversely,
+      if the time has moved backwards by less than 3 hours, those  jobs  that
+      fall into the repeated time will not be re-run.
+    </para>
+    <para>
+      Only  jobs that run at a particular time (not specified as @hourly, nor
+      with '*' in the hour or minute specifier) are affected.  Jobs which are
+      specified with wildcards are run based on the new time immediately.
+    </para>
+    <para>
+      Clock changes of more than 3 hours are considered to be corrections  to
+      the clock, and the new time is used immediately.
+    </para>
+    <para>
+      <command>cron</command>  logs its action to the syslog facility 'cron',
+      and logging may be controlled using the standard
+      <citerefentry>
+	<refentrytitle>syslogd</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      facility.
+    </para>
+  </refsect1>
+  <refsect1 id="environment">
+    <title>ENVIRONMENT</title>
+    <para>
+      If configured in
+      <emphasis><filename>/etc/default/cron</filename></emphasis>
+      in Debian systems, the  <command>cron</command>  daemon
+      localisation  settings  environment  can  be managed through the use of
+      <emphasis><filename>/etc/environment</filename></emphasis> or through
+      the use of <emphasis><filename>/etc/default/locale</filename></emphasis>
+      with  values
+      from  the  latter  overriding  values from the former.  These files are
+      read and they will be used to setup the
+      <emphasis role="bold">LANG</emphasis>,
+      <emphasis role="bold">LC_ALL</emphasis>, and
+      <emphasis role="bold">LC_CTYPE</emphasis>
+      environment  variables.  These variables are then used to set the charset
+      of mails, which defaults to 'C'.
+    </para>
+    <para>
+      This does <emphasis>NOT</emphasis> affect the environment
+      of tasks running under <command>cron</command>.   For
+      more  information  on  how  to modify the environment of tasks, consult
+      <citerefentry>
+	<refentrytitle>crontab</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>.
+    </para>
+    <para>
+      The daemon will use, if present, the definition from
+      <emphasis><filename>/etc/localtime</filename></emphasis> for
+      the timezone.
+    </para>
+    <para>
+      The environment can be redefined in user's crontab definitions
+      but <command>cron</command>
+      will only handle tasks in a single timezone.
+    </para>
+  </refsect1>
+  <refsect1 id="debian_specific">
+    <title>DEBIAN SPECIFIC</title>
+    <para>
+      Debian introduces some changes to <command>cron</command>
+      that were not originally
+      available upstream.  The most significant changes introduced are:
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    Support for
+	    <emphasis><filename>/etc/cron.{hourly,daily,weekly,monthly}</filename></emphasis>
+	    via<emphasis><filename>/etc/crontab</filename></emphasis>,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Support for <emphasis><filename>/etc/cron.d</filename></emphasis>
+	    (drop-in dir for package crontabs),
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    PAM support,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    SELinux support,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    auditlog support,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    DST and other time-related changes/fixes,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    SGID crontab(1) instead of SUID root,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Debian-specific file locations and commands,
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Debian-specific configuration (/etc/default/cron),
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    numerous other smaller features and fixes.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      Support for  <emphasis><filename>/etc/cron.hourly</filename></emphasis>,
+      <emphasis><filename>/etc/cron.daily</filename></emphasis>,
+      <emphasis><filename>/etc/cron.weekly</filename></emphasis>  and
+      <emphasis><filename>/etc/cron.monthly</filename></emphasis>
+      is provided in Debian through the default setting of
+      the <emphasis><filename>/etc/crontab</filename></emphasis>
+      file (see the system-wide
+      example in
+      <citerefentry>
+	<refentrytitle>crontab</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>).
+      The default system-wide crontab contains four tasks: run every
+      hour, every day, every week and every month.  Each of these tasks will
+      execute
+      <citerefentry>
+	<refentrytitle>run-parts</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      providing each one of the
+      directories as an argument.  These tasks are disabled if
+      <citerefentry>
+	<refentrytitle>anacron</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>
+      is installed (except for the hourly task)
+      to prevent conflicts between both daemons.
+    </para>
+    <para>
+      As described above, the files under these directories have to pass some
+      sanity checks including the following: be executable, be owned by root,
+      not be writable by group or other and,  if  symlinks,  point  to  files
+      owned by root.  Additionally, the file names must conform to the
+      filename requirements of
+      <citerefentry>
+	<refentrytitle>run-parts</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>: they must be
+      entirely made up of letters, digits and can only contain the special
+      signs underscores ('_')
+      and hyphens ('-').  Any file that does not conform to these
+      requirements will not be executed by
+      <citerefentry>
+	<refentrytitle>run-parts</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>.
+      For example, any file containing dots will be ignored.  This is done
+      to prevent cron from running any of the files that are left by the
+      Debian package management
+      system when handling files in /etc/cron.d/ as configuration files (i.e.
+      files ending in .dpkg-dist, .dpkg-orig, .dpkg-old, and .dpkg-new).
+    </para>
+    <para>
+      This feature can be used by system administrators and packages  to
+      include  tasks  that  will be run at defined intervals.  Files created by
+      packages in these directories should be named after  the  package  that
+      supplies them.
+    </para>
+    <para>
+      Support  for  <emphasis><filename>/etc/cron.d</filename></emphasis>
+      is included
+      in the <command>cron</command> daemon itself, which
+       handles this location as the system-wide crontab spool.  This directory
+       can contain any file  defining  tasks  following  the  format  used  in
+       <emphasis><filename>/etc/crontab</filename></emphasis>,
+       i.e. unlike the user cron spool,
+       these files must provide
+       the username to run the task as in the task definition.
+    </para>
+    <para>
+      Files in this directory have to be owned by root, do not need to be
+      executable  (they  are  configuration  files, just like
+      <emphasis><filename>/etc/crontab</filename></emphasis>) and
+      must conform to the same naming convention as used  by
+      <citerefentry>
+	<refentrytitle>run-parts</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>  :
+      they  must consist solely of upper- and lower-case letters, digits,
+      underscores, and hyphens.  This means that they
+      <emphasis>cannot</emphasis> contain any  dots.
+      If the <emphasis role="bold">-l</emphasis> option is specified to
+      <command>cron</command> (this option can be setup through
+      <emphasis><filename>/etc/default/cron</filename></emphasis>,
+      see below), then they must
+      conform to the LSB namespace specification, exactly as in  the
+      <emphasis>--lsbsysinit</emphasis>  option  in
+      <citerefentry>
+	<refentrytitle>run-parts</refentrytitle>
+	<manvolnum>8</manvolnum>
+      </citerefentry>.
+    </para>
+    <para>
+      The intended purpose of this feature is to allow packages that
+      require finer control of their scheduling than the
+      <emphasis><filename>/etc/cron.{hourly,daily,weekly,monthly}</filename></emphasis>
+      directories to add a crontab file to
+      <emphasis><filename>/etc/cron.d</filename></emphasis>.
+      Such files should be named after the package that supplies them.
+    </para>
+    <para>
+      Also, the default configuration of <command>cron</command> is
+      controlled by
+      <emphasis><filename>/etc/default/cron</filename></emphasis>
+      which is read by
+      the init.d script that launches the <command>cron</command> daemon.
+      This file determines whether cron will read the system's environment
+      variables and makes it possible to add additional options to the
+      <command>cron</command> program before it is executed, either to
+      configure its logging or to define how it will treat the files under
+      <emphasis><filename>/etc/cron.d</filename></emphasis>.
+    </para>
+  </refsect1>
+  <refsect1 id="see_also">
+    <title>SEE ALSO</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>crontab</refentrytitle>
+        <manvolnum>1</manvolnum>
+	</citerefentry>,
+      <citerefentry>
+        <refentrytitle>crontab</refentrytitle>
+        <manvolnum>5</manvolnum>
+	</citerefentry>,
+	<citerefentry>
+        <refentrytitle>run-parts</refentrytitle>
+        <manvolnum>8</manvolnum>
+	</citerefentry>
+    </para>
+  </refsect1>
+</refentry>
+

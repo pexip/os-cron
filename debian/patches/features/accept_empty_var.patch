@@ -1,0 +1,37 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Sun, 27 Oct 2024 16:53:53 +0100
+Subject: accept_empty_var
+
+===================================================================
+---
+ crontab.5 | 2 +-
+ env.c     | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/crontab.5 b/crontab.5
+index b3f3d15..aa68e44 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -52,7 +52,7 @@ The
+ .I value
+ string may be placed in quotes (single or double, but matching) to preserve
+ leading or trailing blanks.  To define an empty variable, quotes
+-.B must
++can
+ be used.
+ .PP
+ The
+diff --git a/env.c b/env.c
+index a03bfac..3905b02 100644
+--- a/env.c
++++ b/env.c
+@@ -231,7 +231,8 @@ load_env(envstr, f)
+ 			abort();
+ 		}
+ 	}
+-	if (state != FINI && !(state == VALUE && !quotechar)) {
++	if (state != FINI && !(state == VALUE && !quotechar)
++		&& !(state == EQ2 && !quotechar)) {
+ 		Debug(DPARS, ("load_env, not an env var, state = %d\n", state))
+ 		fseek(f, filepos, 0);
+ 		Set_LineNum(fileline);

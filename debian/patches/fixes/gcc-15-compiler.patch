@@ -1,0 +1,694 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Fri, 21 Feb 2025 13:32:23 +0100
+Subject: cleared warning and errors for gcc-15 compiler
+
+---
+ cron.c       | 20 +++++-------------
+ cron.h       |  2 +-
+ crontab.c    | 17 +++++----------
+ database.c   | 30 +++++++--------------------
+ do_command.c | 15 ++++----------
+ entry.c      | 68 +++++++++++++++++++++++++++++++-----------------------------
+ env.c        | 18 +++++-----------
+ job.c        |  4 +---
+ misc.c       | 64 ++++++++++++++++++--------------------------------------
+ popen.c      |  7 ++-----
+ user.c       | 14 ++++---------
+ 11 files changed, 90 insertions(+), 169 deletions(-)
+
+diff --git a/cron.c b/cron.c
+index 0d96b48..6de9f92 100644
+--- a/cron.c
++++ b/cron.c
+@@ -62,9 +62,7 @@ usage() {
+ 
+ 
+ int
+-main(argc, argv)
+-	int	argc;
+-	char	*argv[];
++main(int argc, char *argv[])
+ {
+ 	cron_db	database;
+ 	char	*cs;
+@@ -281,8 +279,7 @@ main(argc, argv)
+ 
+ 
+ static void
+-run_reboot_jobs(db)
+-	cron_db *db;
++run_reboot_jobs(cron_db *db)
+ {
+ 	register user		*u;
+ 	register entry		*e;
+@@ -317,11 +314,7 @@ run_reboot_jobs(db)
+ 
+ 
+ static void
+-find_jobs(vtime, db, doWild, doNonWild)
+-	time_min vtime;
+-	cron_db	*db;
+-	int doWild;
+-	int doNonWild;
++find_jobs(time_min vtime, cron_db *db, int doWild, int doNonWild)
+ {
+ 	time_t   virtualSecond  = vtime * SECONDS_PER_MINUTE;
+ 	register struct tm	*tm = gmtime(&virtualSecond);
+@@ -396,8 +389,7 @@ set_time(int initialize)
+  * try to just hit the next minute
+  */
+ static void
+-cron_sleep(target)
+-	time_min target;
++cron_sleep(time_min target)
+ {
+ 	time_t t;
+ 	int seconds_to_wait;
+@@ -465,9 +457,7 @@ const char *getoptarg = "flL:nN";
+ #endif
+ 
+ static void
+-parse_args(argc, argv)
+-	int	argc;
+-	char	*argv[];
++  parse_args(int argc, char *argv[])
+ {
+ 	int	argch;
+ 
+diff --git a/cron.h b/cron.h
+index da31126..2b26af9 100644
+--- a/cron.h
++++ b/cron.h
+@@ -269,7 +269,7 @@ char		*env_get __P((char *, char **)),
+ user		*load_user __P((int, struct passwd *, char *, char *, char *)),
+ 		*find_user __P((cron_db *, const char *));
+ 
+-entry		*load_entry __P((FILE *, void (*)(),
++entry		*load_entry __P((FILE *, void (*)(char *),
+ 				 struct passwd *, char **));
+ 
+ FILE		*cron_popen __P((char *, char *, entry *));
+diff --git a/crontab.c b/crontab.c
+index 4cab725..bcd89ed 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -79,8 +79,7 @@ static	int		open_tmp_crontab __P((struct stat *fsbuf));
+ static	void		cleanup_tmp_crontab __P((void));
+ 
+ static void
+-usage(msg)
+-	char *msg;
++usage(char *msg)
+ {
+ 	if (strlen(msg) > 0)
+ 	    fprintf(stderr, "%s: usage error: %s\n", ProgramName, msg);
+@@ -99,9 +98,7 @@ usage(msg)
+ 
+ 
+ int
+-main(argc, argv)
+-	int	argc;
+-	char	*argv[];
++main(int argc, char *argv[])
+ {
+ 	int	exitstatus;
+ 
+@@ -167,9 +164,7 @@ const char *getoptarg = "u:hnleri";
+ #endif
+ 
+ static void
+-parse_args(argc, argv)
+-	int	argc;
+-	char	*argv[];
++parse_args(int argc, char *argv[])
+ {
+ 	int		argch;
+ 	struct stat	statbuf;
+@@ -423,8 +418,7 @@ delete_cmd() {
+ 
+ 
+ static void
+-check_error(msg)
+-	char	*msg;
++check_error(char *msg)
+ {
+ 	CheckErrorCount++;
+ 	fprintf(stderr, "\"%s\":%d: %s\n", Filename, LineNumber-1, msg);
+@@ -482,8 +476,7 @@ create_tmp_crontab()
+    just fopen() and stat()? Because there's no guarantee that you
+    fopen()ed the file you stat()ed.) */
+ static int
+-open_tmp_crontab(fsbuf)
+-	struct stat *fsbuf;
++open_tmp_crontab(struct stat *fsbuf)
+ {
+ 	int t;
+ 	struct stat statbuf;
+diff --git a/database.c b/database.c
+index b1dc7d5..9e27ec3 100644
+--- a/database.c
++++ b/database.c
+@@ -57,8 +57,7 @@ static void add_orphan(const char *uname, const char *fname, const char *tabname
+ static void free_orphan(orphan *o);
+ 
+ void
+-load_database(old_db)
+-	cron_db		*old_db;
++load_database(cron_db *old_db)
+ {
+ 	DIR		*dir;
+ 	struct stat	statbuf;
+@@ -257,9 +256,7 @@ load_database(old_db)
+ 
+ 
+ void
+-link_user(db, u)
+-	cron_db	*db;
+-	user	*u;
++link_user(cron_db *db, user *u)
+ {
+ 	if (db->head == NULL)
+ 		db->head = u;
+@@ -272,9 +269,7 @@ link_user(db, u)
+ 
+ 
+ void
+-unlink_user(db, u)
+-	cron_db	*db;
+-	user	*u;
++unlink_user(cron_db *db, user *u)
+ {
+ 	if (u->prev == NULL)
+ 		db->head = u->next;
+@@ -287,13 +282,10 @@ unlink_user(db, u)
+ 		u->next->prev = u->prev;
+ }
+ 
+-
+ user *
+-find_user(db, name)
+-	cron_db		*db;
+-	const char	*name;
++find_user(cron_db *db, const char *name)
+ {
+-	char	*env_get();
++        char	*env_get __P((char *, char **));
+ 	user	*u;
+ 
+ 	for (u = db->head;  u != NULL;  u = u->next)
+@@ -304,13 +296,8 @@ find_user(db, name)
+ 
+ 
+ static void
+-process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
+-	char		*uname;
+-	char		*fname;
+-	char		*tabname;
+-	struct stat	*statbuf;
+-	cron_db		*new_db;
+-	cron_db		*old_db;
++process_crontab(char *uname, char *fname, char *tabname,
++		struct stat *statbuf, cron_db *new_db, cron_db *old_db)
+ {
+ 	struct passwd	*pw = NULL;
+ 	int		crontab_fd = OK - 1;
+@@ -538,8 +525,7 @@ valid_name(char *filename)
+ 
+ 
+ static user *
+-get_next_system_crontab (curtab)
+-	user	*curtab;
++get_next_system_crontab (user *curtab)
+ {
+ 	for ( ; curtab != NULL; curtab = curtab->next)
+ 		if (!strncmp(curtab->name, "*system*", 8) && curtab->name [8])
+diff --git a/do_command.c b/do_command.c
+index ac6e528..d3e3d86 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -81,9 +81,7 @@ static char **build_env(char **cronenv)
+ }
+ 
+ void
+-do_command(e, u)
+-	entry	*e;
+-	user	*u;
++do_command(entry *e, user *u)
+ {
+ 	Debug(DPROC, ("[%d] do_command(%s, (%s,%d,%d))\n",
+ 		getpid(), e->cmd, u->name, e->uid, e->gid))
+@@ -115,9 +113,7 @@ do_command(e, u)
+ 
+ 
+ void
+-do_command_now(e, u)
+-	entry	*e;
+-	user	*u;
++do_command_now(entry *e, user *u)
+ {
+   child_process(e, u);
+   _exit(OK_EXIT);
+@@ -133,9 +129,7 @@ do_command_now(e, u)
+  */
+ 
+ static void
+-child_process(e, u)
+-	entry	*e;
+-	user	*u;
++child_process(entry *e, user *u)
+ {
+ 	int		stdin_pipe[2];
+ 	FILE		*tmpout;
+@@ -710,8 +704,7 @@ mail_finished:
+ 
+ 
+ static void
+-do_univ(u)
+-	user	*u;
++do_univ(user *u)
+ {
+ #if defined(sequent)
+ /* Dynix (Sequent) hack to put the user associated with
+diff --git a/entry.c b/entry.c
+index 8c614b1..62eb1e1 100644
+--- a/entry.c
++++ b/entry.c
+@@ -55,8 +55,7 @@ static char *ecodes[] =
+ 
+ 
+ void
+-free_entry(e)
+-	entry	*e;
++free_entry(entry *e)
+ {
+ 	free(e->cmd);
+ 	env_free(e->envp);
+@@ -68,11 +67,8 @@ free_entry(e)
+  * otherwise return a pointer to a new entry.
+  */
+ entry *
+-load_entry(file, error_func, pw, envp)
+-	FILE		*file;
+-	void		(*error_func)();
+-	struct passwd	*pw;
+-	char		**envp;
++load_entry(FILE *file, void (*error_func)(char *),
++	   struct passwd *pw, char **envp)
+ {
+ 	/* this function reads one crontab entry -- the next -- from a file.
+ 	 * it skips any leading blank lines, ignores comments, and returns
+@@ -370,14 +366,17 @@ load_entry(file, error_func, pw, envp)
+ 	return NULL;
+ }
+ 
+-
++/**
++ * @param *bits one bit per flag, default=FALSE
++ * @param low bound, impl. offset for bitstr
++ * @param high bound, impl. offset for bitstr
++ * @param *names[] NULL or *[] of names for these elements
++ * @param ch current character being processed
++ * @param *file file being read
++ **/
+ static char
+-get_list(bits, low, high, names, ch, file)
+-	bitstr_t	*bits;		/* one bit per flag, default=FALSE */
+-	int		low, high;	/* bounds, impl. offset for bitstr */
+-	char		*names[];	/* NULL or *[] of names for these elements */
+-	int		ch;		/* current character being processed */
+-	FILE		*file;		/* file being read */
++get_list(bitstr_t *bits, int low, int high,
++	 char *names[], int ch, FILE *file)
+ {
+ 	register int	done;
+ 
+@@ -418,13 +417,17 @@ get_list(bits, low, high, names, ch, file)
+ }
+ 
+ 
++/**
++ * @param *bits one bit per flag, default=FALSE
++ * @param low bound, impl. offset for bitstr
++ * @param high bound, impl. offset for bitstr
++ * @param *names[] NULL or names of elements
++ * @param ch current character being processed
++ * @param *file file being read
++ **/
+ static char
+-get_range(bits, low, high, names, ch, file)
+-	bitstr_t	*bits;		/* one bit per flag, default=FALSE */
+-	int		low, high;	/* bounds, impl. offset for bitstr */
+-	char		*names[];	/* NULL or names of elements */
+-	int		ch;		/* current character being processed */
+-	FILE		*file;		/* file being read */
++get_range(bitstr_t *bits, int low, int high,
++	  char *names[], int ch, FILE *file)
+ {
+ 	/* range = number | number "-" number [ "/" number ]
+ 	 */
+@@ -526,14 +529,15 @@ get_range(bits, low, high, names, ch, file)
+ 	return ch;
+ }
+ 
+-
++/**
++ * @param *numptr where does the result go?
++ * @param low offset applied to result if symbolic enum used
++ * @param *names[] symbolic names, if any, for enums
++ * @param ch current character
++ * @param *file source
++ **/
+ static char
+-get_number(numptr, low, names, ch, file)
+-	int	*numptr;	/* where does the result go? */
+-	int	low;		/* offset applied to result if symbolic enum used */
+-	char	*names[];	/* symbolic names, if any, for enums */
+-	int	ch;		/* current character */
+-	FILE	*file;		/* source */
++get_number(int *numptr, int low, char *names[], int ch, FILE *file)
+ {
+ 	char	temp[MAX_TEMPSTR], *pc;
+ 	int	len, i, all_digits;
+@@ -585,13 +589,11 @@ get_number(numptr, low, names, ch, file)
+ 	return EOF;
+ }
+ 
+-
++/**
++ * @param *bits one bit per flag, default=FALSE
++ **/
+ static int
+-set_element(bits, low, high, number)
+-	bitstr_t	*bits; 		/* one bit per flag, default=FALSE */
+-	int		low;
+-	int		high;
+-	int		number;
++set_element(bitstr_t *bits, int low, int high, int number)
+ {
+ 	Debug(DPARS|DEXT, ("set_element(?,%d,%d,%d)\n", low, high, number))
+ 
+diff --git a/env.c b/env.c
+index 3905b02..2f9be4a 100644
+--- a/env.c
++++ b/env.c
+@@ -35,8 +35,7 @@ env_init()
+ 
+ 
+ void
+-env_free(envp)
+-	char	**envp;
++env_free(char **envp)
+ {
+ 	char	**p;
+ 
+@@ -50,8 +49,7 @@ env_free(envp)
+ 
+ 
+ char **
+-env_copy(envp)
+-	register char	**envp;
++env_copy(register char **envp)
+ {
+ 	register int	count, i;
+ 	register char	**p;
+@@ -77,9 +75,7 @@ env_copy(envp)
+ 
+ 
+ char **
+-env_set(envp, envstr)
+-	char	**envp;
+-	char	*envstr;
++env_set(char **envp, char *envstr)
+ {
+ 	register int	count, found;
+ 	register char	**p;
+@@ -145,9 +141,7 @@ enum env_state {
+  *		TRUE = was an env setting
+  */
+ int
+-load_env(envstr, f)
+-	char	*envstr;
+-	FILE	*f;
++load_env(char *envstr, FILE *f)
+ {
+ 	long	filepos;
+ 	int	fileline;
+@@ -272,9 +266,7 @@ load_env(envstr, f)
+ }
+ 
+ char *
+-env_get(name, envp)
+-	register char	*name;
+-	register char	**envp;
++env_get(register char *name, register char **envp)
+ {
+ 	register int	len = strlen(name);
+ 	register char	*p, *q;
+diff --git a/job.c b/job.c
+index 941d492..029da4c 100644
+--- a/job.c
++++ b/job.c
+@@ -34,9 +34,7 @@ static job	*jhead = NULL, *jtail = NULL;
+ 
+ 
+ void
+-job_add(e, u)
+-	register entry *e;
+-	register user *u;
++job_add(register entry *e, register user *u)
+ {
+ 	register job *j;
+ 
+diff --git a/misc.c b/misc.c
+index 121a4d1..90b3158 100644
+--- a/misc.c
++++ b/misc.c
+@@ -55,10 +55,7 @@ static int		LogFD = ERR;
+ 
+ 
+ int
+-strcmp_until(left, right, until)
+-	char	*left;
+-	char	*right;
+-	int	until;
++strcmp_until(char *left, char *right, int until)
+ {
+ 	register int	diff;
+ 
+@@ -81,8 +78,7 @@ strcmp_until(left, right, until)
+ /* strdtb(s) - delete trailing blanks in string 's' and return new length
+  */
+ int
+-strdtb(s)
+-	char	*s;
++strdtb(char *s)
+ {
+ 	char	*x = s;
+ 
+@@ -110,8 +106,7 @@ strdtb(s)
+ 
+ 
+ int
+-set_debug_flags(flags)
+-	char	*flags;
++set_debug_flags(char *flags)
+ {
+ 	/* debug flags are of the form    flag[,flag ...]
+ 	 *
+@@ -282,8 +277,7 @@ set_cron_cwd()
+  * it would be great if fflush() disassociated the file buffer.
+  */
+ void
+-acquire_daemonlock(closeflag)
+-	int closeflag;
++acquire_daemonlock(int closeflag)
+ {
+ 	static	FILE	*fp = NULL;
+ 
+@@ -337,8 +331,7 @@ acquire_daemonlock(closeflag)
+ /* get_char(file) : like getc() but increment LineNumber on newlines
+  */
+ int
+-get_char(file)
+-	FILE	*file;
++get_char(FILE *file)
+ {
+ 	int	ch;
+ 
+@@ -352,9 +345,7 @@ get_char(file)
+ /* unget_char(ch, file) : like ungetc but do LineNumber processing
+  */
+ void
+-unget_char(ch, file)
+-	int	ch;
+-	FILE	*file;
++unget_char(int ch, FILE *file)
+ {
+ 	ungetc(ch, file);
+ 	if (ch == '\n')
+@@ -369,11 +360,7 @@ unget_char(ch, file)
+  *		(4) returns EOF or terminating character, whichever
+  */
+ int
+-get_string(string, size, file, terms)
+-	char	*string;
+-	int	size;
+-	FILE	*file;
+-	char	*terms;
++get_string(char *string, int size, FILE *file, char *terms)
+ {
+ 	int	ch;
+ 
+@@ -394,8 +381,7 @@ get_string(string, size, file, terms)
+ /* skip_comments(file) : read past comment (if any)
+  */
+ void
+-skip_comments(file)
+-	FILE	*file;
++skip_comments(FILE *file)
+ {
+ 	int	ch;
+ 
+@@ -436,9 +422,7 @@ skip_comments(file)
+  *	FALSE otherwise.
+  */
+ static int
+-in_file(string, file)
+-	char *string;
+-	FILE *file;
++in_file(char *string, FILE* file)
+ {
+ 	char line[MAX_TEMPSTR];
+ 
+@@ -459,8 +443,7 @@ in_file(string, file)
+  *	or (neither file exists but user=="root" so it's okay)
+  */
+ int
+-allowed(username)
+-	char *username;
++allowed(char *username)
+ {
+ 	static int	init = FALSE;
+ 	static FILE	*allow, *deny;
+@@ -525,11 +508,7 @@ allowed(username)
+ 
+ 
+ void
+-log_it(username, xpid, event, detail)
+-	char	*username;
+-	int	xpid;
+-	char	*event;
+-	char	*detail;
++log_it(char *username, int xpid, char *event, char *detail)
+ {
+ 	PID_T			pid = xpid;
+ #if defined(LOG_FILE)
+@@ -629,14 +608,16 @@ log_close() {
+ }
+ 
+ 
+-/* two warnings:
++/**
++ * two warnings:
+  *	(1) this routine is fairly slow
+  *	(2) it returns a pointer to static storage
+- */
++ *
++ * @param *s string we want the first word of
++ * @param *t terminators, implicitly including \0
++ **/
+ char *
+-first_word(s, t)
+-	register char *s;	/* string we want the first word of */
+-	register char *t;	/* terminators, implicitly including \0 */
++first_word(register char *s, register char *t)
+ {
+ 	static char retbuf[2][MAX_TEMPSTR + 1];	/* sure wish C had GC */
+ 	static int retsel = 0;
+@@ -667,10 +648,7 @@ first_word(s, t)
+  *	heavily ascii-dependent.
+  */
+ void
+-mkprint(dst, src, len)
+-	register char *dst;
+-	register unsigned char *src;
+-	register int len;
++mkprint(register char *dst, register unsigned char *src, register int len)
+ {
+ 	while (len-- > 0)
+ 	{
+@@ -699,9 +677,7 @@ mkprint(dst, src, len)
+  *	returns a pointer to malloc'd storage, you must call free yourself.
+  */
+ char *
+-mkprints(src, len)
+-	register unsigned char *src;
+-	register unsigned int len;
++mkprints(register unsigned char *src, register unsigned int len)
+ {
+ 	register char *dst = malloc(len*4 + 1);
+ 
+diff --git a/popen.c b/popen.c
+index 55fa64e..efb039f 100644
+--- a/popen.c
++++ b/popen.c
+@@ -48,9 +48,7 @@ static PID_T *pids;
+ static int fds;
+ 
+ FILE *
+-cron_popen(program, type, e)
+-	char *program, *type;
+-	entry *e;
++cron_popen(char *program, char *type, entry *e)
+ {
+ 	register char *cp;
+ 	FILE *iop;
+@@ -176,8 +174,7 @@ pfree:
+ }
+ 
+ int
+-cron_pclose(iop)
+-	FILE *iop;
++cron_pclose(FILE *iop)
+ {
+ 	register int fdes;
+ 	sigset_t omask, mask;
+diff --git a/user.c b/user.c
+index f701927..4728d6c 100644
+--- a/user.c
++++ b/user.c
+@@ -162,8 +162,7 @@ static int get_security_context(char *name, int crontab_fd, security_context_t
+ static char *err_user = NULL;
+ 
+ void
+-crontab_error(msg)
+-	char *msg;
++crontab_error(char *msg)
+ {
+ 	const char *fn;
+ 	/* Figure out the file name from the username */
+@@ -180,8 +179,7 @@ crontab_error(msg)
+ }
+ 
+ void
+-free_user(u)
+-	user	*u;
++free_user(user *u)
+ {
+ 	entry	*e, *ne;
+ 
+@@ -199,12 +197,8 @@ free_user(u)
+ 
+ 
+ user *
+-load_user(crontab_fd, pw, uname, fname, tabname)
+-	int		crontab_fd;
+-	struct passwd	*pw;		/* NULL implies syscrontab */
+-	char		*uname;
+-	char		*fname;
+-	char		*tabname;
++load_user(int crontab_fd, struct passwd *pw,
++	  char *uname, char *fname, char *tabname)
+ {
+ 	char	envstr[MAX_ENVSTR];
+ 	FILE	*file;

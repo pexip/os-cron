@@ -1,12 +1,20 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:22 +0200
+Subject: protect-list
+
 manage characters \r and \b in a special way, since one could use
 them to obfuscate a crontab. This patch should close #585552
 
 A test has been designed for autopkgtest: 
 file debian/tests/check-listings-protection
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/crontab.c b/crontab.c
+index 555cc6c..8fe6f90 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -313,6 +313,8 @@ list_cmd() {
  	}
  

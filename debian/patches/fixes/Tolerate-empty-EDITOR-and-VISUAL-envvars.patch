@@ -9,10 +9,14 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/148809
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index a43d9ce..c71bc38 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -394,8 +394,8 @@ edit_cmd() {
  	}
  	mtime = statbuf.st_mtime;

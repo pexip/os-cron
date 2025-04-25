@@ -15,10 +15,47 @@ using sockets instead should be taken into consideration.
 Bug-Debian: https://bugs.debian.org/18333
 Forwarded: no
 Last-Update: 2016-01-10
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ cron.8      |  2 ++
+ crontab.1   |  5 +++++
+ crontab.c   | 32 ++++++++++++++------------------
+ misc.c      | 41 +++++++++++++++++++++++++++++++++++++----
+ pathnames.h | 20 ++++++++++++++++++++
+ 5 files changed, 78 insertions(+), 22 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index 86831e7..2ba9b34 100644
+--- a/cron.8
++++ b/cron.8
+@@ -181,6 +181,8 @@ auditlog support,
+ .IP \(em
+ DST and other time-related changes/fixes,
+ .IP \(em
++SGID crontab(1) instead of SUID root,
++.IP \(em
+ Debian-specific file locations and commands,
+ .IP \(em
+ Debian-specific configuration (/etc/default/cron),
+diff --git a/crontab.1 b/crontab.1
+index 2741db6..b349099 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -118,6 +118,11 @@ There is one file for each user's crontab under the /var/spool/cron/crontabs
+ directory.  Users are not allowed to edit the files under that directory
+ directly to ensure that only users allowed by the system to run periodic tasks
+ can add them, and only syntactically correct crontabs will be written there.
++This is enforced by having the directory writable only by the
++.I crontab
++group and configuring
++.I crontab
++command with the setgid bid set for that specific group.
+ .SH STANDARDS
+ The
+ .I crontab
+diff --git a/crontab.c b/crontab.c
+index 8cfbeb6..c81bc87 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -110,7 +110,6 @@ main(argc, argv)
  		argv[1] = "-";
  	}
@@ -49,7 +86,7 @@ Index: cron/crontab.c
  		fprintf(stderr, "Temporary crontab no longer owned by you.\n");
  		return -1;;
  	}
-@@ -582,6 +575,10 @@ again: /* Loop point for retrying edit a
+@@ -582,6 +575,10 @@ again: /* Loop point for retrying edit after error */
  		goto fatal;
  	case 0:
  		/* child */
@@ -93,11 +130,11 @@ Index: cron/crontab.c
  	(void) snprintf(n, sizeof(n), CRON_TAB(User));
  	if (rename(tn, n)) {
  		fprintf(stderr, "%s: %s: rename: %s\n",
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -35,6 +35,7 @@ static char rcsid[] = "$Id: misc.c,v 2.9
+diff --git a/misc.c b/misc.c
+index ac0cfb8..43174c2 100644
+--- a/misc.c
++++ b/misc.c
+@@ -35,6 +35,7 @@ static char rcsid[] = "$Id: misc.c,v 2.9 1994/01/15 20:43:43 vixie Exp $";
  #include <errno.h>
  #include <string.h>
  #include <fcntl.h>
@@ -172,10 +209,10 @@ Index: cron/misc.c
  			exit(ERROR_EXIT);
  		}
  	}
-Index: cron/pathnames.h
-===================================================================
---- cron.orig/pathnames.h
-+++ cron/pathnames.h
+diff --git a/pathnames.h b/pathnames.h
+index 5170e99..669d33f 100644
+--- a/pathnames.h
++++ b/pathnames.h
 @@ -81,3 +81,23 @@
  #ifndef REBOOT_FILE
  # define REBOOT_FILE "/run/crond.reboot"
@@ -200,32 +237,3 @@ Index: cron/pathnames.h
 +			 */
 +#define SPOOL_DIR_GROUP "crontab"
 +#endif
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -180,6 +180,8 @@ auditlog support,
- .IP \(em
- DST and other time-related changes/fixes,
- .IP \(em
-+SGID crontab(1) instead of SUID root,
-+.IP \(em
- Debian-specific file locations and commands,
- .IP \(em
- Debian-specific configuration (/etc/default/cron),
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
-@@ -118,6 +118,11 @@ There is one file for each user's cronta
- directory.  Users are not allowed to edit the files under that directory
- directly to ensure that only users allowed by the system to run periodic tasks
- can add them, and only syntactically correct crontabs will be written there.
-+This is enforced by having the directory writable only by the
-+.I crontab
-+group and configuring
-+.I crontab
-+command with the setgid bid set for that specific group.
- .SH STANDARDS
- The
- .I crontab

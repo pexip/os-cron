@@ -12,11 +12,19 @@ Bug-Debian: https://bugs.debian.org/309150
 Bug-Debian: https://bugs.debian.org/600310
 Forwarded: no
 Last-Update: 2016-01-10
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -30,6 +30,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
+---
+ cron.c       | 16 ++++++++++++++++
+ cron.h       |  3 +++
+ crontab.5    | 14 ++++++++++++++
+ do_command.c | 39 ++++++++++++++++++++++++++++++++++++++-
+ externs.h    |  5 +++++
+ 5 files changed, 76 insertions(+), 1 deletion(-)
+
+diff --git a/cron.c b/cron.c
+index b073ecc..db0e073 100644
+--- a/cron.c
++++ b/cron.c
+@@ -30,6 +30,7 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
  #include <sys/types.h>
  #include <fcntl.h>
  #include <libgen.h>
@@ -53,10 +61,10 @@ Index: cron/cron.c
  	/* if there are no debug flags turned on, fork as a daemon should.
  	 */
  # if DEBUGGING
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
+diff --git a/cron.h b/cron.h
+index 7cce1c5..2a12bd2 100644
+--- a/cron.h
++++ b/cron.h
 @@ -294,6 +294,8 @@ static long GMToff;
  
  int	lsbsysinit_mode;
@@ -74,26 +82,35 @@ Index: cron/cron.h
  # if DEBUGGING
  extern	int	DebugFlags;
  extern	char	*DebugFlagNames[];
-Index: cron/externs.h
-===================================================================
---- cron.orig/externs.h
-+++ cron/externs.h
-@@ -26,6 +26,11 @@
- # define WAIT_IS_INT 1
- extern char *tzname[2];
- # define TZONE(tm) tzname[(tm).tm_isdst]
-+/* include locale stuff for mailer "Content-Type":
-+ */
-+#include <locale.h>
-+#include <nl_types.h>
-+#include <langinfo.h>
- #endif
- 
- #if defined(UNIXPC)
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/crontab.5 b/crontab.5
+index 0f72f28..c0863b3 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -121,6 +121,20 @@ override the settings described above nor any settings in the
+ .I crontab
+ file itself.  Note in particular that if you want a PATH other than
+ "/usr/bin:/bin", you will need to set it in the crontab file.
++.PP
++By default, cron will send mail using the mail "Content-Type:" header of
++"text/plain" with the "charset=" parameter set to the charmap / codeset of the
++locale in which
++.IR crond (8)
++is started up \(en i.e.\& either the default system locale,
++if no LC_* environment variables are set, or the locale specified by
++the LC_* environment variables
++( see
++.IR locale (7) ).
++You can use different character encodings for mailed cron job output by
++setting the CONTENT_TYPE and CONTENT_TRANSFER_ENCODING variables in crontabs,
++to the correct values of the mail headers of those names.
++.PP
+ The format of a cron command is very much the V7 standard, with a number of
+ upward-compatible extensions.  Each line has five time and date fields,
+ followed by a command, followed by a newline character ('\en').
+diff --git a/do_command.c b/do_command.c
+index 82c2cc6..f646722 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -470,8 +470,12 @@ child_process(e, u)
  
  			if (mailto) {
@@ -149,28 +166,19 @@ Index: cron/do_command.c
  
  				for (env = e->envp;  *env;  env++)
  					fprintf(mail, "X-Cron-Env: <%s>\n",
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
-@@ -121,6 +121,20 @@ override the settings described above no
- .I crontab
- file itself.  Note in particular that if you want a PATH other than
- "/usr/bin:/bin", you will need to set it in the crontab file.
-+.PP
-+By default, cron will send mail using the mail "Content-Type:" header of
-+"text/plain" with the "charset=" parameter set to the charmap / codeset of the
-+locale in which
-+.IR crond (8)
-+is started up \(en i.e.\& either the default system locale,
-+if no LC_* environment variables are set, or the locale specified by
-+the LC_* environment variables
-+( see
-+.IR locale (7) ).
-+You can use different character encodings for mailed cron job output by
-+setting the CONTENT_TYPE and CONTENT_TRANSFER_ENCODING variables in crontabs,
-+to the correct values of the mail headers of those names.
-+.PP
- The format of a cron command is very much the V7 standard, with a number of
- upward-compatible extensions.  Each line has five time and date fields,
- followed by a command, followed by a newline character ('\en').
+diff --git a/externs.h b/externs.h
+index 5d10430..dab6da5 100644
+--- a/externs.h
++++ b/externs.h
+@@ -26,6 +26,11 @@
+ # define WAIT_IS_INT 1
+ extern char *tzname[2];
+ # define TZONE(tm) tzname[(tm).tm_isdst]
++/* include locale stuff for mailer "Content-Type":
++ */
++#include <locale.h>
++#include <nl_types.h>
++#include <langinfo.h>
+ #endif
+ 
+ #if defined(UNIXPC)

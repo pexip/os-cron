@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Mar 2019 11:00:48 +0100
+Date: Thu, 7 Mar 2019 11:00:48 +0100
 Subject: Open/close syslog on every call
 
 Open and close syslog on every call to log_it().
@@ -17,11 +17,15 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2019-03-07
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -48,10 +48,6 @@ static char rcsid[] = "$Id: misc.c,v 2.9
+---
+ misc.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/misc.c b/misc.c
+index 43174c2..a307ab7 100644
+--- a/misc.c
++++ b/misc.c
+@@ -48,10 +48,6 @@ static char rcsid[] = "$Id: misc.c,v 2.9 1994/01/15 20:43:43 vixie Exp $";
  #define LOG_CRON LOG_DAEMON
  #endif
  
@@ -32,7 +36,7 @@ Index: cron/misc.c
  
  static int		LogFD = ERR;
  
-@@ -584,15 +580,12 @@ log_it(username, xpid, event, detail)
+@@ -584,14 +580,11 @@ log_it(username, xpid, event, detail)
  #endif /*LOG_FILE*/
  
  #if defined(SYSLOG)
@@ -46,11 +50,9 @@ Index: cron/misc.c
  # endif
 -		syslog_open = TRUE;		/* assume openlog success */
 -	}
--
-+
+ 
  	syslog(LOG_INFO, "(%s) %s (%s)", username, event, detail);
  
- #endif /*SYSLOG*/
 @@ -616,7 +609,6 @@ log_close() {
  #endif
  #if defined(SYSLOG)

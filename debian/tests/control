@@ -1,7 +1,8 @@
-Tests: compare-with-old-cron-files,
- check-significant-header,
- do-not-modify-previous-crontabs,
+Tests: check-significant-header,
+ sanity-checks,
  check-messages-sent-by-cron,
- check-listings-protection
-Depends: apt, binutils, exim4, mailutils, rsyslog, bsdextrautils, @
+ check-listings-protection,
+ step-size-out-of-bound,
+ check-wrapping-long-lines,
+Depends: apt, binutils, exim4, mailutils, rsyslog, bsdextrautils, expect, @
 Restrictions: needs-root, needs-internet, breaks-testbed

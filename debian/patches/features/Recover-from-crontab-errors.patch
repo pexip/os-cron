@@ -18,11 +18,15 @@ Bug-Debian: https://bugs.debian.org/627859
 Bug-Debian: https://bugs.debian.org/809167
 Forwarded: no
 Last-Update: 2019-03-23
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -27,6 +27,7 @@ static char rcsid[] = "$Id: database.c,v
+---
+ database.c | 77 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 74 insertions(+), 3 deletions(-)
+
+diff --git a/database.c b/database.c
+index 40317b1..f16be38 100644
+--- a/database.c
++++ b/database.c
+@@ -27,6 +27,7 @@ static char rcsid[] = "$Id: database.c,v 2.8 1994/01/15 20:43:43 vixie Exp $";
  #include <fcntl.h>
  #include <sys/stat.h>
  #include <sys/file.h>
@@ -30,7 +34,7 @@ Index: cron/database.c
  
  
  #define TMAX(a,b) ((a)>(b)?(a):(b))
-@@ -50,6 +51,8 @@ static	void		process_crontab __P((char *
+@@ -50,6 +51,8 @@ static	void		process_crontab __P((char *, char *, char *,
  static int valid_name (char *filename);
  static user *get_next_system_crontab __P((user *));
  
@@ -49,7 +53,7 @@ Index: cron/database.c
  				syscrond_change = 1;
                          }
  
-@@ -339,6 +343,7 @@ process_crontab(uname, fname, tabname, s
+@@ -339,6 +343,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  
  		if (statbuf->st_uid != pw->pw_uid && statbuf->st_uid != ROOT_UID) {
  			log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
@@ -57,7 +61,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  
-@@ -351,12 +356,14 @@ process_crontab(uname, fname, tabname, s
+@@ -351,12 +356,14 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		/* Check to make sure that the crontab's permissions are secure */
  		if ((statbuf->st_mode & 07777) != 0600) {
  			log_it(fname, getpid(), "INSECURE MODE (mode 0600 expected)", tabname);
@@ -72,7 +76,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  	} else {
-@@ -368,12 +375,24 @@ process_crontab(uname, fname, tabname, s
+@@ -368,12 +375,24 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		}
  		if (S_ISLNK(statbuf->st_mode) && statbuf->st_uid != ROOT_UID) {
  			log_it(fname, getpid(), "WRONG SYMLINK OWNER", tabname);
@@ -98,7 +102,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  
-@@ -385,6 +404,7 @@ process_crontab(uname, fname, tabname, s
+@@ -385,6 +404,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		/* Check to make sure that the crontab is owned by root */
  		if (statbuf->st_uid != ROOT_UID) {
  			log_it(fname, getpid(), "WRONG FILE OWNER", tabname);
@@ -106,7 +110,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  
-@@ -400,6 +420,7 @@ process_crontab(uname, fname, tabname, s
+@@ -400,6 +420,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		 */
  		if ((statbuf->st_mode & S_IWGRP) || (statbuf->st_mode & S_IWOTH)) {
  			log_it(fname, getpid(), "INSECURE MODE (group/other writable)", tabname);
@@ -114,7 +118,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  		/* Technically, we should also check whether the parent dir is
-@@ -412,6 +433,7 @@ process_crontab(uname, fname, tabname, s
+@@ -412,6 +433,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		/* Check to make sure that there are no hardlinks to the crontab */
  		if (statbuf->st_nlink != 1) {
  			log_it(fname, getpid(), "NUMBER OF HARD LINKS > 1", tabname);
@@ -122,7 +126,7 @@ Index: cron/database.c
  			goto next_crontab;
  		}
  	}
-@@ -451,7 +473,15 @@ process_crontab(uname, fname, tabname, s
+@@ -451,7 +473,15 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  	if (u != NULL) {
  		u->mtime = statbuf->st_mtime;
  		link_user(new_db, u);

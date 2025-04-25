@@ -52,8 +52,8 @@ parse_environment ()
      done
 
 # Get the timezone set.
-    if [ -z "$TZ" -a -e /etc/timezone ]; then
-        TZ=`cat /etc/timezone` 
+    if [ -z "$TZ" -a -e /etc/localtime ]; then
+        TZ=$(readlink /etc/localtime | sed "s|/usr/share/zoneinfo/||") 
     fi
 }
 

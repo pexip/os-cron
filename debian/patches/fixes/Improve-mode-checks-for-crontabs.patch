@@ -10,11 +10,29 @@ Improve mode checks for crontabs to improve security. Specifically, check for:
 
  Forwarded: no
  Last-Update: 2015-12-26
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -222,7 +222,7 @@ process_crontab(uname, fname, tabname, s
+---
+ cron.8     |  2 ++
+ database.c | 28 +++++++++++++++++++++++++++-
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/cron.8 b/cron.8
+index 2f3e7a4..eaca890 100644
+--- a/cron.8
++++ b/cron.8
+@@ -41,6 +41,8 @@ command should be used to access and update them.
+ .I cron
+ also reads /etc/crontab, which is in a slightly different format (see
+ .IR crontab (5)).
++/etc/crontab must be owned by root, and must not
++be group-or other-writable.
+ .I cron
+ then wakes up every minute, examining all stored crontabs, checking
+ each command to see if it should be run in the current minute.  When
+diff --git a/database.c b/database.c
+index 09f44a4..fceb578 100644
+--- a/database.c
++++ b/database.c
+@@ -222,7 +222,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		goto next_crontab;
  	}
  
@@ -23,7 +41,7 @@ Index: cron/database.c
  		/* crontab not accessible?
  		 */
  		log_it(fname, getpid(), "CAN'T OPEN", tabname);
-@@ -233,6 +233,32 @@ process_crontab(uname, fname, tabname, s
+@@ -233,6 +233,32 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		log_it(fname, getpid(), "FSTAT FAILED", tabname);
  		goto next_crontab;
  	}
@@ -56,16 +74,3 @@ Index: cron/database.c
  
  	Debug(DLOAD, ("\t%s:", fname))
  	u = find_user(old_db, fname);
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -41,6 +41,8 @@ command should be used to access and upd
- .I cron
- also reads /etc/crontab, which is in a slightly different format (see
- .IR crontab (5)).
-+/etc/crontab must be owned by root, and must not
-+be group-or other-writable.
- .I cron
- then wakes up every minute, examining all stored crontabs, checking
- each command to see if it should be run in the current minute.  When

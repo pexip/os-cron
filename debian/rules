@@ -22,11 +22,11 @@ endif
 export DEB_CFLAGS_MAINT_APPEND += -Wall -Wno-unused -Wno-comment
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-# debug is disabled by default
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-  DEBUG_DEFS = -DDEBUGGING=1
-else
+# debug is enabled by default
+ifneq (,$(findstring nodebug,$(DEB_BUILD_OPTIONS)))
   DEBUG_DEFS = -DDEBUGGING=0
+else
+  DEBUG_DEFS = -DDEBUGGING=1
 endif
 export DEBUG_DEFS
 
@@ -58,10 +58,17 @@ endif # Linux
 %:
 	dh $@
 
+override_dh_auto_clean:
+	dh_auto_clean
+	: # remove generated man pages
+	rm -f debian/crontab.1 debian/crontab.5 debian/cron.8
 
-override_dh_auto_install:
-	# Empty target to bypass the auto-detected install target in Makefile
 
+override_dh_auto_install: manpages
+	: # Empty target to bypass the auto-detected install target in Makefile
+	: #
+	: # this step is automatic with DebHelper >= 14
+	dh_installsysusers
 
 COMMON_ETC = debian/cron-daemon-common/etc
 # beginning with release 3.0pl1-139, the configuration files
@@ -75,3 +82,14 @@ override_dh_install-indep:
 	install -m 644 debian/placeholder $(COMMON_ETC)/cron.weekly/.placeholder
 	install -m 644 debian/placeholder $(COMMON_ETC)/cron.monthly/.placeholder
 	install -m 644 debian/placeholder $(COMMON_ETC)/cron.yearly/.placeholder
+
+manpages:
+	for f in debian/crontab.1 debian/crontab.5 debian/cron.8; do \
+	  xsltproc --nonet --param man.charmap.use.subset "0" \
+            --param make.year.ranges "1" --param make.single.year.ranges "1" \
+	    --output $$f \
+            /usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl \
+            $$f.xml; \
+	done
+
+.PHONY: manpages

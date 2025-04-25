@@ -11,11 +11,15 @@ Bug-Debian: https://bugs.debian.org/149908
 Bug-Debian: https://bugs.debian.org/413962
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -58,6 +58,7 @@ static char	*Options[] = { "???", "list"
+---
+ crontab.c | 223 ++++++++++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 189 insertions(+), 34 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index 24de55f..015da98 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -58,6 +58,7 @@ static char	*Options[] = { "???", "list", "delete", "edit", "replace" };
  static	PID_T		Pid;
  static	char		*User, *RealUser;
  static	char		Filename[MAX_FNAME];

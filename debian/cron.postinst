@@ -3,14 +3,11 @@ set -e
 
 action="$1"
 
-if [ "$action" != configure ]; then
-    exit 0
-fi
-
-
-# Fixup crontab binary for new group 'crontab'.
-if ! dpkg-statoverride --list /usr/bin/crontab > /dev/null ; then
-    dpkg-statoverride --update --add root crontab 2755 /usr/bin/crontab
+if [ "$action" = configure ]; then
+    # Fixup crontab binary for new group 'crontab'.
+    if ! dpkg-statoverride --list /usr/bin/crontab > /dev/null ; then
+	dpkg-statoverride --update --add root crontab 2755 /usr/bin/crontab
+    fi
 fi
 
 #DEBHELPER#

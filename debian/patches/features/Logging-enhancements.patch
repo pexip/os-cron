@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Sat, 09 Jan 2016 19:37:40 +0100
+Date: Sat, 9 Jan 2016 19:37:40 +0100
 Subject: Logging enhancements
 
 Minor enhancements to logging, namely:
@@ -12,10 +12,16 @@ Contributed by Steve Greenland <stevegr@debian.org>.
 Bug-Debian: https://bugs.debian.org/76625
 Forwarded: no
 Last-Update: 2016-01-09
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
+---
+ misc.c      |  3 ++-
+ pathnames.h |  2 +-
+ user.c      | 30 +++++++++++++++++++++++++++++-
+ 3 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/misc.c b/misc.c
+index b04d792..ac0cfb8 100644
+--- a/misc.c
++++ b/misc.c
 @@ -288,7 +288,8 @@ acquire_daemonlock(closeflag)
  			log_it("CRON", getpid(), "DEATH", buf);
  			exit(ERROR_EXIT);
@@ -26,10 +32,10 @@ Index: cron/misc.c
  		(void) fcntl(fd, F_SETFD, 1);
  	}
  
-Index: cron/pathnames.h
-===================================================================
---- cron.orig/pathnames.h
-+++ cron/pathnames.h
+diff --git a/pathnames.h b/pathnames.h
+index 0f5c1b9..5170e99 100644
+--- a/pathnames.h
++++ b/pathnames.h
 @@ -49,7 +49,7 @@
  			 */
  #define	ALLOW_FILE	"/etc/cron.allow"		/*-*/
@@ -39,11 +45,11 @@ Index: cron/pathnames.h
  
  			/* where should the daemon stick its PID?
  			 */
-Index: cron/user.c
-===================================================================
---- cron.orig/user.c
-+++ cron/user.c
-@@ -23,8 +23,11 @@ static char rcsid[] = "$Id: user.c,v 2.8
+diff --git a/user.c b/user.c
+index 6a96bc5..f701927 100644
+--- a/user.c
++++ b/user.c
+@@ -23,8 +23,11 @@ static char rcsid[] = "$Id: user.c,v 2.8 1994/01/15 20:43:43 vixie Exp $";
   */
  
  
@@ -55,7 +61,7 @@ Index: cron/user.c
  #ifdef WITH_SELINUX
  #include <selinux/context.h>
  #include <selinux/selinux.h>
-@@ -153,6 +156,29 @@ static int get_security_context(char *na
+@@ -153,6 +156,29 @@ static int get_security_context(char *name, int crontab_fd, security_context_t
  #endif
  
  
@@ -85,7 +91,7 @@ Index: cron/user.c
  void
  free_user(u)
  	user	*u;
-@@ -256,7 +282,9 @@ load_user(crontab_fd, pw, uname, fname,
+@@ -256,7 +282,9 @@ load_user(crontab_fd, pw, uname, fname, tabname)
  			}
  			goto done;
  		case FALSE:

@@ -11,13 +11,18 @@ frame "Here we are testing the patch" \
 echo "================= adding user 'dummy' ====================="
 getent passwd dummy || adduser --disabled-password --gecos "" dummy
 
-echo "========= Inject an obfuscated line into dummy's crontab =============="
+echo "=== Inject an obfuscated line into dummy's crontab ========"
 printf "* * * * * >/tmp/x;\rno crontab for dummy\b\bbo\n" | crontab -u dummy -
 
 echo "========== testing the crontab of user 'dummy' ============="
 result="$(crontab -u dummy -l)"
-echo "========= here is a hexa dump of \$(crontab -u dummy -l) ===="
+echo "======== here is a hexa dump of \$(crontab -u dummy -l) ===="
 echo "$result" | hd
 test "$result" = "* * * * * >/tmp/x;\\rno crontab for dummy\\b\\bbo"
 
 frame "Good! characters \\r and \\b were protected"
+echo
+frame "test whether crontab -l can be colorized thanks to the" \
+      "patch features/Coloring_the_ouput_of_crontab_l.patch"
+(unbuffer crontab -u dummy -l | grep "[\033]") || (echo "no character \\033 when unbuffering 'crontab -l'"; false)
+echo "====== crontab -l is able to colorize its output ==========="

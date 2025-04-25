@@ -11,10 +11,17 @@ numerous smaller contributions by others.
 
 Forwarded: not-needed
 Last-Update: 2016-01-16
-Index: cron/README
-===================================================================
---- cron.orig/README
-+++ cron/README
+---
+ README    |  6 +++++
+ cron.8    | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ crontab.1 | 28 +++++++++++++++++-----
+ crontab.5 | 55 ++++++++++++++++++++++++++++++++++++++----
+ 4 files changed, 157 insertions(+), 14 deletions(-)
+
+diff --git a/README b/README
+index 751f04f..03a4051 100644
+--- a/README
++++ b/README
 @@ -24,6 +24,12 @@ December 27, 1993
  [V1.0 was May 6, 1987]
  Paul Vixie
@@ -28,10 +35,10 @@ Index: cron/README
  This is a version of 'cron' that is known to run on BSD 4.[23] systems.  It
  is functionally based on the SysV cron, which means that each user can have
  their own crontab file (all crontab files are stored in a read-protected
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
+diff --git a/cron.8 b/cron.8
+index eaca890..97cc48f 100644
+--- a/cron.8
++++ b/cron.8
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: cron.8,v 2.2 1993/12/28 08:34:43 vixie Exp $
@@ -41,7 +48,7 @@ Index: cron/cron.8
  .UC 4
  .SH NAME
  cron \- daemon to execute scheduled commands (Vixie Cron)
-@@ -41,6 +41,12 @@ command should be used to access and upd
+@@ -41,6 +41,12 @@ command should be used to access and update them.
  .I cron
  also reads /etc/crontab, which is in a slightly different format (see
  .IR crontab (5)).
@@ -54,7 +61,7 @@ Index: cron/cron.8
  /etc/crontab must be owned by root, and must not
  be group-or other-writable.
  .I cron
-@@ -72,8 +78,78 @@ logs its action to the syslog facility '
+@@ -72,8 +78,78 @@ logs its action to the syslog facility 'cron', and logging may be
  controlled using the standard
  .IR syslogd (8)
  facility.
@@ -79,7 +86,7 @@ Index: cron/cron.8
 +.IR crontab (5).
 +.PP
 +The daemon will use, if present, the definition from
-+.I /etc/timezone
++.I /etc/localtime
 +for the timezone.
 +.PP
 +The environment can be redefined in user's crontab definitions but
@@ -135,10 +142,10 @@ Index: cron/cron.8
 +and original creator of this manual page.  This page has also been modified for
 +Debian by Steve Greenland, Javier Fernandez-Sanguino and Christian Kastner.
 +
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
+diff --git a/crontab.1 b/crontab.1
+index 92b69f0..7daf75b 100644
+--- a/crontab.1
++++ b/crontab.1
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: crontab.1,v 2.4 1993/12/31 10:47:33 vixie Exp $
@@ -148,7 +155,7 @@ Index: cron/crontab.1
  .UC 4
  .SH NAME
  crontab \- maintain crontab files for individual users (Vixie Cron)
-@@ -58,7 +58,8 @@ is not considered and your user must be
+@@ -58,7 +58,8 @@ is not considered and your user must be listed in
  in order to be able to use the crontab.
  .PP
  Regardless of the existence of any of these files, the root administrative
@@ -196,10 +203,10 @@ Index: cron/crontab.1
 +.I cron
 +and original creator of this manual page.  This page has also been modified for
 +Debian by Steve Greenland, Javier Fernandez-Sanguino and Christian Kastner.
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
+diff --git a/crontab.5 b/crontab.5
+index 9db8166..f4405f2 100644
+--- a/crontab.5
++++ b/crontab.5
 @@ -17,7 +17,7 @@
  .\"
  .\" $Id: crontab.5,v 2.4 1994/01/15 20:43:43 vixie Exp $
@@ -225,7 +232,7 @@ Index: cron/crontab.5
  .fi
  .in
  .PP
-@@ -237,9 +238,28 @@ MAILTO=paul
+@@ -237,6 +238,8 @@ MAILTO=paul
  0 22 * * 1\-5    mail \-s "It's 10pm" joe%Joe,%%Where are your kids?%
  23 0\-23/2 * * * echo "run 23 minutes after midn, 2am, 4am ..., everyday"
  5 4 * * sun     echo "run at 5 after 4 every Sunday"
@@ -233,6 +240,10 @@ Index: cron/crontab.5
 +0 0 */2 * sun   echo "run at midn on every Sunday that's an uneven date"
  # Run on every second Saturday of the month
  0 4 8\-14 * *    test $(date +\e%u) \-eq 6 && echo "2nd Saturday"
+ # Same thing, efficient too:
+@@ -245,6 +248,23 @@ MAILTO=paul
+ #Thursday of each month
+ 57 2 * * 5 case $(date +\%d) in 0[2-8]) echo "After 1st Thursday"; esac
  .fi
 +
 +.PP
@@ -254,7 +265,7 @@ Index: cron/crontab.5
  .SH EXAMPLE SYSTEM CRON FILE
  
  The following lists the content of a regular system-wide crontab file.  Unlike a
-@@ -255,6 +275,13 @@ user's crontab, this file has the userna
+@@ -260,6 +280,13 @@ user's crontab, this file has the username field, as used by /etc/crontab.
  SHELL=/bin/sh
  PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
  
@@ -268,7 +279,7 @@ Index: cron/crontab.5
  # m h dom mon dow user	command
  17 * * * *  root  cd / && run-parts \-\-report /etc/cron.hourly
  25 6 * * *  root  test \-x /usr/sbin/anacron || ( cd / && run-parts \-\-report /etc/cron.daily )
-@@ -262,6 +289,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbi
+@@ -267,6 +294,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
  52 6 1 * *  root  test \-x /usr/sbin/anacron || ( cd / && run-parts \-\-report /etc/cron.monthly )
  #
  .fi
@@ -281,7 +292,7 @@ Index: cron/crontab.5
  .SH SEE ALSO
  cron(8), crontab(1)
  .SH EXTENSIONS
-@@ -298,6 +331,15 @@ environment variable in his
+@@ -303,6 +336,15 @@ environment variable in his
  this will affect only the commands executed in the crontab, not the execution
  of the crontab tasks themselves.
  
@@ -297,7 +308,7 @@ Index: cron/crontab.5
  The
  .I crontab
  syntax does not make it possible to define all possible periods one can
-@@ -329,5 +371,8 @@ cron will consider the crontab (at least
+@@ -334,5 +376,8 @@ cron will consider the crontab (at least partially) broken.
  A warning will be written to syslog.
  
  .SH AUTHOR

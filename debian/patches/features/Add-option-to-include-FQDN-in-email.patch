@@ -8,24 +8,32 @@ in the subject when sending mails.
 Bug-Debian: https://bugs.debian.org/570423
 Forwarded: no
 Last-Update: 2015-01-16
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -537,7 +537,8 @@ child_process(e, u)
- 	fprintf(mail, "From: root (Cron Daemon)\n");
- 	fprintf(mail, "To: %s\n", mailto);
- 	fprintf(mail, "Subject: Cron <%s@%s> %s%s\n",
--			usernm, first_word(hostname, "."),
-+			usernm,
-+			fqdn_in_subject ? hostname : first_word(hostname, "."),
- 			e->cmd, status?" (failed)":"");
- # if defined(MAIL_DATE)
- 	fprintf(mail, "Date: %s\n",
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
+---
+ cron.8       | 4 ++++
+ cron.c       | 8 ++++++--
+ cron.h       | 2 ++
+ do_command.c | 3 ++-
+ 4 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index 77cb100..e1d6736 100644
+--- a/cron.8
++++ b/cron.8
+@@ -41,6 +41,10 @@ Enable LSB compliant names for /etc/cron.d files.  This setting, however, does
+ not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
+ /etc/cron.weekly or /etc/cron.monthly.
+ .TP
++.B \-n
++Include the FQDN in the subject when sending mails.  By default, cron will
++abbreviate the hostname.
++.TP
+ .B \-L loglevel
+ Tell cron what to log about \fBjobs\fR (errors are logged regardless of this
+ value) as the sum of the following values:
+diff --git a/cron.c b/cron.c
+index 673134a..613e7bf 100644
+--- a/cron.c
++++ b/cron.c
 @@ -448,9 +448,9 @@ sighup_handler(int x) {
  
  
@@ -56,10 +64,10 @@ Index: cron/cron.c
  #if DEBUGGING
  		case 'x':
  			if (!set_debug_flags(optarg))
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
+diff --git a/cron.h b/cron.h
+index 94b8e04..b58753d 100644
+--- a/cron.h
++++ b/cron.h
 @@ -308,6 +308,7 @@ static long GMToff;
  int	stay_foreground;
  int	lsbsysinit_mode;
@@ -76,18 +84,17 @@ Index: cron/cron.h
  extern	int	LineNumber;
  extern	time_t	StartTime;
  extern  time_min timeRunning;
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -41,6 +41,10 @@ Enable LSB compliant names for /etc/cron
- not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
- /etc/cron.weekly or /etc/cron.monthly.
- .TP
-+.B \-n
-+Include the FQDN in the subject when sending mails.  By default, cron will
-+abbreviate the hostname.
-+.TP
- .B \-L loglevel
- Tell cron what to log about \fBjobs\fR (errors are logged regardless of this
- value) as the sum of the following values:
+diff --git a/do_command.c b/do_command.c
+index e024995..a469347 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -537,7 +537,8 @@ child_process(e, u)
+ 	fprintf(mail, "From: root (Cron Daemon)\n");
+ 	fprintf(mail, "To: %s\n", mailto);
+ 	fprintf(mail, "Subject: Cron <%s@%s> %s%s\n",
+-			usernm, first_word(hostname, "."),
++			usernm,
++			fqdn_in_subject ? hostname : first_word(hostname, "."),
+ 			e->cmd, status?" (failed)":"");
+ # if defined(MAIL_DATE)
+ 	fprintf(mail, "Date: %s\n",

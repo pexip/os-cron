@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Jan 2016 22:11:18 +0100
+Date: Thu, 7 Jan 2016 22:11:18 +0100
 Subject: Debian sendmail options
 
 Modify the options passed to sendmail:
@@ -12,10 +12,14 @@ Bug-Debian: https://bugs.debian.org/36338
 Bug-Debian: https://bugs.debian.org/146224
 Forwarded: no
 Last-Update: 2016-01-07
-Index: cron/config.h
-===================================================================
---- cron.orig/config.h
-+++ cron/config.h
+---
+ config.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/config.h b/config.h
+index 2940392..3d2b614 100644
+--- a/config.h
++++ b/config.h
 @@ -42,11 +42,16 @@
  			 */
  

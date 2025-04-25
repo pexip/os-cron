@@ -5,7 +5,7 @@
 # that none of the other crontabs do.
 
 SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Example of job definition:
 # .---------------- minute (0 - 59)

@@ -10,71 +10,33 @@ Based on the changes originally made by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/externs.h
-===================================================================
---- cron.orig/externs.h
-+++ cron/externs.h
-@@ -20,6 +20,7 @@
- # include <unistd.h>
- # include <string.h>
- # include <dirent.h>
-+# include <errno.h>
- # define DIR_T	struct dirent
- # define WAIT_T	int
- # define WAIT_IS_INT 1
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -24,7 +24,7 @@ static char rcsid[] = "$Id: cron.c,v 2.1
- 
- 
- #include "cron.h"
--#include <sys/signal.h>
-+#include <signal.h>
- #if SYS_TIME_H
- # include <sys/time.h>
- #else
-Index: cron/popen.c
-===================================================================
---- cron.orig/popen.c
-+++ cron/popen.c
-@@ -29,7 +29,7 @@ static char sccsid[] = "@(#)popen.c	5.7
- #endif /* not lint */
- 
- #include "cron.h"
--#include <sys/signal.h>
-+#include <signal.h>
- 
- 
- #define WANT_GLOBBING 0
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -21,7 +21,8 @@ static char rcsid[] = "$Id: do_command.c
- 
- 
- #include "cron.h"
--#include <sys/signal.h>
-+#include <signal.h>
-+#include <grp.h>
- #if defined(sequent)
- # include <sys/universe.h>
- #endif
-@@ -207,7 +208,7 @@ child_process(e, u)
- 		 * we set uid, we've lost root privledges.
- 		 */
- 		setgid(e->gid);
--# if defined(BSD)
-+# if defined(BSD) || defined(POSIX)
- 		initgroups(env_get("LOGNAME", e->envp), e->gid);
- # endif
- 		setuid(e->uid);		/* we aren't root after this... */
-Index: cron/compat.h
-===================================================================
---- cron.orig/compat.h
-+++ cron/compat.h
+---
+ Makefile     |  2 +-
+ compat.h     | 20 ++++++++++----------
+ cron.c       |  2 +-
+ do_command.c |  5 +++--
+ externs.h    |  1 +
+ pathnames.h  |  2 +-
+ popen.c      |  2 +-
+ 7 files changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3dab5ad..c4c32ad 100644
+--- a/Makefile
++++ b/Makefile
+@@ -65,7 +65,7 @@ OPTIM		=	-g
+ #(BSD is only needed if <sys/params.h> does not define it, as on ULTRIX)
+ #COMPAT		=	-DBSD
+ # (POSIX)
+-#COMPAT		=	-DPOSIX
++COMPAT		=	-DPOSIX
+ #<<lint flags of choice?>>
+ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
+ #<<want to use a nonstandard CC?>>
+diff --git a/compat.h b/compat.h
+index 528c6d3..9ff3778 100644
+--- a/compat.h
++++ b/compat.h
 @@ -62,7 +62,7 @@
  #endif
  
@@ -131,10 +93,58 @@ Index: cron/compat.h
  # define SYS_TIME_H 1
  #else
  # define SYS_TIME_H 0
-Index: cron/pathnames.h
-===================================================================
---- cron.orig/pathnames.h
-+++ cron/pathnames.h
+diff --git a/cron.c b/cron.c
+index 624c37a..2753a44 100644
+--- a/cron.c
++++ b/cron.c
+@@ -24,7 +24,7 @@ static char rcsid[] = "$Id: cron.c,v 2.11 1994/01/15 20:43:43 vixie Exp $";
+ 
+ 
+ #include "cron.h"
+-#include <sys/signal.h>
++#include <signal.h>
+ #if SYS_TIME_H
+ # include <sys/time.h>
+ #else
+diff --git a/do_command.c b/do_command.c
+index 4083c32..11e157a 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -21,7 +21,8 @@ static char rcsid[] = "$Id: do_command.c,v 2.12 1994/01/15 20:43:43 vixie Exp $"
+ 
+ 
+ #include "cron.h"
+-#include <sys/signal.h>
++#include <signal.h>
++#include <grp.h>
+ #if defined(sequent)
+ # include <sys/universe.h>
+ #endif
+@@ -207,7 +208,7 @@ child_process(e, u)
+ 		 * we set uid, we've lost root privledges.
+ 		 */
+ 		setgid(e->gid);
+-# if defined(BSD)
++# if defined(BSD) || defined(POSIX)
+ 		initgroups(env_get("LOGNAME", e->envp), e->gid);
+ # endif
+ 		setuid(e->uid);		/* we aren't root after this... */
+diff --git a/externs.h b/externs.h
+index 3efe605..5d10430 100644
+--- a/externs.h
++++ b/externs.h
+@@ -20,6 +20,7 @@
+ # include <unistd.h>
+ # include <string.h>
+ # include <dirent.h>
++# include <errno.h>
+ # define DIR_T	struct dirent
+ # define WAIT_T	int
+ # define WAIT_IS_INT 1
+diff --git a/pathnames.h b/pathnames.h
+index df6bf1e..04065a0 100644
+--- a/pathnames.h
++++ b/pathnames.h
 @@ -19,7 +19,7 @@
   * $Id: pathnames.h,v 1.3 1994/01/15 20:43:43 vixie Exp $
   */
@@ -144,16 +154,16 @@ Index: cron/pathnames.h
  # include <paths.h>
  #endif /*BSD*/
  
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
-@@ -65,7 +65,7 @@ OPTIM		=	-g
- #(BSD is only needed if <sys/params.h> does not define it, as on ULTRIX)
- #COMPAT		=	-DBSD
- # (POSIX)
--#COMPAT		=	-DPOSIX
-+COMPAT		=	-DPOSIX
- #<<lint flags of choice?>>
- LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
- #<<want to use a nonstandard CC?>>
+diff --git a/popen.c b/popen.c
+index 55708bb..d6c2c75 100644
+--- a/popen.c
++++ b/popen.c
+@@ -29,7 +29,7 @@ static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
+ #endif /* not lint */
+ 
+ #include "cron.h"
+-#include <sys/signal.h>
++#include <signal.h>
+ 
+ 
+ #define WANT_GLOBBING 0

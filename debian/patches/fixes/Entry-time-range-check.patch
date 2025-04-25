@@ -12,11 +12,15 @@ contains an invalid minute "64".
 Bug-Debian: https://bugs.debian.org/533726
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/entry.c
-===================================================================
---- cron.orig/entry.c
-+++ cron/entry.c
-@@ -479,6 +479,17 @@ get_range(bits, low, high, names, ch, fi
+---
+ entry.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/entry.c b/entry.c
+index 511ccfa..567562f 100644
+--- a/entry.c
++++ b/entry.c
+@@ -479,6 +479,17 @@ get_range(bits, low, high, names, ch, file)
  		num3 = 1;
  	}
  

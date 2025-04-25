@@ -16,14 +16,14 @@ Last-Update: 2021-02-16
 ---
  cron.8       |  4 +++-
  crontab.5    | 16 ++++++++++------
- do_command.c | 45 ++++++++++++++++++++++++++-------------------
- 3 files changed, 39 insertions(+), 26 deletions(-)
+ do_command.c | 34 ++++++++++++++++++++++++++++------
+ 3 files changed, 41 insertions(+), 13 deletions(-)
 
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -123,7 +123,9 @@ then wakes up every minute, examining al
+diff --git a/cron.8 b/cron.8
+index e1d6736..fb0f5fe 100644
+--- a/cron.8
++++ b/cron.8
+@@ -124,7 +124,9 @@ then wakes up every minute, examining all stored crontabs, checking
  each command to see if it should be run in the current minute.  When
  executing commands, any output is mailed to the owner of the crontab
  (or to the user named in the MAILTO environment variable in the
@@ -34,11 +34,11 @@ Index: cron/cron.8
  processes have their name coerced to uppercase, as will be seen in the
  syslog and ps output.
  .PP
-Index: cron/crontab.5
-===================================================================
---- cron.orig/crontab.5
-+++ cron/crontab.5
-@@ -100,12 +100,16 @@ on these systems, USER will be set also.
+diff --git a/crontab.5 b/crontab.5
+index c0863b3..e60228a 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -100,12 +100,16 @@ on these systems, USER will be set also.)
  .PP
  In addition to LOGNAME, HOME, and SHELL,
  .IR cron (8)
@@ -61,10 +61,10 @@ Index: cron/crontab.5
  .PP
  On the Debian GNU/Linux system, cron supports the
  .B pam_env
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/do_command.c b/do_command.c
+index a469347..78eaa33 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -52,6 +52,7 @@ static const struct pam_conv conv = {
  
  static void		child_process __P((entry *, user *)),

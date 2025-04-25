@@ -19,10 +19,101 @@ Bug-Debian: https://bugs.debian.org/271747
 Bug-Debian: https://bugs.debian.org/318247
 Forwarded: no
 Last-Update: 2016-01-15
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
+---
+ cron.8       | 25 ++++++++++++++++++++++++-
+ cron.c       |  8 ++++++--
+ cron.h       |  9 ++++++++-
+ do_command.c | 56 ++++++++++++++++++++++++++++++++++++++++----------------
+ 4 files changed, 78 insertions(+), 20 deletions(-)
+
+diff --git a/cron.8 b/cron.8
+index 23a50c0..77cb100 100644
+--- a/cron.8
++++ b/cron.8
+@@ -25,6 +25,8 @@ cron \- daemon to execute scheduled commands (Vixie Cron)
+ cron
+ .RB [ \-f ]
+ .RB [ \-l ]
++.RB [ \-L
++.IR loglevel ]
+ .SH DESCRIPTION
+ .I cron
+ is started automatically from /etc/init.d on entering multi-user
+@@ -38,6 +40,27 @@ Stay in foreground mode, don't daemonize.
+ Enable LSB compliant names for /etc/cron.d files.  This setting, however, does
+ not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
+ /etc/cron.weekly or /etc/cron.monthly.
++.TP
++.B \-L loglevel
++Tell cron what to log about \fBjobs\fR (errors are logged regardless of this
++value) as the sum of the following values:
++.br
++.RS 12
++.IP \fB1\fR
++will log the start of all cron jobs
++.IP \fB2\fR
++will log the end of all cron jobs
++.IP \fB4\fR
++will log all failed jobs (exit status != 0)
++.IP \fB8\fR
++will log the process number of all cron jobs
++.RE
++.IP
++The default is to log the start of all jobs (1).
++Logging will be disabled if
++.I levels
++is set to zero (0).
++A value of fifteen (15) will select all options.
+ .SH NOTES
+ .PP
+ .I cron
+@@ -272,7 +295,7 @@ daemon.  This file determines whether
+ will read the system's environment variables and makes it possible to add
+ additional options to the
+ .I cron
+-program before it is executed, for example to define how
++program before it is executed, either to configure its logging or to define how
+ it will treat the files under /etc/cron.d.
+ 
+ .SH "SEE ALSO"
+diff --git a/cron.c b/cron.c
+index 53a6dae..84b19e6 100644
+--- a/cron.c
++++ b/cron.c
+@@ -447,9 +447,9 @@ sighup_handler(int x) {
+ 
+ 
+ #if DEBUGGING
+-const char *getoptarg = "flx:";
++const char *getoptarg = "flL:x:";
+ #else
+-const char *getoptarg = "fl";
++const char *getoptarg = "flL:";
+ #endif
+ 
+ static void
+@@ -461,6 +461,7 @@ parse_args(argc, argv)
+ 
+ 	stay_foreground = 0;
+ 	lsbsysinit_mode = 0;
++	log_level = 1;
+ 
+ 	while (EOF != (argch = getopt(argc, argv, getoptarg))) {
+ 		switch (argch) {
+@@ -472,6 +473,9 @@ parse_args(argc, argv)
+ 		case 'l':
+ 			lsbsysinit_mode = 1;
+ 			break;
++		case 'L':
++			log_level = atoi(optarg);
++			break;
+ #if DEBUGGING
+ 		case 'x':
+ 			if (!set_debug_flags(optarg))
+diff --git a/cron.h b/cron.h
+index 30b36e9..6c866a4 100644
+--- a/cron.h
++++ b/cron.h
 @@ -138,6 +138,12 @@
  
  typedef int time_min;
@@ -60,10 +151,10 @@ Index: cron/cron.h
  extern	int	LineNumber;
  extern	time_t	StartTime;
  extern  time_min timeRunning;
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/do_command.c b/do_command.c
+index 923e507..e024995 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -131,6 +131,7 @@ child_process(e, u)
  	register char	*input_data;
  	char		*usernm, *mailto;
@@ -166,87 +257,3 @@ Index: cron/do_command.c
  #if defined(USE_PAM)
  	pam_setcred(pamh, PAM_DELETE_CRED | PAM_SILENT);
  	retcode = pam_close_session(pamh, PAM_SILENT);
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -447,9 +447,9 @@ sighup_handler(int x) {
- 
- 
- #if DEBUGGING
--const char *getoptarg = "flx:";
-+const char *getoptarg = "flL:x:";
- #else
--const char *getoptarg = "fl";
-+const char *getoptarg = "flL:";
- #endif
- 
- static void
-@@ -461,6 +461,7 @@ parse_args(argc, argv)
- 
- 	stay_foreground = 0;
- 	lsbsysinit_mode = 0;
-+	log_level = 1;
- 
- 	while (EOF != (argch = getopt(argc, argv, getoptarg))) {
- 		switch (argch) {
-@@ -472,6 +473,9 @@ parse_args(argc, argv)
- 		case 'l':
- 			lsbsysinit_mode = 1;
- 			break;
-+		case 'L':
-+			log_level = atoi(optarg);
-+			break;
- #if DEBUGGING
- 		case 'x':
- 			if (!set_debug_flags(optarg))
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -25,6 +25,8 @@ cron \- daemon to execute scheduled comm
- cron
- .RB [ \-f ]
- .RB [ \-l ]
-+.RB [ \-L
-+.IR loglevel ]
- .SH DESCRIPTION
- .I cron
- is started automatically from /etc/init.d on entering multi-user
-@@ -38,6 +40,27 @@ Stay in foreground mode, don't daemonize
- Enable LSB compliant names for /etc/cron.d files.  This setting, however, does
- not affect the parsing of files under /etc/cron.hourly, /etc/cron.daily,
- /etc/cron.weekly or /etc/cron.monthly.
-+.TP
-+.B \-L loglevel
-+Tell cron what to log about \fBjobs\fR (errors are logged regardless of this
-+value) as the sum of the following values:
-+.br
-+.RS 12
-+.IP \fB1\fR
-+will log the start of all cron jobs
-+.IP \fB2\fR
-+will log the end of all cron jobs
-+.IP \fB4\fR
-+will log all failed jobs (exit status != 0)
-+.IP \fB8\fR
-+will log the process number of all cron jobs
-+.RE
-+.IP
-+The default is to log the start of all jobs (1).
-+Logging will be disabled if
-+.I levels
-+is set to zero (0).
-+A value of fifteen (15) will select all options.
- .SH NOTES
- .PP
- .I cron
-@@ -271,7 +294,7 @@ daemon.  This file determines whether
- will read the system's environment variables and makes it possible to add
- additional options to the
- .I cron
--program before it is executed, for example to define how
-+program before it is executed, either to configure its logging or to define how
- it will treat the files under /etc/cron.d.
- 
- .SH "SEE ALSO"

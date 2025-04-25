@@ -1,5 +1,5 @@
 From: Christian Kastner <ckk@kvr.at>
-Date: Thu, 07 Jan 2016 23:17:45 +0100
+Date: Thu, 7 Jan 2016 23:17:45 +0100
 Subject: SELinux support
 
 Add SELinux support.
@@ -16,10 +16,19 @@ Bug-Debian: https://bugs.debian.org/857662
 Bug-Debian: https://bugs.debian.org/924716
 Forwarded: no
 Last-Update: 2019-09-15
-Index: cron/Makefile
-===================================================================
---- cron.orig/Makefile
-+++ cron/Makefile
+---
+ Makefile     |   4 +-
+ cron.8       |   2 +
+ cron.h       |  12 ++++-
+ database.c   |   5 +-
+ do_command.c |  23 +++++++++
+ user.c       | 158 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 6 files changed, 195 insertions(+), 9 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index c8dd2f4..ce16df8 100644
+--- a/Makefile
++++ b/Makefile
 @@ -55,7 +55,7 @@ DESTMAN		=	$(DESTROOT)/share/man
  INCLUDE		=	-I.
  #INCLUDE	=
@@ -29,7 +38,7 @@ Index: cron/Makefile
  #<<optimize or debug?>>
  #OPTIM		=	-O
  OPTIM		=	-g
-@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $
+@@ -73,7 +73,7 @@ LINTFLAGS	=	-hbxa $(INCLUDE) $(COMPAT) $(DEBUGGING)
  #<<manifest defines>>
  # Allow override from command line
  DEBUG_DEFS	?= -DDEBUGGING=0
@@ -38,10 +47,23 @@ Index: cron/Makefile
  #(SGI IRIX systems need this)
  #DEFS		=	-D_BSD_SIGNALS -Dconst=
  #<<the name of the BSD-like install program>>
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
+diff --git a/cron.8 b/cron.8
+index 9b2c01d..dd40322 100644
+--- a/cron.8
++++ b/cron.8
+@@ -118,6 +118,8 @@ Support for /etc/cron.{hourly,daily,weekly,monthly} via /etc/crontab,
+ .IP \(em
+ PAM support,
+ .IP \(em
++SELinux support,
++.IP \(em
+ Debian-specific file locations and commands,
+ .IP \(em
+ Debian-specific configuration (/etc/default/cron),
+diff --git a/cron.h b/cron.h
+index 2120367..86e7a74 100644
+--- a/cron.h
++++ b/cron.h
 @@ -40,6 +40,13 @@
  #include "config.h"
  #include "externs.h"
@@ -75,10 +97,10 @@ Index: cron/cron.h
  		*find_user __P((cron_db *, const char *));
  
  entry		*load_entry __P((FILE *, void (*)(),
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
+diff --git a/database.c b/database.c
+index fceb578..e08a3e1 100644
+--- a/database.c
++++ b/database.c
 @@ -98,7 +98,7 @@ load_database(old_db)
  	new_db.head = new_db.tail = NULL;
  
@@ -88,7 +110,7 @@ Index: cron/database.c
  				SYSCRONTAB, &syscron_stat,
  				&new_db, old_db);
  	}
-@@ -285,7 +285,8 @@ process_crontab(uname, fname, tabname, s
+@@ -285,7 +285,8 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		free_user(u);
  		log_it(fname, getpid(), "RELOAD", tabname);
  	}
@@ -98,10 +120,10 @@ Index: cron/database.c
  	if (u != NULL) {
  		u->mtime = statbuf->st_mtime;
  		link_user(new_db, u);
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+diff --git a/do_command.c b/do_command.c
+index dec189e..a04ed83 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -42,6 +42,11 @@ static const struct pam_conv conv = {
  	}
  #endif
@@ -139,11 +161,11 @@ Index: cron/do_command.c
  			execle(shell, shell, "-c", e->cmd, (char *)0, jobenv);
  			fprintf(stderr, "%s: execle: %s\n", shell, strerror(errno));
  			_exit(ERROR_EXIT);
-Index: cron/user.c
-===================================================================
---- cron.orig/user.c
-+++ cron/user.c
-@@ -25,6 +25,133 @@ static char rcsid[] = "$Id: user.c,v 2.8
+diff --git a/user.c b/user.c
+index 5226102..6a96bc5 100644
+--- a/user.c
++++ b/user.c
+@@ -25,6 +25,133 @@ static char rcsid[] = "$Id: user.c,v 2.8 1994/01/15 20:43:43 vixie Exp $";
  
  #include "cron.h"
  
@@ -341,16 +363,3 @@ Index: cron/user.c
  	/* 
  	 * init environment.  this will be copied/augmented for each entry.
  	 */
-Index: cron/cron.8
-===================================================================
---- cron.orig/cron.8
-+++ cron/cron.8
-@@ -118,6 +118,8 @@ Support for /etc/cron.{hourly,daily,week
- .IP \(em
- PAM support,
- .IP \(em
-+SELinux support,
-+.IP \(em
- Debian-specific file locations and commands,
- .IP \(em
- Debian-specific configuration (/etc/default/cron),

@@ -1,3 +1,7 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Wed, 11 Oct 2023 11:43:22 +0200
+Subject: Check_for_timezone_changes
+
 if the timezone for a system is changed while cron is running,
 and the timezone change is _not_ due to a DST event, cron is unaware of
 the change and will continue using the old `GMToff` value until it is
@@ -6,10 +10,14 @@ restarted.
 This patch checks for the timezone unconditionnaly
 
 See bug #1019716: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1019716
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
+---
+ cron.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cron.c b/cron.c
+index 613e7bf..5432f21 100644
+--- a/cron.c
++++ b/cron.c
 @@ -371,10 +371,11 @@ set_time(int initialize)
      StartTime = time(NULL);
  

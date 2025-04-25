@@ -1,0 +1,218 @@
+From: Georges Khaznadar <georgesk@debian.org>
+Date: Sun, 27 Oct 2024 16:53:53 +0100
+Subject: more_examples_for_crontab
+
+This patch modifies crontab.5 in order to give useful
+information about:
+- using eval command, which makes easier to express 
+  environment assignments inside commands to call with
+  cron.
+- using leading zeroes instead of spaces to line up 
+  columns
+---
+ crontab.1           | 25 ++++++++++++++++++++++++-
+ crontab.5           | 31 ++++++++++++++++++++++++++++---
+ spcrc-crontab       | 42 ++++++++++++++++++++++++++++++++++++++++++
+ spcrc-crontab-light | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 138 insertions(+), 4 deletions(-)
+ create mode 100644 spcrc-crontab
+ create mode 100644 spcrc-crontab-light
+
+diff --git a/crontab.1 b/crontab.1
+index 2c87bc9..9da1e16 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -139,8 +139,31 @@ original behaviour by setting the environment variable
+ to 'N', which will cause the
+ .I crontab \-l
+ command to emit the extraneous header.
++.SH HIGHLIGHTING THE OUTPUT of crontab \-l
++The command
++.I crontab \-l
++outputs plain text. When a tty can support ANSI sequences to colourise
++this text, one can highlight the output, by calling:
++.I crontab \-l | spc -t crontab
++when the tty background is dark, or
++.I crontab \-l | spc -t crontab-light
++when this background is light.
++.PP
++The highlighting scheme can be modified by using customised versions of
++files
++.I /etc/supercat/spcrc-crontab*
++.PP
++One can also colourise this text with the program
++.I batcat
++provided by the package
++.I bat
++, here is an example:
++.nf
++.I crontab \-l | batcat --language Crontab
++.fi
++
+ .SH "SEE ALSO"
+-crontab(5), cron(8)
++crontab(5), cron(8), spc(1)
+ .SH FILES
+ .nf
+ /etc/cron.allow
+diff --git a/crontab.5 b/crontab.5
+index 15f9fef..b3f3d15 100644
+--- a/crontab.5
++++ b/crontab.5
+@@ -64,8 +64,8 @@ tilde(~) expansion, thus lines like
+ .PP
+ .in +4n
+ .nf
+-PATH = $HOME/bin:$PATH
+-PATH = ~/bin:/usr/bin
++PATH=$HOME/bin:$PATH
++PATH=~/bin:/usr/bin
+ .fi
+ .in
+ .PP
+@@ -80,7 +80,10 @@ C=$A $B
+ .in
+ .PP
+ There will not be any substitution for the defined variables in the
+-last value.
++last value. However, with most shells you can also try e.g.,:
++.PP
++     P=PATH=/a/b/c:$PATH
++     33 22 1 2 3 eval $P && some commands
+ .PP
+ Several environment variables are set up automatically by the
+ .IR cron (8)
+@@ -290,6 +293,17 @@ Note that all the system-wide tasks will run, by default, from 6 am to 7 am.  In
+ the case of systems that are not powered on during that period of time, only
+ the hourly tasks will be executed unless the defaults above are changed.
+ 
++.SH YET ANOTHER EXAMPLE
++
++In that example one can see that numbers can be prepended some 0, in order
++to line up columns.
++
++.nf
++17  * * * *  root  cd / && run-parts --report /etc/cron.hourly
++25 16 * * *  root  test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
++47 06 * * 7  root  test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
++52 06 1 * *  root  test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
++.fi
+ 
+ .SH SEE ALSO
+ cron(8), crontab(1)
+@@ -367,6 +381,17 @@ the following wrapper code:
+ 0 4 * * Sat   [ "$(date +\e%e)" = "$(LANG=C ncal | sed \-n 's/^Sa .* \e([0\-9]\e+\e) *$/\e1/p')" ] && echo "Last Saturday" && program_to_run
+ .fi
+ 
++.SH USING EVAL TO WRAP MISC ENVIRONMENT SETTINGS
++The following tip is kindly provided by 積丹尼 Dan Jacobson:
++.PP
++     CONTENT_TYPE="text/plain; charset=UTF-8"
++     d=eval LANG=zh_TW.UTF-8 w3m -dump
++     26 22 16 1-12 * $d https://www.ptt.cc/bbs/transgender/index.html
++.PP
++ it won't work without the eval. Saying
++ d=LANG=zh_TW.UTF-8 w3m -dump
++ will get
++ /bin/sh: LANG=zh_TW.UTF-8: command not found
+ 
+ .SH DIAGNOSTICS
+ cron requires that each entry in a crontab end in a newline character.  If the
+diff --git a/spcrc-crontab b/spcrc-crontab
+new file mode 100644
+index 0000000..8c0f147
+--- /dev/null
++++ b/spcrc-crontab
+@@ -0,0 +1,42 @@
++# ============ this file is to colorize crontabs ==========
++#        1         2         3         4         5
++#2345678901234567890123456789012345678901234567890123456789
++# HTML COLOR         COL A N T STRING or REGULAR EXPRESSION
++#################### ### # # # ############################
++#Where:
++#  HTML COLOR - Standard HTML Color name for HTML output
++#  COL        - Console color name from the list
++#                 red, yel, cya, grn, mag, blk, whi, blu
++#  A          - Attribute from the list
++#                 ' ' : normal
++#                 'b' : bold
++#                 'u' : underline
++#                 'r' : reverse video
++#                 'k' : blink
++#  N          - number of matches
++#                 ' ' : all
++#                 '0' : all
++#                 '1' - '9' : number of matches
++#  T          - type of matching to perform
++#                 'c' : characters
++#                 's' : string
++#                 'r' : regex - case   sensitive
++#                 'R' : regex - case insensitive
++#                 't' : regex with Unix time conversion
++#                 ' ' : default ('r' regex)
++#        1         2         3         4         5
++#2345678901234567890123456789012345678901234567890123456789
++# HTML COLOR         COL A N T STRING or REGULAR EXPRESSION
++#################### ### # # # ############################
++#                                        dom is blue + bold
++Blue                 blu b 5   \s+(\S+)
++#                                     month is green + bold
++Green                grn b 4   \s+(\S+)
++#                              dow is green + reverse video
++Green                grn r 3   \s+(\S+)
++#                                        hour is red + bold
++Red                  red b 2   \s+(\S+)
++#                             minute is red + reverse video
++Red                  red r 1   \s*(\S+)
++#                                      comments are magenta
++Magenta              mag       (^#.*)
+diff --git a/spcrc-crontab-light b/spcrc-crontab-light
+new file mode 100644
+index 0000000..81de807
+--- /dev/null
++++ b/spcrc-crontab-light
+@@ -0,0 +1,44 @@
++# ============ this file is to colorize crontabs ==========
++#        1         2         3         4         5
++#2345678901234567890123456789012345678901234567890123456789
++# HTML COLOR         COL A N T STRING or REGULAR EXPRESSION
++#################### ### # # # ############################
++#Where:
++#  HTML COLOR - Standard HTML Color name for HTML output
++#  COL        - Console color name from the list
++#                 red, yel, cya, grn, mag, blk, whi, blu
++#  A          - Attribute from the list
++#                 ' ' : normal
++#                 'b' : bold
++#                 'u' : underline
++#                 'r' : reverse video
++#                 'k' : blink
++#  N          - number of matches
++#                 ' ' : all
++#                 '0' : all
++#                 '1' - '9' : number of matches
++#  T          - type of matching to perform
++#                 'c' : characters
++#                 's' : string
++#                 'r' : regex - case   sensitive
++#                 'R' : regex - case insensitive
++#                 't' : regex with Unix time conversion
++#                 ' ' : default ('r' regex)
++#        1         2         3         4         5
++#2345678901234567890123456789012345678901234567890123456789
++# HTML COLOR         COL A N T STRING or REGULAR EXPRESSION
++#################### ### # # # ############################
++#                                          default is black
++Black                blk       (.*)
++#                                        dom is blue + bold
++Blue                 blu b 5   \s+(\S+)
++#                                     month is green + bold
++Green                grn b 4   \s+(\S+)
++#                              dow is green + reverse video
++Green                grn r 3   \s+(\S+)
++#                                        hour is red + bold
++Red                  red b 2   \s+(\S+)
++#                             minute is red + reverse video
++Red                  red r 1   \s*(\S+)
++#                                      comments are magenta
++Magenta              mag       (^#.*)

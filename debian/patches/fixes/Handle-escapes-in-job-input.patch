@@ -8,10 +8,14 @@ Miettinen, with OpenBSD indicated as the original source of it.
 Bug-Debian: https://bugs.debian.org/8499
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
+---
+ do_command.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/do_command.c b/do_command.c
+index f18f670..73362a6 100644
+--- a/do_command.c
++++ b/do_command.c
 @@ -123,13 +123,21 @@ child_process(e, u)
  	 * command, and subsequent characters are the additional input to
  	 * the command.  Subsequent %'s will be transformed into newlines,

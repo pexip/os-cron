@@ -14,22 +14,28 @@ echo "auth       optional   pam_group.so" >> /etc/pam.d/cron
 
 echo "================= adding user 'dummy' ====================="
 getent passwd dummy || adduser --disabled-password --gecos "" dummy
+touch /var/mail/dummy && chown dummy /var/mail/dummy
 
-echo "====== adding the group 'plugdev' with group.conf ========="
-echo "*;*;dummy;Al0000-2400;plugdev" > /etc/security/group.conf
+echo "===== group 'plugdev' for user dummy, with group.conf ====="
+grep -q dummy /etc/security/group.conf || echo "*;*;dummy;Al0000-2400;plugdev" >> /etc/security/group.conf
 
 echo "======== create a crontab for user dummy =================="
+mylocalhost=$(cat /etc/hostname)
+
 crontab -u dummy - <<EOF
-MAILTO=dummy@mylocalhost
-MAILFROM=dummy@mylocalhost
-* * * * * ls -l / && false
-* * * * * id && false
+MAILTO=dummy@$mylocalhost
+MAILFROM=dummy@$mylocalhost
+* * * * * /usr/bin/ls -l / && /usr/bin/false
+* * * * * /usr/bin/id && /usr/bin/false
 EOF
 
-echo "=========== wait longer than one minute ==================="
-sleep 90
+echo "====== launch 'cron -N' in order to check it now =========="
+cron -N
+echo "================== sleep 4 seconds ========================"
+sleep 4
 echo "========== check e-mails got by user dummy ================"
-echo "type *" | (su - dummy -c mail) > e-mails
+echo "type *" | (su - dummy -c mail || echo "something went wrong while launching 'mail' with dummy user, retcode = $?") > e-mails
+
 echo "========== e-mails content: ==============================="
 cat e-mails
 
@@ -37,8 +43,8 @@ frame "the goal of the first test is to check whether environment variables" \
       "MAILFROM and MAILTO are correctly taken in account"
 
 echo "==========================================================="
-grep 'From: dummy@mylocalhost' e-mails || abort "test failed"
-grep 'To: dummy@mylocalhost' e-mails || abort "test failed"
+grep "From: dummy@$mylocalhost" e-mails || abort "test failed"
+grep "To: dummy@$mylocalhost" e-mails || abort "test failed"
 
 frame "OK, this is great: MAILFROM and MAILTO variables are honored"
 

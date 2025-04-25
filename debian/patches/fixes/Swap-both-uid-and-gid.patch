@@ -8,10 +8,14 @@ Fix provided by Solar Designer.
 
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
+---
+ misc.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/misc.c b/misc.c
+index cf4a74c..1ab2b99 100644
+--- a/misc.c
++++ b/misc.c
 @@ -695,10 +695,21 @@ arpadate(clock)
  
  

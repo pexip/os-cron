@@ -1,6 +1,6 @@
 From: Tomas Mraz <tmraz@fedoraproject.org>
 Date: Tue, 21 Jun 2011 18:26:38 +0200
-Subject: Check orphaned crontabs for adoption. 
+Subject: Check orphaned crontabs for adoption.
 
 Change the default behaviour of permanently ignoring crontabs with an invalid
 owner (ie, getpwnam() fails) to checking for adoption every time cron wakes up.
@@ -12,10 +12,16 @@ Bug-Debian: https://bugs.debian.org/634926
 Bug-Ubuntu: https://bugs.launchpad.net/bugs/27520
 Origin: https://git.fedorahosted.org/cgit/cronie.git/commit/?id=8b407876f276f96914111bd9954f21f627db7b11
 Last-Update: 2016-01-15
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
+---
+ cron.c     |  1 +
+ cron.h     | 10 +++++++-
+ database.c | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 90 insertions(+), 3 deletions(-)
+
+diff --git a/cron.c b/cron.c
+index 84b19e6..673134a 100644
+--- a/cron.c
++++ b/cron.c
 @@ -171,6 +171,7 @@ main(argc, argv)
  		} while (clockTime == timeRunning);
  		timeRunning = clockTime;
@@ -24,10 +30,10 @@ Index: cron/cron.c
  		load_database(&database);
  
  		/*
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
+diff --git a/cron.h b/cron.h
+index 6c866a4..94b8e04 100644
+--- a/cron.h
++++ b/cron.h
 @@ -216,6 +216,13 @@ typedef	struct _cron_db {
  	time_t		sysd_mtime;     /* last modtime on system crondir */
  } cron_db;
@@ -52,11 +58,11 @@ Index: cron/cron.h
  
  int		job_runqueue __P((void)),
  		set_debug_flags __P((char *)),
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -53,6 +53,9 @@ static user *get_next_system_crontab __P
+diff --git a/database.c b/database.c
+index f16be38..b1dc7d5 100644
+--- a/database.c
++++ b/database.c
+@@ -53,6 +53,9 @@ static user *get_next_system_crontab __P((user *));
  
  void force_rescan_user(cron_db *old_db, cron_db *new_db, const char *fname, time_t old_mtime);
  
@@ -66,7 +72,7 @@ Index: cron/database.c
  void
  load_database(old_db)
  	cron_db		*old_db;
-@@ -311,7 +314,7 @@ process_crontab(uname, fname, tabname, s
+@@ -311,7 +314,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  {
  	struct passwd	*pw = NULL;
  	int		crontab_fd = OK - 1;
@@ -75,7 +81,7 @@ Index: cron/database.c
  
  	/* If the name begins with *system*, don't worry about password -
  	 it's part of the system crontab */
-@@ -321,6 +324,7 @@ process_crontab(uname, fname, tabname, s
+@@ -321,6 +324,7 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
  		if (strncmp(fname, "tmp.", 4)) {
  			/* don't log these temporary files */
  			log_it(fname, getpid(), "ORPHAN", "no passwd entry");
@@ -83,7 +89,7 @@ Index: cron/database.c
  		}
  		goto next_crontab;
  	}
-@@ -444,7 +448,10 @@ process_crontab(uname, fname, tabname, s
+@@ -444,7 +448,10 @@ process_crontab(uname, fname, tabname, statbuf, new_db, old_db)
           * 1), but this is all we've got.
           */
  	Debug(DLOAD, ("\t%s:", fname))
@@ -95,7 +101,7 @@ Index: cron/database.c
  	if (u != NULL) {
  		/* if crontab has not changed since we last read it
  		 * in, then we can just use our existing entry.
-@@ -580,3 +587,74 @@ force_rescan_user(cron_db *old_db, cron_
+@@ -580,3 +587,74 @@ force_rescan_user(cron_db *old_db, cron_db *new_db, const char *fname, time_t ol
  	Debug(DLOAD, ("\t%s: [added empty placeholder to force rescan]\n", fname))
  	link_user(new_db, u);
  }

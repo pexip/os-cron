@@ -1,6 +1,9 @@
 From: Christian Kastner <ckk@kvr.at>
 Date: Fri, 15 Jan 2016 21:47:32 +0100
 Subject: Prompt on crontab deletion
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 Add an option -i that modifies the -r option to prompt the user for a y/n
 response before actually deleting the crontab.
@@ -10,10 +13,39 @@ Contributed by Javier Fernández-Sanguino Peña <jfs@debian.org>.
 Bug-Debian: https://bugs.debian.org/513379
 Forwarded: no
 Last-Update: 2016-01-15
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.1 |  6 +++++-
+ crontab.c | 40 ++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 43 insertions(+), 3 deletions(-)
+
+diff --git a/crontab.1 b/crontab.1
+index f432097..199bae8 100644
+--- a/crontab.1
++++ b/crontab.1
+@@ -24,7 +24,7 @@ crontab \- maintain crontab files for individual users (Vixie Cron)
+ .SH SYNOPSIS
+ crontab [ \-u user ] file
+ .br
+-crontab [ \-u user ] [ \-e ] { \-l | \-r }
++crontab [ \-u user ] [ \-i ] { \-e | \-l | \-r }
+ .SH DESCRIPTION
+ .I crontab
+ is the program used to install, deinstall or list the tables
+@@ -100,6 +100,10 @@ from the editor, the modified crontab will be installed automatically.  If
+ neither of the environment variables is defined, then the
+ default editor /usr/bin/editor is used.
+ .PP
++The
++.I \-i
++option modifies the \-r option to prompt the user for a 'y/Y' response
++before actually removing the crontab.
+ .SH DEBIAN SPECIFIC
+ The "out-of-the-box" behaviour for
+ .I crontab \-l
+diff --git a/crontab.c b/crontab.c
+index 033d536..c48900c 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -59,6 +59,7 @@ static	char		Filename[MAX_FNAME];
  static	char		Directory[MAX_FNAME];
  static	FILE		*NewCrontab = NULL;
@@ -95,27 +127,3 @@ Index: cron/crontab.c
  	if (unlink(n)) {
  		if (errno == ENOENT)
  			fprintf(stderr, "no crontab for %s\n", User);
-Index: cron/crontab.1
-===================================================================
---- cron.orig/crontab.1
-+++ cron/crontab.1
-@@ -24,7 +24,7 @@ crontab \- maintain crontab files for in
- .SH SYNOPSIS
- crontab [ \-u user ] file
- .br
--crontab [ \-u user ] [ \-e ] { \-l | \-r }
-+crontab [ \-u user ] [ \-i ] { \-e | \-l | \-r }
- .SH DESCRIPTION
- .I crontab
- is the program used to install, deinstall or list the tables
-@@ -100,6 +100,10 @@ from the editor, the modified crontab wi
- neither of the environment variables is defined, then the
- default editor /usr/bin/editor is used.
- .PP
-+The
-+.I \-i
-+option modifies the \-r option to prompt the user for a 'y/Y' response
-+before actually removing the crontab.
- .SH DEBIAN SPECIFIC
- The "out-of-the-box" behaviour for
- .I crontab \-l

@@ -9,10 +9,14 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-26
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index 992d175..7060db3 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -176,18 +176,19 @@ parse_args(argc, argv)
  				usage("bad debug option");
  			break;

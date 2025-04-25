@@ -11,10 +11,23 @@ match what upstream eventually did for ISC cron v4.1.
 
 Forwarded: no
 Last-Update: 2015-12-20
-Index: cron/compat.c
-===================================================================
---- cron.orig/compat.c
-+++ cron/compat.c
+---
+ compat.c     |  2 +-
+ cron.c       |  4 ++--
+ cron.h       |  5 +++--
+ crontab.c    | 20 +++++++++++++-------
+ database.c   |  4 ++--
+ do_command.c | 22 ++++++++++------------
+ env.c        |  5 ++++-
+ misc.c       | 26 ++++++++++++++------------
+ popen.c      |  4 ++--
+ user.c       |  1 +
+ 10 files changed, 52 insertions(+), 41 deletions(-)
+
+diff --git a/compat.c b/compat.c
+index 205c731..1c7eb2d 100644
+--- a/compat.c
++++ b/compat.c
 @@ -227,7 +227,7 @@ setenv(name, value, overwrite)
  		return -1;
  	}
@@ -24,11 +37,63 @@ Index: cron/compat.c
  	return putenv(tmp);	/* intentionally orphan 'tmp' storage */
  }
  #endif
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
-@@ -57,7 +57,7 @@ static char	*Options[] = { "???", "list"
+diff --git a/cron.c b/cron.c
+index 2753a44..c2a7d18 100644
+--- a/cron.c
++++ b/cron.c
+@@ -246,7 +246,7 @@ cron_sleep() {
+ 
+ #ifdef USE_SIGCHLD
+ static void
+-sigchld_handler(x) {
++sigchld_handler(int x) {
+ 	WAIT_T		waiter;
+ 	PID_T		pid;
+ 
+@@ -276,7 +276,7 @@ sigchld_handler(x) {
+ 
+ 
+ static void
+-sighup_handler(x) {
++sighup_handler(int x) {
+ 	log_close();
+ }
+ 
+diff --git a/cron.h b/cron.h
+index ebe45c7..a71dc17 100644
+--- a/cron.h
++++ b/cron.h
+@@ -105,7 +105,7 @@
+ 
+ #if DEBUGGING
+ # define Debug(mask, message) \
+-			if ( (DebugFlags & (mask) ) == (mask) ) \
++			if ( (DebugFlags & (mask) )  ) \
+ 				printf message;
+ #else /* !DEBUGGING */
+ # define Debug(mask, message) \
+@@ -205,6 +205,7 @@ int		job_runqueue __P((void)),
+ 		get_char __P((FILE *)),
+ 		get_string __P((char *, int, FILE *, char *)),
+ 		swap_uids __P((void)),
++		swap_uids_back __P((void)),
+ 		load_env __P((char *, FILE *)),
+ 		cron_pclose __P((FILE *)),
+ 		strcmp_until __P((char *, char *, int)),
+@@ -220,7 +221,7 @@ char		*env_get __P((char *, char **)),
+ 		**env_set __P((char **, char *));
+ 
+ user		*load_user __P((int, struct passwd *, char *)),
+-		*find_user __P((cron_db *, char *));
++		*find_user __P((cron_db *, const char *));
+ 
+ entry		*load_entry __P((FILE *, void (*)(),
+ 				 struct passwd *, char **));
+diff --git a/crontab.c b/crontab.c
+index 657af71..d8aecba 100644
+--- a/crontab.c
++++ b/crontab.c
+@@ -57,7 +57,7 @@ static char	*Options[] = { "???", "list", "delete", "edit", "replace" };
  static	PID_T		Pid;
  static	char		User[MAX_UNAME], RealUser[MAX_UNAME];
  static	char		Filename[MAX_FNAME];
@@ -41,14 +106,15 @@ Index: cron/crontab.c
  	case opt_replace:	if (replace_cmd() < 0)
  					exitstatus = ERROR_EXIT;
  				break;
+-	}
+-	exit(0);
 +				/* The following was added to shut
 +				 -Wall up, but it will never be hit,
 +				 because the option parser will catch
 +				 it */
 +	case opt_unknown: usage("unknown option specified");
 +	                  break;
- 	}
--	exit(0);
++	}
 +	exit(exitstatus);
  	/*NOTREACHED*/
  }
@@ -89,11 +155,116 @@ Index: cron/crontab.c
  		fclose(tmp);  unlink(tn);
  		return (-2);
  	}
-Index: cron/misc.c
-===================================================================
---- cron.orig/misc.c
-+++ cron/misc.c
-@@ -44,6 +44,10 @@ static char rcsid[] = "$Id: misc.c,v 2.9
+diff --git a/database.c b/database.c
+index 879aaaa..67b71a0 100644
+--- a/database.c
++++ b/database.c
+@@ -189,8 +189,8 @@ unlink_user(db, u)
+ 
+ user *
+ find_user(db, name)
+-	cron_db	*db;
+-	char	*name;
++	cron_db		*db;
++	const char	*name;
+ {
+ 	char	*env_get();
+ 	user	*u;
+diff --git a/do_command.c b/do_command.c
+index 11e157a..b8e32df 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -99,10 +99,10 @@ child_process(e, u)
+ #ifdef USE_SIGCHLD
+ 	/* our parent is watching for our death by catching SIGCHLD.  we
+ 	 * do not care to watch for our children's deaths this way -- we
+-	 * use wait() explictly.  so we have to disable the signal (which
++	 * use wait() explictly.  so we have to reset the signal (which
+ 	 * was inherited from the parent).
+ 	 */
+-	(void) signal(SIGCHLD, SIG_IGN);
++	(void) signal(SIGCHLD, SIG_DFL);
+ #else
+ 	/* on system-V systems, we are ignoring SIGCLD.  we have to stop
+ 	 * ignoring it now or the wait() in cron_pclose() won't work.
+@@ -146,13 +146,13 @@ child_process(e, u)
+ 
+ 	/* fork again, this time so we can exec the user's command.
+ 	 */
+-	switch (vfork()) {
++	switch (fork()) {
+ 	case -1:
+-		log_it("CRON",getpid(),"error","can't vfork");
++		log_it("CRON",getpid(),"error","can't fork");
+ 		exit(ERROR_EXIT);
+ 		/*NOTREACHED*/
+ 	case 0:
+-		Debug(DPROC, ("[%d] grandchild process Vfork()'ed\n",
++		Debug(DPROC, ("[%d] grandchild process fork()'ed\n",
+ 			      getpid()))
+ 
+ 		/* write a log message.  we've waited this long to do it
+@@ -169,9 +169,7 @@ child_process(e, u)
+ 
+ 		/* that's the last thing we'll log.  close the log files.
+ 		 */
+-#ifdef SYSLOG
+-		closelog();
+-#endif
++		log_close();
+ 
+ 		/* get new pgrp, void tty, etc.
+ 		 */
+@@ -189,9 +187,9 @@ child_process(e, u)
+ 		/* grandchild process.  make std{in,out} be the ends of
+ 		 * pipes opened by our daddy; make stderr go to stdout.
+ 		 */
+-		close(STDIN);	dup2(stdin_pipe[READ_PIPE], STDIN);
+-		close(STDOUT);	dup2(stdout_pipe[WRITE_PIPE], STDOUT);
+-		close(STDERR);	dup2(STDOUT, STDERR);
++		dup2(stdin_pipe[READ_PIPE], STDIN);
++		dup2(stdout_pipe[WRITE_PIPE], STDOUT);
++		dup2(STDOUT, STDERR);
+ 
+ 		/* close the pipes we just dup'ed.  The resources will remain.
+ 		 */
+@@ -331,7 +329,7 @@ child_process(e, u)
+ 		register int	ch = getc(in);
+ 
+ 		if (ch != EOF) {
+-			register FILE	*mail;
++			register FILE	*mail = NULL;
+ 			register int	bytes = 1;
+ 			int		status = 0;
+ 
+diff --git a/env.c b/env.c
+index 7eb53fa..b788e75 100644
+--- a/env.c
++++ b/env.c
+@@ -39,6 +39,9 @@ env_free(envp)
+ {
+ 	char	**p;
+ 
++	if(!envp)
++		return;
++
+ 	for (p = envp;  *p;  p++)
+ 		free(*p);
+ 	free(envp);
+@@ -168,7 +171,7 @@ env_get(name, envp)
+ 	register int	len = strlen(name);
+ 	register char	*p, *q;
+ 
+-	while (p = *envp++) {
++	while ((p = *envp++) != NULL) {
+ 		if (!(q = strchr(p, '=')))
+ 			continue;
+ 		if ((q - p) == len && !strncmp(p, name, len))
+diff --git a/misc.c b/misc.c
+index c912ffb..c03f25f 100644
+--- a/misc.c
++++ b/misc.c
+@@ -44,6 +44,10 @@ static char rcsid[] = "$Id: misc.c,v 2.9 1994/01/15 20:43:43 vixie Exp $";
  #define LOG_CRON LOG_DAEMON
  #endif
  
@@ -171,33 +342,10 @@ Index: cron/misc.c
  static int save_euid;
  int swap_uids() { save_euid = geteuid(); return seteuid(getuid()); }
  int swap_uids_back() { return seteuid(save_euid); }
-Index: cron/env.c
-===================================================================
---- cron.orig/env.c
-+++ cron/env.c
-@@ -39,6 +39,9 @@ env_free(envp)
- {
- 	char	**p;
- 
-+	if(!envp)
-+		return;
-+
- 	for (p = envp;  *p;  p++)
- 		free(*p);
- 	free(envp);
-@@ -168,7 +171,7 @@ env_get(name, envp)
- 	register int	len = strlen(name);
- 	register char	*p, *q;
- 
--	while (p = *envp++) {
-+	while ((p = *envp++) != NULL) {
- 		if (!(q = strchr(p, '=')))
- 			continue;
- 		if ((q - p) == len && !strncmp(p, name, len))
-Index: cron/popen.c
-===================================================================
---- cron.orig/popen.c
-+++ cron/popen.c
+diff --git a/popen.c b/popen.c
+index d6c2c75..ba59b97 100644
+--- a/popen.c
++++ b/popen.c
 @@ -58,7 +58,7 @@ cron_popen(program, type)
  	extern char **glob(), **copyblk();
  #endif
@@ -216,144 +364,10 @@ Index: cron/popen.c
  	case -1:			/* error */
  		(void)close(pdes[0]);
  		(void)close(pdes[1]);
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -99,10 +99,10 @@ child_process(e, u)
- #ifdef USE_SIGCHLD
- 	/* our parent is watching for our death by catching SIGCHLD.  we
- 	 * do not care to watch for our children's deaths this way -- we
--	 * use wait() explictly.  so we have to disable the signal (which
-+	 * use wait() explictly.  so we have to reset the signal (which
- 	 * was inherited from the parent).
- 	 */
--	(void) signal(SIGCHLD, SIG_IGN);
-+	(void) signal(SIGCHLD, SIG_DFL);
- #else
- 	/* on system-V systems, we are ignoring SIGCLD.  we have to stop
- 	 * ignoring it now or the wait() in cron_pclose() won't work.
-@@ -146,13 +146,13 @@ child_process(e, u)
- 
- 	/* fork again, this time so we can exec the user's command.
- 	 */
--	switch (vfork()) {
-+	switch (fork()) {
- 	case -1:
--		log_it("CRON",getpid(),"error","can't vfork");
-+		log_it("CRON",getpid(),"error","can't fork");
- 		exit(ERROR_EXIT);
- 		/*NOTREACHED*/
- 	case 0:
--		Debug(DPROC, ("[%d] grandchild process Vfork()'ed\n",
-+		Debug(DPROC, ("[%d] grandchild process fork()'ed\n",
- 			      getpid()))
- 
- 		/* write a log message.  we've waited this long to do it
-@@ -169,9 +169,7 @@ child_process(e, u)
- 
- 		/* that's the last thing we'll log.  close the log files.
- 		 */
--#ifdef SYSLOG
--		closelog();
--#endif
-+		log_close();
- 
- 		/* get new pgrp, void tty, etc.
- 		 */
-@@ -189,9 +187,9 @@ child_process(e, u)
- 		/* grandchild process.  make std{in,out} be the ends of
- 		 * pipes opened by our daddy; make stderr go to stdout.
- 		 */
--		close(STDIN);	dup2(stdin_pipe[READ_PIPE], STDIN);
--		close(STDOUT);	dup2(stdout_pipe[WRITE_PIPE], STDOUT);
--		close(STDERR);	dup2(STDOUT, STDERR);
-+		dup2(stdin_pipe[READ_PIPE], STDIN);
-+		dup2(stdout_pipe[WRITE_PIPE], STDOUT);
-+		dup2(STDOUT, STDERR);
- 
- 		/* close the pipes we just dup'ed.  The resources will remain.
- 		 */
-@@ -331,7 +329,7 @@ child_process(e, u)
- 		register int	ch = getc(in);
- 
- 		if (ch != EOF) {
--			register FILE	*mail;
-+			register FILE	*mail = NULL;
- 			register int	bytes = 1;
- 			int		status = 0;
- 
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
-@@ -105,7 +105,7 @@
- 
- #if DEBUGGING
- # define Debug(mask, message) \
--			if ( (DebugFlags & (mask) ) == (mask) ) \
-+			if ( (DebugFlags & (mask) )  ) \
- 				printf message;
- #else /* !DEBUGGING */
- # define Debug(mask, message) \
-@@ -205,6 +205,7 @@ int		job_runqueue __P((void)),
- 		get_char __P((FILE *)),
- 		get_string __P((char *, int, FILE *, char *)),
- 		swap_uids __P((void)),
-+		swap_uids_back __P((void)),
- 		load_env __P((char *, FILE *)),
- 		cron_pclose __P((FILE *)),
- 		strcmp_until __P((char *, char *, int)),
-@@ -220,7 +221,7 @@ char		*env_get __P((char *, char **)),
- 		**env_set __P((char **, char *));
- 
- user		*load_user __P((int, struct passwd *, char *)),
--		*find_user __P((cron_db *, char *));
-+		*find_user __P((cron_db *, const char *));
- 
- entry		*load_entry __P((FILE *, void (*)(),
- 				 struct passwd *, char **));
-Index: cron/database.c
-===================================================================
---- cron.orig/database.c
-+++ cron/database.c
-@@ -189,8 +189,8 @@ unlink_user(db, u)
- 
- user *
- find_user(db, name)
--	cron_db	*db;
--	char	*name;
-+	cron_db		*db;
-+	const char	*name;
- {
- 	char	*env_get();
- 	user	*u;
-Index: cron/cron.c
-===================================================================
---- cron.orig/cron.c
-+++ cron/cron.c
-@@ -246,7 +246,7 @@ cron_sleep() {
- 
- #ifdef USE_SIGCHLD
- static void
--sigchld_handler(x) {
-+sigchld_handler(int x) {
- 	WAIT_T		waiter;
- 	PID_T		pid;
- 
-@@ -276,7 +276,7 @@ sigchld_handler(x) {
- 
- 
- static void
--sighup_handler(x) {
-+sighup_handler(int x) {
- 	log_close();
- }
- 
-Index: cron/user.c
-===================================================================
---- cron.orig/user.c
-+++ cron/user.c
+diff --git a/user.c b/user.c
+index 9672dd5..e010f74 100644
+--- a/user.c
++++ b/user.c
 @@ -75,6 +75,7 @@ load_user(crontab_fd, pw, name)
  	/*
  	 * load the crontab

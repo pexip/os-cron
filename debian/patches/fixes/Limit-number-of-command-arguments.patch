@@ -9,11 +9,15 @@ Fix provided by Steve Greenland <stevegr@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/popen.c
-===================================================================
---- cron.orig/popen.c
-+++ cron/popen.c
-@@ -32,6 +32,7 @@ static char sccsid[] = "@(#)popen.c	5.7
+---
+ popen.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/popen.c b/popen.c
+index ba59b97..d0c2621 100644
+--- a/popen.c
++++ b/popen.c
+@@ -32,6 +32,7 @@ static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
  #include <signal.h>
  
  

@@ -9,10 +9,14 @@ attack prevention.
 
 Forwarded: no
 Last-Update: 2015-12-25
-Index: cron/crontab.c
-===================================================================
---- cron.orig/crontab.c
-+++ cron/crontab.c
+---
+ crontab.c | 23 +++++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/crontab.c b/crontab.c
+index 5f9d977..7ec98d2 100644
+--- a/crontab.c
++++ b/crontab.c
 @@ -471,6 +471,7 @@ edit_cmd() {
  	(void)signal(SIGHUP, SIG_DFL);
  	(void)signal(SIGINT, SIG_DFL);

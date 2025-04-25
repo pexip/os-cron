@@ -2,14 +2,16 @@ Source: cron
 Section: admin
 Priority: important
 Maintainer: Pexip AS <packaging@pexip.com>
-XSBC-Pexip-Original-Maintainer: Javier Fernández-Sanguino Peña <jfs@debian.org>
-XSBC-Pexip-Original-Uploaders: Georges Khaznadar <georgesk@debian.org>
-Standards-Version: 4.6.1
+XSBC-Pexip-Original-Maintainer: Georges Khaznadar <georgesk@debian.org>
+Standards-Version: 4.6.2
 Build-Depends:
     debhelper-compat (= 13),
     libpam0g-dev,
     libselinux1-dev [linux-any],
-    libaudit-dev [linux-any]
+    libaudit-dev [linux-any],
+    python3:any,
+    docbook-xsl,
+    xsltproc,
 Rules-Requires-Root: no
 Homepage: https://ftp.isc.org/isc/cron/
 Vcs-Git: https://salsa.debian.org/debian/cron.git
@@ -28,11 +30,13 @@ Depends:
     sensible-utils,
     libpam-runtime
 Recommends:
-    default-mta | mail-transport-agent
+    default-mta | mail-transport-agent,
 Suggests:
     anacron,
     logrotate,
-    checksecurity
+    checksecurity,
+    supercat,
+    bat,
 Conflicts:
     systemd-cron,
     bcron,
@@ -58,6 +62,7 @@ Description: process scheduling daemon
 
 Package: cron-daemon-common
 Architecture: all
+Multi-Arch: foreign
 Depends: ${misc:Depends},
     adduser
 Conflicts:

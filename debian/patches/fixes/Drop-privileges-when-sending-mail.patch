@@ -1,6 +1,9 @@
 From: Christian Kastner <ckk@kvr.at>
 Date: Tue, 22 Dec 2015 18:42:49 +0100
 Subject: Drop privileges when sending mail
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 Drop privileges when sending mail. It is unnecessary to send them as root.
 
@@ -9,11 +12,17 @@ and extended by Javier Fernández-Sanguino Peña <jfs@debian.org>.
 
 Forwarded: no
 Last-Update: 2015-12-22
-Index: cron/cron.h
-===================================================================
---- cron.orig/cron.h
-+++ cron/cron.h
-@@ -226,7 +226,7 @@ user		*load_user __P((int, struct passwd
+---
+ cron.h       |  2 +-
+ do_command.c |  2 +-
+ popen.c      | 34 +++++++++++++++++++++++++++++++++-
+ 3 files changed, 35 insertions(+), 3 deletions(-)
+
+diff --git a/cron.h b/cron.h
+index d1861be..2fcc94d 100644
+--- a/cron.h
++++ b/cron.h
+@@ -226,7 +226,7 @@ user		*load_user __P((int, struct passwd *, char *)),
  entry		*load_entry __P((FILE *, void (*)(),
  				 struct passwd *, char **));
  
@@ -22,11 +31,24 @@ Index: cron/cron.h
  
  
  				/* in the C tradition, we only create
-Index: cron/popen.c
-===================================================================
---- cron.orig/popen.c
-+++ cron/popen.c
-@@ -31,6 +31,10 @@ static char sccsid[] = "@(#)popen.c	5.7
+diff --git a/do_command.c b/do_command.c
+index 294b177..6f6590b 100644
+--- a/do_command.c
++++ b/do_command.c
+@@ -385,7 +385,7 @@ child_process(e, u)
+ 				(void) gethostname(hostname, MAXHOSTNAMELEN);
+ 				(void) snprintf(mailcmd, sizeof(mailcmd),
+ 						MAILARGS, MAILCMD, mailto);
+-				if (!(mail = cron_popen(mailcmd, "w"))) {
++				if (!(mail = cron_popen(mailcmd, "w", e))) {
+ 					perror(MAILCMD);
+ 					(void) _exit(ERROR_EXIT);
+ 				}
+diff --git a/popen.c b/popen.c
+index d0c2621..b5c3242 100644
+--- a/popen.c
++++ b/popen.c
+@@ -31,6 +31,10 @@ static char sccsid[] = "@(#)popen.c	5.7 (Berkeley) 2/14/89";
  #include "cron.h"
  #include <signal.h>
  
@@ -82,16 +104,3 @@ Index: cron/popen.c
  #if WANT_GLOBBING
  		execvp(gargv[0], gargv);
  #else
-Index: cron/do_command.c
-===================================================================
---- cron.orig/do_command.c
-+++ cron/do_command.c
-@@ -385,7 +385,7 @@ child_process(e, u)
- 				(void) gethostname(hostname, MAXHOSTNAMELEN);
- 				(void) snprintf(mailcmd, sizeof(mailcmd),
- 						MAILARGS, MAILCMD, mailto);
--				if (!(mail = cron_popen(mailcmd, "w"))) {
-+				if (!(mail = cron_popen(mailcmd, "w", e))) {
- 					perror(MAILCMD);
- 					(void) _exit(ERROR_EXIT);
- 				}
