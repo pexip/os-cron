@@ -1,3 +1,9 @@
+cron (3.0pl1-196+pexip25u1) pexip-trixie; urgency=medium
+
+  * Initial trixie build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Tue, 29 Apr 2025 22:29:31 +0100
+
 cron (3.0pl1-196) unstable; urgency=medium
 
   * Fixed a lot of inconsistencies in man pages cron(8), crontab(1) and
