@@ -1,18 +1,9 @@
 cron (3.0pl1-174) unstable; urgency=medium
-     The command cron_now is no longer shipped with the package; it is
-     replaced by the call of `cron -N`. The new "-N" switch allows sysadmins
-     to run cron jobs immediately, without waiting for the next tick.
+     Running 'cron -N' triggers a cron tick, causing all job definitions
+     to be processed immediately, and then exits. This is useful for
+     testing changes in crontabs.
      
- -- Georges Khaznadar <georgesk@debian.org>  Sun, 27 Aug 2023 19:30:24 +0200
-
-cron (3.0pl1-170) unstable; urgency=medium
-
-    The package ships now a new command cron_now, which was meant to run
-    autopkgtests. This command allows one to trigger the equivalent of a cron
-    tick, which is processed immediately. This features can also be used by
-    sysadmins to test new changes in crontabs.
-
- -- Georges Khaznadar <georgesk@debian.org>  Sat, 19 Aug 2023 17:15:58 +0200
+ -- Georges Khaznadar <georgesk@debian.org>  Thu, 12 Jun 2025 21:18:31 +0200
 
 cron (3.0pl1-134) unstable; urgency=medium
 

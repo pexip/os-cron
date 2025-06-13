@@ -1,3 +1,12 @@
+cron (3.0pl1-197) unstable; urgency=medium
+
+  * modified d/cron.NEWS to merge two overlapping entries, and make it
+    easier for people upgrading from bookworm to trixie to understand
+    the new feature ('cron -N' triggers a cron tick immediately).
+    Thank you Andrew Bower for the hints! Closes: #1107677
+
+ -- Georges Khaznadar <georgesk@debian.org>  Fri, 13 Jun 2025 10:30:37 +0200
+
 cron (3.0pl1-196) unstable; urgency=medium
 
   * Fixed a lot of inconsistencies in man pages cron(8), crontab(1) and
